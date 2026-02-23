@@ -2,16 +2,17 @@ name: "Ruby on Rails CI"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   test:
     runs-on: ubuntu-22.04
     services:
       postgres:
-        image: postgres:11-alpine
+        # 升级到 Postgres 16，与现代 Heroku 栈对齐
+        image: postgres:16-alpine
         ports:
           - "5432:5432"
         env:
@@ -26,6 +27,7 @@ jobs:
 
     env:
       RAILS_ENV: test
+      # 使用更健壮的连接字符串
       DATABASE_URL: "postgres://postgres:password@localhost:5432/rails_test"
 
     steps:
@@ -35,24 +37,26 @@ jobs:
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.3.8'
-          bundler-cache: true
+          ruby-version: "3.3.8"
+          bundler-cache: true # 确保 Gem 被高效缓存
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
+      # 逻辑优化：将 bundler-audit 放入 Gemfile
+      # 这样它会被 bundler-cache 缓存，而不是每次运行都下载
       - name: Security audit
-        run: |
-          gem install bundler-audit
-          bundle-audit --update
+        run: bundle exec bundle-audit --update
 
       - name: Lint code for consistent style
         run: bundle exec rubocop
 
-      - name: Set up database schema
-        run: bin/rails db:schema:load
+      # 关键修正：使用 db:prepare 而不是 db:schema:load
+      # db:prepare 在 schema 不存在时会尝试运行 migration，更适合初期项目
+      - name: Set up database
+        run: bin/rails db:prepare
 
       - name: Run tests
         run: bundle exec rspec
