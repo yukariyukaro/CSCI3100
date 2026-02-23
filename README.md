@@ -6,14 +6,14 @@
 
 为了确保“在我的电脑上能跑，在助教电脑上报错”的情况不再发生，所有人必须使用以下技术栈：
 
-| 组件 | 版本 / 要求 | 备注 |
-| --- | --- | --- |
-| **操作系统** | **Linux (WSL2 Ubuntu 22.04+)** | **严禁直接在 Windows 原生环境运行** |
-| **Ruby** | **3.3.8** | 必须通过 `rbenv` 或 `rvm` 安装 |
-| **Rails** | **7.1.3** | Web 框架基准 |
-| **Database** | **PostgreSQL** | 严禁使用 SQLite，确保生产环境一致性 |
-| **Git 签名** | **@link.cuhk.edu.hk** | 使用教育邮箱，便于通过审计 |
-| **Node.js** | **v18+** | 必须安装，用于处理 Rails 资源编译 (Assets) |
+| 组件         | 版本 / 要求                    | 备注                                       |
+| ------------ | ------------------------------ | ------------------------------------------ |
+| **操作系统** | **Linux (WSL2 Ubuntu 22.04+)** | **严禁直接在 Windows 原生环境运行**        |
+| **Ruby**     | **3.3.8**                      | 必须通过 `rbenv` 或 `rvm` 安装             |
+| **Rails**    | **7.1.3**                      | Web 框架基准                               |
+| **Database** | **PostgreSQL**                 | 严禁使用 SQLite，确保生产环境一致性        |
+| **Git 签名** | **@link.cuhk.edu.hk**          | 使用教育邮箱，便于通过审计                 |
+| **Node.js**  | **v18+**                       | 必须安装，用于处理 Rails 资源编译 (Assets) |
 
 > **补充安装指令 (nvm 方式):**
 >
@@ -44,21 +44,40 @@ ruby -v # 必须输出 ruby 3.3.8
 ### 2.2 项目初始化
 
 ```bash
-# 确保你本地 PostgreSQL 角色已创建 (解决 db:prepare 权限报错)
-# 这一步将创建一个与你系统用户名一致的数据库超级用户
+# 启动 PostgreSQL 数据库服务
+sudo service postgresql start
+
+# 创建数据库超级用户：
+# Rails 默认使用你的 Linux 用户名连接数据库。执行以下命令创建一个同名的超级用户 (Superuser)：
+# 如果提示 role already exists，请忽略并继续
 sudo -u postgres createuser -s $(whoami)
 
-# 克隆仓库
-git clone <your-repository-url>
-cd cuhk_marketplace
+# 克隆仓库并进入目录：
+git clone https://github.com/yukariyukaro/CSCI3100.git
+cd CSCI3100
 
-# 安装依赖
+# 锁定依赖版本：
+# 执行安装，确保本地 Gem 树与 Gemfile.lock 完全一致。
 bundle install
 
-# 配置数据库 (确保你本地 PostgreSQL 已启动)
+# Rails 数据库自动化配置 (Rails DB Prepare)
+# 这一步会根据 config/database.yml 自动创建数据库并加载表结构 (Schema)。
 rails db:prepare
 
 ```
+
+---
+
+### 常见初始化故障排除 (Troubleshooting)
+
+| 报错信息 (Error Message)               | 根本原因 (Root Cause)                | 解决方案 (Solution)                                            |
+| -------------------------------------- | ------------------------------------ | -------------------------------------------------------------- |
+| `role "..." does not exist`            | 尚未执行 `createuser` 或用户名不匹配 | 重新执行 `sudo -u postgres createuser -s $(whoami)`            |
+| `Is the server running locally?`       | PostgreSQL 服务未启动                | 执行 `sudo service postgresql start`                           |
+| `Gem::Ext::BuildError (pg / nokogiri)` | 缺少 Linux 端的系统依赖库            | 执行 `sudo apt install libpq-dev build-essential`              |
+| `database "..." already exists`        | 之前初始化过，残留了旧数据库         | 运行 `bundle exec rails db:drop db:create db:migrate` 强行重置 |
+
+---
 
 ### 2.3 启动开发服务器
 
@@ -85,12 +104,12 @@ rails server -b 0.0.0.0
 
 ### 3.2 Commit 命名规范
 
-助教会通过 Git Log 审计贡献度。请务必使用有意义的描述：
+请务必使用有意义的描述：
 
-* `feat: ...` (新功能)
-* `fix: ...` (修复 Bug)
-* `docs: ...` (修改文档)
-* `test: ...` (增加测试)
+- `feat: ...` (新功能)
+- `fix: ...` (修复 Bug)
+- `docs: ...` (修改文档)
+- `test: ...` (增加测试)
 
 ---
 
@@ -104,14 +123,16 @@ rails server -b 0.0.0.0
 
 ## 5. 生产环境 (Production)
 
-* **Public URL:** [https://cuhk-marketplace-csci3100-6b82f95ad3ac.herokuapp.com/](https://cuhk-marketplace-csci3100-6b82f95ad3ac.herokuapp.com/)
-* **部署负责人：** Tan Yihao (sty0000)
+- **Public URL:** [https://cuhk-marketplace-csci3100-6b82f95ad3ac.herokuapp.com/](https://cuhk-marketplace-csci3100-6b82f95ad3ac.herokuapp.com/)
+- **部署负责人：** Tan Yihao (sty0000)
 
 ---
 
 ### PS
 
-如果你在配置过程中遇到关于 `pg` 或 `nokogiri` 的安装错误，99% 的原因是因为你没有在 **WSL2** 环境下运行。请立刻停止折腾 Windows 原生环境，那是浪费所有人的时间。
+如果你在配置过程中遇到关于 `pg` 或 `nokogiri` 的安装错误，99% 的原因是因为你没有在 **WSL2** 环境下运行。
+
+---
 
 ## 6. 环境的退出与恢复 (Exiting and Re-entering)
 
@@ -119,25 +140,25 @@ rails server -b 0.0.0.0
 
 ### 6.1 退出开发环境 (Exiting)
 
-* **停止 Rails 服务：** 在运行 `rails s` 的终端按下 `Ctrl + C`。
-  * **警告：** 严禁直接关闭终端窗口。如果不按 `Ctrl + C` 退出，后台进程会锁定 `3000` 端口并留下 `server.pid` 文件，导致下次启动失败。
-* **退出 WSL 终端：** 输入 `exit` 或直接关闭窗口。
+- **停止 Rails 服务：** 在运行 `rails s` 的终端按下 `Ctrl + C`。
+  - **警告：** 严禁直接关闭终端窗口。如果不按 `Ctrl + C` 退出，后台进程会锁定 `3000` 端口并留下 `server.pid` 文件，导致下次启动失败。
+- **退出 WSL 终端：** 输入 `exit` 或直接关闭窗口。
 
 ### 6.2 重新进入环境 (Re-entering)
 
 1. **定位项目：** 重新打开终端后，必须首先进入项目目录：
 
-    ```bash
-    cd ~/cuhk_marketplace
-    ```
+   ```bash
+   cd ~/cuhk_marketplace
+   ```
 
 2. **恢复环境变量 (Critical)：** 由于 `export` 命令在关闭窗口后会失效，若需执行 Heroku 部署，必须重新注入 API Key。
-    * **永久方案（推荐）：** 执行以下命令将 Key 写入你的系统配置，此后无需重复输入：
+   - **永久方案（推荐）：** 执行以下命令将 Key 写入你的系统配置，此后无需重复输入：
 
-        ```bash
-        echo 'export HEROKU_API_KEY="你的_HEROKU_API_KEY"' >> ~/.bashrc
-        source ~/.bashrc
-        ```
+     ```bash
+     echo 'export HEROKU_API_KEY="你的_HEROKU_API_KEY"' >> ~/.bashrc
+     source ~/.bashrc
+     ```
 
 ### 6.3 故障排除 (Troubleshooting)
 
@@ -193,12 +214,12 @@ git push origin <branch-name>
 
 分支名必须具有语义化，格式为 `类型/简短描述`：
 
-| 命名格式 | 适用场景 | 示例 |
-| --- | --- | --- |
-| `feat/xxx` | 开发新功能 | `feat/product-search` |
-| `fix/xxx` | 修复现有 Bug | `fix/db-connection-leak` |
-| `docs/xxx` | 仅修改文档/README | `docs/update-workflow` |
-| `refactor/xxx` | 代码重构（不改变功能） | `refactor/user-model` |
+| 命名格式       | 适用场景               | 示例                     |
+| -------------- | ---------------------- | ------------------------ |
+| `feat/xxx`     | 开发新功能             | `feat/product-search`    |
+| `fix/xxx`      | 修复现有 Bug           | `fix/db-connection-leak` |
+| `docs/xxx`     | 仅修改文档/README      | `docs/update-workflow`   |
+| `refactor/xxx` | 代码重构（不改变功能） | `refactor/user-model`    |
 
 ---
 
@@ -207,8 +228,8 @@ git push origin <branch-name>
 助教会通过 Commit 审计你的工作量。**严禁使用 "update", "fix", "111" 等无意义的描述。**
 推荐格式：`<type>: <description>`
 
-* **Bad:** `git commit -m "fixed"`
-* **Good:** `git commit -m "fix: resolve nil pointer error in product controller"`
+- **Bad:** `git commit -m "fixed"`
+- **Good:** `git commit -m "fix: resolve nil pointer error in product controller"`
 
 ---
 
@@ -236,8 +257,8 @@ git branch -d <branch-name>
 
 本项目已计划配置 **GitHub Actions (CI)**。任何试图合并至 `main` 的 PR 必须通过以下硬性检测：
 
-* **Ruby 版本匹配 (3.3.8)**
-* **RSpec 单元测试 100% 通过**
-* **RuboCop 代码风格检查无报错**
+- **Ruby 版本匹配 (3.3.8)**
+- **RSpec 单元测试 100% 通过**
+- **RuboCop 代码风格检查无报错**
 
 **未通过 CI 检测的代码将无法合并，请务必在本地测试通过后再提交。**
