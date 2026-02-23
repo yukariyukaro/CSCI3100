@@ -1,18 +1,21 @@
 # 继承 Rails 官方推荐的规范
-require:
+plugins:
   - rubocop-rails
   - rubocop-performance
 
 AllCops:
   NewCops: enable
   Exclude:
-    - 'bin/**/*'
-    - 'db/schema.rb'
-    - 'db/migrate/*'
-    - 'vendor/**/*'
-    - 'config/environments/*'
-    - 'node_modules/**/*'
+    - "bin/**/*"
+    - "db/schema.rb"
+    - "db/migrate/*"
+    - "vendor/**/*"
+    - "config/environments/*"
+    - "node_modules/**/*"
   TargetRubyVersion: 3.3.8
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
 
 # 1. 允许双引号 (Rails 生成器默认使用双引号，没必要强行改单引号)
 Style/StringLiterals:
@@ -22,7 +25,7 @@ Style/StringLiterals:
 Layout/LineLength:
   Max: 120
   Exclude:
-    - 'config/initializers/*'
+    - "config/initializers/*"
 
 # 3. 禁用强制文档注释 (不需要每个 Class 都写 magic comment，浪费时间)
 Style/Documentation:
@@ -35,8 +38,8 @@ Style/MultilineTernaryOperator:
 # 5. 针对 Rails 路由文件的特殊优化 (允许其块定义较长)
 Metrics/BlockLength:
   Exclude:
-    - 'config/routes.rb'
-    - 'spec/**/*'
+    - "config/routes.rb"
+    - "spec/**/*"
 
 # 6. 禁用空方法体告警 (Rails 经常有空的 controller action)
 Style/EmptyMethod:

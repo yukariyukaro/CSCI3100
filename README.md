@@ -247,18 +247,53 @@ git branch -d <branch-name>
 
 ```
 
+---
+
 ## 8. 安全与敏感信息 (Security Guidelines)
 
 1. **环境变量：** 严禁将包含 `HEROKU_API_KEY` 或其他私密凭证的 `.env` 文件提交至仓库。
 2. **Git 拦截：** 提交前请检查 `git status`，确保没有敏感配置文件进入暂存区。
 3. **泄漏处理：** 若不慎将密钥推送到远端，必须立即在 Heroku Dashboard 重新生成（Regenerate）API Key，并通知负责人 (sty0000) 撤回相关 Commit。
 
-## 9. 自动化审计 (Automated Guardrails)(已启用)
+---
 
-本项目已计划配置 **GitHub Actions (CI)**。任何试图合并至 `main` 的 PR 必须通过以下硬性检测：
+## 9. 自动化审计 (Automated Guardrails) - [已启用]
 
-- **Ruby 版本匹配 (3.3.8)**
-- **RSpec 单元测试 100% 通过**
-- **RuboCop 代码风格检查无报错**
+本项目采用工业级自动化审计流程（GitHub Actions），旨在确保 `main` 分支的绝对稳定性与代码美感。**任何合并至 `main` 的 Pull Request (PR) 都必须通过“绿色审计”方可准入。**
 
-**未通过 CI 检测的代码将无法合并，请务必在本地测试通过后再提交。**
+### 9.1 审计项 (Hard Checks)
+
+CI 警察会在云端环境（Ubuntu 22.04）中对以下项进行强制执行：
+
+- **环境一致性**: 强制验证 Ruby **3.3.8**。
+- **静态审计 (RuboCop)**: 执行 `.rubocop.yml` 中定义的审美规范。
+- **逻辑正确性 (RSpec)**: 运行所有测试用例，要求 **100% Pass**。
+- **安全性 (Security)**: 运行 `bundler-audit` 检查依赖库是否有已知漏洞。
+
+### 9.2 开发者提交清单 (Pre-push Checklist)
+
+**在 `git push` 前，请务必在本地依次执行以下指令。** 只有本地通过，云端才可能变绿。
+
+```bash
+# 1. 代码风格自动修正 (Auto-Fix)
+# 这将根据项目规范自动调整你的引号、缩进和 Gem 排序
+bundle exec rubocop -A
+
+# 2. 运行单元测试 (Run Tests)
+# 确保你的新功能没有破坏任何现有功能
+bundle exec rspec
+
+# 3. 依赖项安全检查 (Security Audit)
+bundle exec bundle-audit --update
+
+```
+
+### 9.3 故障排除策略 (Handling CI Failures)
+
+如果在 GitHub PR 页面看到 **红色 X (Fail)**，请执行以下“理性三步走”：
+
+1. **查看日志**: 点击 `Details` -> 进入 Action 运行记录 -> 展开报错的 Step。
+2. **本地复现**: 在本地运行对应的检查指令（见 9.2）。
+3. **修复并再次提交**: 修正代码后直接 `git push` 到你的分支，CI 会自动重新审计。
+
+---
