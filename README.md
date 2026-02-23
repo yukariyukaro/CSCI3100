@@ -253,7 +253,7 @@ git branch -d <branch-name>
 2. **Git 拦截：** 提交前请检查 `git status`，确保没有敏感配置文件进入暂存区。
 3. **泄漏处理：** 若不慎将密钥推送到远端，必须立即在 Heroku Dashboard 重新生成（Regenerate）API Key，并通知负责人 (sty0000) 撤回相关 Commit。
 
-## 9. 自动化审计 (Automated Guardrails)(暂未启用)
+## 9. 自动化审计 (Automated Guardrails)(已启用)
 
 本项目已计划配置 **GitHub Actions (CI)**。任何试图合并至 `main` 的 PR 必须通过以下硬性检测：
 
