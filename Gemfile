@@ -67,3 +67,7 @@ group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
 end
+
+gem "cucumber-rails", "~> 4.0", group: :test
+
+gem "database_cleaner-active_record", "~> 2.2", group: :test
