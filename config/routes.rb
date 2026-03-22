@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  get 'messages/create'
+  get 'conversations/index'
+  get 'conversations/show'
   root "home#index"
 
   resources :products, only: %i[index show]
