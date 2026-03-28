@@ -9,5 +9,5 @@ Feature: Placeholder pages
       | /chats        | Chats Placeholder            |
       | /payments     | Payments Placeholder         |
       | /listings     | Listings Placeholder         |
-      | /sessions/new | Login Placeholder            |
-      | /users        | Users Placeholder            |
+      | /sessions/new | Login                        |
+      | /users/new    | Sign Up                      |
