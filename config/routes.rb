@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   resources :payments, only: %i[index new show create]
   resources :listings, only: %i[index new create]
   resources :sessions, only: %i[new create destroy]
-  resources :users, only: %i[index show]
+  resources :users, only: %i[index show new create]
 
   namespace :api do
     resources :products, only: %i[index show]

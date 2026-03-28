@@ -1,0 +1,31 @@
+<div class="auth-container">
+  <h1>Sign Up</h1>
+  <p class="auth-subtitle">Create your CUHK Marketplace account.</p>
+
+  <%= form_with model: @user, class: "auth-form" do |form| %>
+    <p>
+      <%= form.label :name, "Name" %><br>
+      <%= form.text_field :name, required: true, class: "auth-input" %>
+    </p>
+    <p>
+      <%= form.label :email, "Email" %><br>
+      <%= form.email_field :email, required: true, class: "auth-input" %>
+    </p>
+    <p>
+      <%= form.label :password, "Password" %><br>
+      <%= form.password_field :password, required: true, class: "auth-input" %>
+    </p>
+    <p>
+      <%= form.label :password_confirmation, "Password confirmation" %><br>
+      <%= form.password_field :password_confirmation, required: true, class: "auth-input" %>
+    </p>
+    <p>
+      <%= form.submit "Create Account", class: "auth-submit" %>
+    </p>
+  <% end %>
+
+  <p class="auth-switch">
+    Already have an account?
+    <%= link_to "Go to login", new_session_path %>
+  </p>
+</div>

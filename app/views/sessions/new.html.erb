@@ -1,3 +1,23 @@
-<h1>Login Placeholder</h1>
-<p>User login page placeholder.</p>
-<div data-controller="sessions-placeholder"></div>
+<div class="auth-container">
+  <h1>Login</h1>
+  <p class="auth-subtitle">Welcome back to CUHK Marketplace.</p>
+
+  <%= form_with url: sessions_path, class: "auth-form" do |form| %>
+    <p>
+      <%= form.label :email, "Email" %><br>
+      <%= form.email_field :email, required: true, class: "auth-input" %>
+    </p>
+    <p>
+      <%= form.label :password, "Password" %><br>
+      <%= form.password_field :password, required: true, class: "auth-input" %>
+    </p>
+    <p>
+      <%= form.submit "Login", class: "auth-submit" %>
+    </p>
+  <% end %>
+
+  <p class="auth-switch">
+    New here?
+    <%= link_to "Create an account", new_user_path %>
+  </p>
+</div>
