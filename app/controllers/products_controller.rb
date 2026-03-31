@@ -1,19 +1,31 @@
 class ProductsController < ApplicationController
   def index
-    query = params[:query].to_s.strip
+    @query = params[:query].to_s.strip
+    @products = load_products
 
-    if query.present?
-      if query.length < 2
-        flash.now[:alert] = "Please enter at least 2 characters to search."
-        @products = Product.none
+    apply_sorting
+  end
+
+  def show
+    @product = Product.find(params[:id])
+  end
+
+  private
+
+  def load_products
+    if @query.present?
+      if @query.length < 2
+        flash.now[:alert] = t("products.search.too_short")
+        Product.none
       else
-        @products = Product.search(query)
+        Product.search(@query)
       end
     else
-      @products = Product.all
+      Product.all
     end
+  end
 
-    # Apply Sorting
+  def apply_sorting
     case params[:sort]
     when "price_asc"
       @products = @products.order(price: :asc)
@@ -22,14 +34,7 @@ class ProductsController < ApplicationController
     when "time_desc"
       @products = @products.order(created_at: :desc)
     else
-      # 'relevance' or default: 
-      # pg_search automatically sorts by relevance if there's a query,
-      # but if there's no query, we fallback to time_desc or id
-      @products = @products.order(created_at: :desc) unless query.present? && query.length >= 2
+      @products = @products.order(created_at: :desc) unless @query.present? && @query.length >= 2
     end
-  end
-
-  def show
-    @product = Product.find(params[:id])
   end
 end

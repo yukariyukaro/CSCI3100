@@ -20,14 +20,14 @@ RSpec.describe Product, type: :model do
       Product.create!(name: "ThinkPad", description: "Lenovo laptop")
       Product.create!(name: "Apple Watch", description: "Smart watch by Apple")
       Product.create!(name: "Generic Watch", description: "Works with Apple devices")
-      
+
       # For Chinese/English mixed content testing
       Product.create!(
-        name: "【急售】95新二手iPhone 14 Pro Max暗夜紫", 
+        name: "【急售】95新二手iPhone 14 Pro Max暗夜紫",
         description: "用了大半年，一直带壳贴膜，无任何磕碰。电池健康度89%。支持面交或者邮寄。送几个Casetify手机壳。诚心要的话价格可小刀。"
       )
       Product.create!(
-        name: "自用MacBook Air M2 芯片 16+512", 
+        name: "自用MacBook Air M2 芯片 16+512",
         description: "因为换了Windows打游戏，这台MacBook平时就用来看看B站或者写写代码，非常新。无暗病，键盘无打油。"
       )
     end
@@ -45,7 +45,7 @@ RSpec.describe Product, type: :model do
     it "is case-insensitive (e.g., 'iphone' matches 'iPhone')" do
       results = Product.search("iphone")
       expect(results.first.name).to eq("iPhone 15")
-      
+
       results_upper = Product.search("IPHONE")
       expect(results_upper.first.name).to eq("iPhone 15")
     end
