@@ -10,7 +10,9 @@ RSpec.describe "Frontend placeholders", type: :request do
   it "renders products pages" do
     get products_path
     expect(response).to have_http_status(:ok)
-    get product_path(1)
+    
+    product = Product.create!(name: "Test Product", description: "Placeholder desc")
+    get product_path(product)
     expect(response).to have_http_status(:ok)
   end
 

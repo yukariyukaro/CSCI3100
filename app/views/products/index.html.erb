@@ -1,3 +1,34 @@
-<h1>Products Placeholder</h1>
-<p>Product list page placeholder.</p>
+<h1>Products</h1>
+<p>Second-hand products list.</p>
+
+<div class="search-container" style="margin-bottom: 20px;">
+  <%= form_with url: products_path, method: :get, local: true do |form| %>
+    <%= form.text_field :query, placeholder: "Search for items (min 2 chars)...", value: params[:query] %>
+    
+    <%= form.label :sort, "Sort by:" %>
+    <%= form.select :sort, 
+          options_for_select([
+            ['Relevance', 'relevance'], 
+            ['Time (Newest First)', 'time_desc'],
+            ['Price (Low to High)', 'price_asc'],
+            ['Price (High to Low)', 'price_desc']
+          ], params[:sort]) %>
+          
+    <%= form.submit "Search" %>
+  <% end %>
+</div>
+
+<% if @products.any? %>
+  <ul>
+    <% @products.each do |product| %>
+      <li>
+        <%= link_to product.name, product_path(product) %>
+        - <%= number_to_currency(product.price) %> (<%= product.condition %>)
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No products found.</p>
+<% end %>
+
 <div data-controller="products-placeholder"></div>

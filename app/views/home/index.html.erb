@@ -1,5 +1,13 @@
 <h1>CUHK Marketplace</h1>
-<p>Front-end and back-end architecture placeholders are ready.</p>
+<p>Welcome to the second-hand trading platform.</p>
+
+<div class="search-container" style="margin-bottom: 20px;">
+  <%= form_with url: products_path, method: :get, local: true do |form| %>
+    <%= form.text_field :query, placeholder: "Search for items...", value: params[:query] %>
+    <%= form.submit "Search" %>
+  <% end %>
+</div>
+
 <ul>
   <li><%= link_to "Products", products_path %></li>
   <li><%= link_to "Chats", chats_path %></li>
