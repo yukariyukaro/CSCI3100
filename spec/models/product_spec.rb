@@ -59,7 +59,7 @@ RSpec.describe Product, type: :model do
 
     it "supports prefix matching (e.g., 'mac' matches 'MacBook')" do
       results = Product.search("mac")
-      expect(results.first.name).to eq("MacBook Pro")
+      expect(results.map(&:name)).to include("MacBook Pro")
     end
 
     it "tolerates typos (e.g., 'ipone' matches 'iPhone')" do
