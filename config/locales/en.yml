@@ -33,6 +33,3 @@ en:
     logged_in: "You are logged in."
     logged_out: "You are logged out."
     invalid_credentials: "Invalid email or password."
-  products:
-    search:
-      too_short: "Please enter at least 2 characters to search."

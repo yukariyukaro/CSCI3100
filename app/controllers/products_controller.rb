@@ -6,6 +6,21 @@ class ProductsController < ApplicationController
     apply_sorting
   end
 
+  def autocomplete
+    query = params[:query].to_s.strip
+    if query.length < 2
+      render json: []
+      return
+    end
+
+    cache_key = "autocomplete_#{query.downcase}"
+    suggestions = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+      Product.suggest(query)
+    end
+
+    render json: suggestions
+  end
+
   def show
     @product = Product.find(params[:id])
   end
