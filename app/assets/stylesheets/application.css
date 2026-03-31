@@ -70,3 +70,57 @@ body {
   margin: 8px 0 0;
   font-size: 14px;
 }
+
+/* Autocomplete Styles */
+.autocomplete-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  max-width: 400px;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.autocomplete-results.hidden {
+  display: none;
+}
+
+.autocomplete-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-active {
+  background-color: #f3f4f6;
+}
+
+.autocomplete-item b {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.autocomplete-item.no-results {
+  color: #6b7280;
+  cursor: default;
+}
+
+.autocomplete-item.no-results:hover {
+  background-color: #fff;
+}

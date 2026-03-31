@@ -24,4 +24,15 @@ class Product < ApplicationRecord
       all
     end
   end
+
+  def self.suggest(query)
+    return [] if query.blank?
+
+    # Prefix match, limit 8, unique values
+    where("name ILIKE ?", "#{sanitize_sql_like(query)}%")
+      .select(:name)
+      .distinct
+      .limit(8)
+      .pluck(:name)
+  end
 end

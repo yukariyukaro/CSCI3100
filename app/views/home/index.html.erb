@@ -1,11 +1,22 @@
 <h1>CUHK Marketplace</h1>
 <p>Welcome to the second-hand trading platform.</p>
 
-<div class="search-container" style="margin-bottom: 20px;">
+<div class="search-container" style="margin-bottom: 20px; position: relative;" data-controller="autocomplete" data-autocomplete-url-value="/products/autocomplete">
   <%= form_with url: products_path, method: :get, local: true do |form| %>
-    <%= form.text_field :query, placeholder: "Search for items...", value: params[:query] %>
+    <%= form.text_field :query, 
+          placeholder: "Search for items...", 
+          value: params[:query],
+          data: { 
+            autocomplete_target: "input", 
+            action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
+          },
+          role: "combobox",
+          "aria-autocomplete": "list"
+    %>
     <%= form.submit "Search" %>
+    <span data-autocomplete-target="loading" class="hidden" style="margin-left: 10px; font-size: 0.9em; color: #666;">Loading...</span>
   <% end %>
+  <ul data-autocomplete-target="results" class="autocomplete-results hidden"></ul>
 </div>
 
 <ul>
