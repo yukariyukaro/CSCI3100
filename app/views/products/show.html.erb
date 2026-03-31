@@ -1,2 +1,10 @@
-<h1>Product Detail Placeholder</h1>
-<p>Product ID: <%= @product_id %></p>
+<h1>Product Details</h1>
+
+<div>
+  <h2><%= @product.name %></h2>
+  <p><strong>Description:</strong> <%= @product.description %></p>
+  <p><strong>Price:</strong> <%= number_to_currency(@product.price) %></p>
+  <p><strong>Condition:</strong> <%= @product.condition %></p>
+</div>
+
+<p><%= link_to "Back to Products", products_path %></p>

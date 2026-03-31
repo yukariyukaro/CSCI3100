@@ -70,6 +70,8 @@ group :development do
   # gem "spring"
 end
 
-gem "cucumber-rails", "~> 4.0", group: :test
+gem "cucumber-rails", "~> 4.0", group: :test, require: false
 
 gem "database_cleaner-active_record", "~> 2.2", group: :test
+
+gem "pg_search", "~> 2.3"
