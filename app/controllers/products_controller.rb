@@ -23,6 +23,9 @@ class ProductsController < ApplicationController
 
   def show
     @product = Product.find(params[:id])
+
+    # Try to get or generate AI summary in background.
+    Ai::Summarizer.new(@product).call
   end
 
   private

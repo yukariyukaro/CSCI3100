@@ -76,3 +76,6 @@ gem "database_cleaner-active_record", "~> 2.2", group: :test
 gem "selenium-webdriver", group: :test
 
 gem "pg_search", "~> 2.3"
+
+gem "dotenv-rails", "~> 3.2"
+gem "ruby-openai", "~> 8.3"

@@ -4,6 +4,9 @@ class Product < ApplicationRecord
   validates :name, presence: true
   validates :description, presence: true
 
+  # Reset AI summary if the description changes
+  before_update :reset_ai_summary, if: :description_changed?
+
   # Set up advanced search scope using pg_search
   pg_search_scope :advanced_search,
                   against: {
@@ -34,5 +37,13 @@ class Product < ApplicationRecord
       .distinct
       .limit(8)
       .pluck(:name)
+  end
+
+  private
+
+  def reset_ai_summary
+    self.ai_summary = nil
+    self.ai_summary_status = "pending"
+    self.ai_summary_requested_at = nil
   end
 end

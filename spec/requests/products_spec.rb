@@ -82,12 +82,23 @@ RSpec.describe "Products", type: :request do
   end
 
   describe "GET /products/:id" do
-    it "returns the product details" do
-      product = Product.create!(name: "MacBook Pro", description: "Apple laptop")
+    it "returns the product details without AI summary if description is too short" do
+      product = Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1000,
+                                ai_summary_status: "skipped")
       get product_path(product)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("MacBook Pro")
       expect(response.body).to include("Apple laptop")
+      expect(response.body).to include("该商品描述较短，一目了然，无需 AI 总结。")
+    end
+
+    it "renders the AI summary card if the product has a summary" do
+      product = Product.create!(name: "Used iPhone", description: "Long long desc", price: 500,
+                                ai_summary: "✅ Good condition", ai_summary_status: "completed")
+      get product_path(product)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("AI 智能卖点总结")
+      expect(response.body).to include("Good condition")
     end
   end
 end
