@@ -4,6 +4,12 @@
       <h1 class="text-3xl font-bold text-base-content">全部商品</h1>
       <p class="text-base-content/60 mt-1">发现二手好物</p>
     </div>
+    <%= link_to root_path, class: "btn btn-ghost" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+      返回首页
+    <% end %>
   </div>
 
   <div class="bg-base-200 p-4 rounded-xl mb-8">
@@ -14,7 +20,7 @@
               placeholder: "搜索商品 (至少2个字符)...", 
               value: params[:query],
               autocomplete: "off",
-              class: "input input-bordered w-full",
+              class: "input input-bordered w-full bg-white text-gray-900",
               data: { 
                 autocomplete_target: "input", 
                 action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
@@ -24,7 +30,7 @@
         %>
         <span data-autocomplete-target="loading" class="hidden absolute right-3 top-3 loading loading-spinner loading-sm text-primary"></span>
         <!-- Search autocomplete results will be placed here -->
-        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute z-[100] bg-white/70 backdrop-blur-md shadow-xl rounded-box w-full mt-1 max-h-60 overflow-y-auto"></ul>
+        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute z-[100] bg-white/70 backdrop-blur-md shadow-xl rounded-box w-full mt-1 max-h-60 overflow-y-auto text-gray-900"></ul>
       </div>
       
       <div class="flex gap-2">
@@ -34,7 +40,7 @@
                 ['最新发布', 'time_desc'],
                 ['价格从低到高', 'price_asc'],
                 ['价格从高到低', 'price_desc']
-              ], params[:sort]), {}, class: "select select-bordered" %>
+              ], params[:sort]), {}, class: "select select-bordered bg-white text-gray-900" %>
               
         <%= form.submit "搜索", class: "btn btn-primary" %>
       </div>
@@ -54,7 +60,7 @@
             </div>
           </figure>
           <div class="card-body p-4">
-            <h2 class="card-title text-base line-clamp-1"><%= product.name %></h2>
+            <h2 class="card-title text-base text-base-content line-clamp-1"><%= product.name %></h2>
             <div class="flex items-center gap-2 mt-1 mb-2">
               <div class="badge <%= condition_badge_class(product.condition) %> badge-sm"><%= product.condition %></div>
             </div>

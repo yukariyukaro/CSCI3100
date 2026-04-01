@@ -15,7 +15,7 @@
                   placeholder: "Search for items...", 
                   value: params[:query],
                   autocomplete: "off",
-                  class: "input input-bordered input-lg join-item w-full flex-1 bg-white text-base-content focus:outline-none focus:ring-2 focus:ring-primary",
+                  class: "input input-bordered input-lg join-item w-full flex-1 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary",
                   data: { 
                     autocomplete_target: "input", 
                     action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
@@ -29,7 +29,7 @@
         <% end %>
         
         <!-- Autocomplete results: very high z-index and glassmorphism -->
-        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute top-full left-0 right-0 z-[100] mt-2 bg-white/70 backdrop-blur-md shadow-xl rounded-box max-h-64 overflow-y-auto text-left text-base-content border border-base-200/50 p-2"></ul>
+        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute top-full left-0 right-0 z-[100] mt-2 bg-white/70 backdrop-blur-md shadow-xl rounded-box max-h-64 overflow-y-auto text-left text-gray-900 border border-base-200/50 p-2"></ul>
       </div>
     </div>
   </div>
