@@ -29,12 +29,14 @@ export default class extends Controller {
     this.currentFocus = -1
     const query = this.inputTarget.value.trim()
 
+    // 如果用户清空了输入或者字数不够，立即隐藏结果和 Loading
     if (query.length < 2) {
       this.hideLoading()
       this.closeDropdown()
       return
     }
 
+    // 只有在准备发起请求时，才显示 Loading
     this.showLoading()
     this.search(query)
   }
@@ -62,6 +64,7 @@ export default class extends Controller {
         console.error("Autocomplete fetch error:", error)
       }
     } finally {
+      // 请求完成后（不论成功、失败还是被 abort），都隐藏 Loading
       this.hideLoading()
     }
   }
