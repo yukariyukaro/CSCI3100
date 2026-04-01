@@ -2,13 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="autocomplete"
 export default class extends Controller {
-  static targets = [ "input", "results", "loading" ]
+  static targets = ["input", "results", "loading"]
   static values = { url: String }
 
   connect() {
     this.currentFocus = -1
     this.search = this.debounce(this.search.bind(this), 300)
-    
+
     // Close dropdown when clicking outside
     document.addEventListener("click", this.closeDropdown.bind(this))
   }
@@ -19,7 +19,7 @@ export default class extends Controller {
 
   debounce(func, wait) {
     let timeout
-    return function(...args) {
+    return function (...args) {
       clearTimeout(timeout)
       timeout = setTimeout(() => func.apply(this, args), wait)
     }
@@ -28,8 +28,9 @@ export default class extends Controller {
   onInput() {
     this.currentFocus = -1
     const query = this.inputTarget.value.trim()
-    
+
     if (query.length < 2) {
+      this.hideLoading()
       this.closeDropdown()
       return
     }
@@ -51,7 +52,7 @@ export default class extends Controller {
           "Accept": "application/json"
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         this.renderResults(data, query)
@@ -67,7 +68,7 @@ export default class extends Controller {
 
   renderResults(results, query) {
     this.resultsTarget.innerHTML = ""
-    
+
     if (results.length === 0) {
       const li = document.createElement("li")
       li.className = "autocomplete-item no-results"
@@ -80,15 +81,15 @@ export default class extends Controller {
         li.dataset.action = "click->autocomplete#selectItem"
         li.dataset.index = index
         li.dataset.value = item
-        
+
         const regex = new RegExp(`(${query})`, 'gi')
         const highlightedText = item.replace(regex, '<b>$1</b>')
         li.innerHTML = highlightedText
-        
+
         this.resultsTarget.appendChild(li)
       })
     }
-    
+
     this.resultsTarget.classList.remove("hidden")
   }
 
@@ -108,6 +109,7 @@ export default class extends Controller {
     if (e && this.element.contains(e.target)) return
     this.resultsTarget.innerHTML = ""
     this.resultsTarget.classList.add("hidden")
+    this.hideLoading()
   }
 
   selectItem(e) {

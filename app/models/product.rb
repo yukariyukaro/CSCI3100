@@ -28,8 +28,9 @@ class Product < ApplicationRecord
   def self.suggest(query)
     return [] if query.blank?
 
-    # Prefix match, limit 8, unique values
-    where("name ILIKE ?", "#{sanitize_sql_like(query)}%")
+    # Change from prefix match (query%) to fuzzy match (%query%) to support
+    # mid-string matches like "iPhone" in "二手iPhone"
+    where("name ILIKE ?", "%#{sanitize_sql_like(query)}%")
       .select(:name)
       .distinct
       .limit(8)
