@@ -5,7 +5,7 @@ Feature: Placeholder pages
 
     Examples:
       | path          | text                         |
-      | /products     | Products                     |
+      | /products     | 全部商品                     |
       | /chats        | Chats Placeholder            |
       | /payments     | Payments Placeholder         |
       | /listings     | Listings Placeholder         |

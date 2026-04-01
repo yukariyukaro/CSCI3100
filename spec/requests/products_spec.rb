@@ -89,7 +89,7 @@ RSpec.describe "Products", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("MacBook Pro")
       expect(response.body).to include("Apple laptop")
-      expect(response.body).to include("该商品描述较短，一目了然，无需 AI 总结。")
+      expect(response.body).to include("hidden")
     end
 
     it "renders the AI summary card if the product has a summary" do

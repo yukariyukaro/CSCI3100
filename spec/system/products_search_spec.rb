@@ -23,7 +23,7 @@ RSpec.describe "Products Search", type: :system do
     visit products_path
 
     fill_in "query", with: "laptop"
-    click_button "Search"
+    click_button "搜索"
 
     expect(page).to have_content("MacBook Pro")
     expect(page).to have_content("ThinkPad")
