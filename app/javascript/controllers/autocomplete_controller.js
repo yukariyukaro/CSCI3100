@@ -36,8 +36,6 @@ export default class extends Controller {
       return
     }
 
-    // 只有在准备发起请求时，才显示 Loading
-    this.showLoading()
     this.search(query)
   }
 
@@ -46,6 +44,9 @@ export default class extends Controller {
       this.abortController.abort()
     }
     this.abortController = new AbortController()
+
+    // 只有在准备发起请求时，才显示 Loading
+    this.showLoading()
 
     try {
       const response = await fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
