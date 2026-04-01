@@ -6,6 +6,7 @@
     <%= form.text_field :query, 
           placeholder: "Search for items (min 2 chars)...", 
           value: params[:query],
+          autocomplete: "off",
           data: { 
             autocomplete_target: "input", 
             action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 

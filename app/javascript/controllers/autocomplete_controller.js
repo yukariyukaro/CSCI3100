@@ -2,13 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="autocomplete"
 export default class extends Controller {
-  static targets = [ "input", "results", "loading" ]
+  static targets = ["input", "results", "loading"]
   static values = { url: String }
 
   connect() {
     this.currentFocus = -1
     this.search = this.debounce(this.search.bind(this), 300)
-    
+
     // Close dropdown when clicking outside
     document.addEventListener("click", this.closeDropdown.bind(this))
   }
@@ -19,7 +19,7 @@ export default class extends Controller {
 
   debounce(func, wait) {
     let timeout
-    return function(...args) {
+    return function (...args) {
       clearTimeout(timeout)
       timeout = setTimeout(() => func.apply(this, args), wait)
     }
@@ -28,13 +28,14 @@ export default class extends Controller {
   onInput() {
     this.currentFocus = -1
     const query = this.inputTarget.value.trim()
-    
+
+    // 如果用户清空了输入或者字数不够，立即隐藏结果和 Loading
     if (query.length < 2) {
+      this.hideLoading()
       this.closeDropdown()
       return
     }
 
-    this.showLoading()
     this.search(query)
   }
 
@@ -44,6 +45,9 @@ export default class extends Controller {
     }
     this.abortController = new AbortController()
 
+    // 只有在准备发起请求时，才显示 Loading
+    this.showLoading()
+
     try {
       const response = await fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
         signal: this.abortController.signal,
@@ -51,7 +55,7 @@ export default class extends Controller {
           "Accept": "application/json"
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         this.renderResults(data, query)
@@ -61,13 +65,14 @@ export default class extends Controller {
         console.error("Autocomplete fetch error:", error)
       }
     } finally {
+      // 请求完成后（不论成功、失败还是被 abort），都隐藏 Loading
       this.hideLoading()
     }
   }
 
   renderResults(results, query) {
     this.resultsTarget.innerHTML = ""
-    
+
     if (results.length === 0) {
       const li = document.createElement("li")
       li.className = "autocomplete-item no-results"
@@ -80,15 +85,15 @@ export default class extends Controller {
         li.dataset.action = "click->autocomplete#selectItem"
         li.dataset.index = index
         li.dataset.value = item
-        
+
         const regex = new RegExp(`(${query})`, 'gi')
         const highlightedText = item.replace(regex, '<b>$1</b>')
         li.innerHTML = highlightedText
-        
+
         this.resultsTarget.appendChild(li)
       })
     }
-    
+
     this.resultsTarget.classList.remove("hidden")
   }
 
@@ -108,6 +113,7 @@ export default class extends Controller {
     if (e && this.element.contains(e.target)) return
     this.resultsTarget.innerHTML = ""
     this.resultsTarget.classList.add("hidden")
+    this.hideLoading()
   }
 
   selectItem(e) {

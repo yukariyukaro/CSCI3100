@@ -124,3 +124,7 @@ body {
 .autocomplete-item.no-results:hover {
   background-color: #fff;
 }
+
+.hidden {
+  display: none !important;
+}
