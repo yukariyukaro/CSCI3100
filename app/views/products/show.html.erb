@@ -1,10 +1,37 @@
-<h1>Product Details</h1>
+<div class="product-detail-container">
+  <h1>Product Details</h1>
 
-<div>
-  <h2><%= @product.name %></h2>
-  <p><strong>Description:</strong> <%= @product.description %></p>
-  <p><strong>Price:</strong> <%= number_to_currency(@product.price) %></p>
-  <p><strong>Condition:</strong> <%= @product.condition %></p>
+  <div class="ai-summary-card" style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 4px;">
+    <h3 style="margin-top: 0; color: #007bff;">✨ AI 智能卖点总结</h3>
+    
+    <div class="ai-summary-content">
+      <% case @product.ai_summary_status %>
+      <% when 'completed' %>
+        <%= simple_format(@product.ai_summary) %>
+        <small style="color: #6c757d; display: block; margin-top: 10px;">自动生成，仅供参考</small>
+      <% when 'generating' %>
+        <p style="color: #6c757d; font-style: italic;">AI 正在拼命阅读商品描述中，请稍后刷新页面查看...</p>
+      <% when 'failed' %>
+        <p style="color: #dc3545;">AI 总结生成失败，请直接阅读下方详细描述。</p>
+      <% when 'skipped' %>
+        <p style="color: #6c757d;">该商品描述较短，一目了然，无需 AI 总结。</p>
+      <% else %>
+        <p style="color: #6c757d; font-style: italic;">正在唤醒 AI 助手...</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="product-info">
+    <h2><%= @product.name %></h2>
+    <p><strong>Price:</strong> <%= number_to_currency(@product.price) %></p>
+    <p><strong>Condition:</strong> <%= @product.condition %></p>
+    <div class="product-description" style="margin-top: 20px;">
+      <strong>Description:</strong>
+      <p style="white-space: pre-wrap;"><%= @product.description %></p>
+    </div>
+  </div>
+
+  <p style="margin-top: 30px;">
+    <%= link_to "← Back to Products", products_path, class: "btn btn-secondary" %>
+  </p>
 </div>
-
-<p><%= link_to "Back to Products", products_path %></p>
