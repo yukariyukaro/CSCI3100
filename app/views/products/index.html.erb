@@ -1,46 +1,90 @@
-<h1>Products</h1>
-<p>Second-hand products list.</p>
-
-<div class="search-container" style="margin-bottom: 20px; position: relative;" data-controller="autocomplete" data-autocomplete-url-value="/products/autocomplete">
-  <%= form_with url: products_path, method: :get, local: true do |form| %>
-    <%= form.text_field :query, 
-          placeholder: "Search for items (min 2 chars)...", 
-          value: params[:query],
-          autocomplete: "off",
-          data: { 
-            autocomplete_target: "input", 
-            action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
-          },
-          role: "combobox",
-          "aria-autocomplete": "list"
-    %>
-    
-    <%= form.label :sort, "Sort by:" %>
-    <%= form.select :sort, 
-          options_for_select([
-            ['Relevance', 'relevance'], 
-            ['Time (Newest First)', 'time_desc'],
-            ['Price (Low to High)', 'price_asc'],
-            ['Price (High to Low)', 'price_desc']
-          ], params[:sort]) %>
-          
-    <%= form.submit "Search" %>
-    <span data-autocomplete-target="loading" class="hidden" style="margin-left: 10px; font-size: 0.9em; color: #666;">Loading...</span>
-  <% end %>
-  <ul data-autocomplete-target="results" class="autocomplete-results hidden"></ul>
-</div>
-
-<% if @products.any? %>
-  <ul>
-    <% @products.each do |product| %>
-      <li>
-        <%= link_to product.name, product_path(product) %>
-        - <%= number_to_currency(product.price) %> (<%= product.condition %>)
-      </li>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content">全部商品</h1>
+      <p class="text-base-content/60 mt-1">发现二手好物</p>
+    </div>
+    <%= link_to root_path, class: "btn btn-ghost" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+      返回首页
     <% end %>
-  </ul>
-<% else %>
-  <p>No products found.</p>
-<% end %>
+  </div>
 
-<div data-controller="products-placeholder"></div>
+  <div class="bg-base-200 p-4 rounded-xl mb-8">
+    <!-- Search Form -->
+    <%= form_with url: products_path, method: :get, local: true, class: "flex flex-col md:flex-row gap-4 relative", data: { controller: "autocomplete", autocomplete_url_value: "/products/autocomplete" } do |form| %>
+      <div class="flex-1 relative">
+        <%= form.text_field :query, 
+              placeholder: "搜索商品 (至少2个字符)...", 
+              value: params[:query],
+              autocomplete: "off",
+              class: "input input-bordered w-full bg-white text-gray-900",
+              data: { 
+                autocomplete_target: "input", 
+                action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
+              },
+              role: "combobox",
+              "aria-autocomplete": "list"
+        %>
+        <span data-autocomplete-target="loading" class="hidden absolute right-3 top-3 loading loading-spinner loading-sm text-primary"></span>
+        <!-- Search autocomplete results will be placed here -->
+        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute z-[100] bg-white/70 backdrop-blur-md shadow-xl rounded-box w-full mt-1 max-h-60 overflow-y-auto text-gray-900"></ul>
+      </div>
+      
+      <div class="flex gap-2">
+        <%= form.select :sort, 
+              options_for_select([
+                ['相关度优先', 'relevance'], 
+                ['最新发布', 'time_desc'],
+                ['价格从低到高', 'price_asc'],
+                ['价格从高到低', 'price_desc']
+              ], params[:sort]), {}, class: "select select-bordered bg-white text-gray-900" %>
+              
+        <%= form.submit "搜索", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @products.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <% @products.each do |product| %>
+        <%= link_to product_path(product), class: "card bg-base-100 shadow-sm border border-base-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group" do %>
+          <figure class="aspect-square bg-base-200 w-full overflow-hidden">
+            <!-- Placeholder for image -->
+            <div class="w-full h-full flex items-center justify-center text-base-content/20 group-hover:scale-105 transition-transform duration-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </figure>
+          <div class="card-body p-4">
+            <h2 class="card-title text-base text-base-content line-clamp-1"><%= product.name %></h2>
+            <div class="flex items-center gap-2 mt-1 mb-2">
+              <div class="badge <%= condition_badge_class(product.condition) %> badge-sm"><%= product.condition %></div>
+            </div>
+            <div class="mt-auto pt-2 flex items-center justify-between">
+              <span class="text-xl text-primary font-bold"><%= number_to_currency(product.price) %></span>
+              <button class="btn btn-primary btn-sm btn-circle opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-16 bg-base-200 rounded-xl">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <h3 class="text-xl font-bold text-base-content">未找到相关商品</h3>
+      <p class="text-base-content/60 mt-2">尝试更换关键词或筛选条件</p>
+    </div>
+  <% end %>
+
+  <div data-controller="products-placeholder"></div>
+</div>
