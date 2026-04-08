@@ -1,8 +1,19 @@
 class Product < ApplicationRecord
   include PgSearch::Model
 
+  belongs_to :seller, class_name: "User", foreign_key: "seller_id", optional: true
+  # Renamed from :transaction to avoid conflict with ActiveRecord's built-in #transaction method
+  has_one :sale, class_name: "Transaction", dependent: :destroy
+
+  enum :sale_status, { active: 0, pending: 1, sold: 2 }
+
   validates :name, presence: true
   validates :description, presence: true
+
+  scope :recent_first, -> { order(created_at: :desc) }
+  scope :by_status,    ->(status) { where(sale_status: status) }
+  scope :by_seller,    ->(user_id) { where(seller_id: user_id) }
+  scope :for_sale,     -> { where(sale_status: %i[active pending]) }
 
   # Reset AI summary if the description changes
   before_update :reset_ai_summary, if: :description_changed?

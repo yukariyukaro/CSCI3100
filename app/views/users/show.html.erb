@@ -1,3 +1,253 @@
-<h1>User Profile</h1>
-<p>Name: <%= @user.name %></p>
-<p>Email: <%= @user.email %></p>
+<%# ─── Profile Page ──────────────────────────────────────────────────────── %>
+<div class="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
+
+  <%# ── Sidebar ──────────────────────────────────────────────────────────── %>
+  <aside class="w-full lg:w-64 flex-shrink-0">
+    <%# Avatar %>
+    <div class="mb-6" data-testid="avatar">
+      <% if @user.avatar.attached? && @user.avatar.blob.persisted? %>
+        <%= image_tag url_for(@user.avatar),
+              alt: "#{@user.name} avatar",
+              class: "w-48 h-48 rounded-lg object-cover shadow-md mx-auto lg:mx-0" %>
+      <% else %>
+        <div class="w-48 h-48 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-6xl font-bold mx-auto lg:mx-0 shadow-md">
+          <%= @user.name.first.upcase %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# User info %>
+    <h2 class="text-2xl font-bold text-gray-900 text-center lg:text-left mb-2"><%= @user.name %></h2>
+    <p class="text-gray-500 text-center lg:text-left mb-6">Member since <%= @user.created_at.strftime("%B %Y") %></p>
+
+    <%# Stats row %>
+    <div class="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+      <div class="text-center">
+        <div class="text-2xl font-bold text-gray-900"><%= @user.products.count %></div>
+        <div class="text-sm text-gray-600">Items</div>
+      </div>
+      <div class="text-center">
+        <div class="text-2xl font-bold text-gray-900"><%= @user.sold_count %></div>
+        <div class="text-sm text-gray-600">Sold</div>
+      </div>
+      <div class="text-center">
+        <div class="text-2xl font-bold text-gray-900"><%= @user.positive_reviews_count %></div>
+        <div class="text-sm text-gray-600">Reviews</div>
+      </div>
+    </div>
+
+    <%# Avatar upload form (owner only) %>
+    <% if current_user == @user %>
+      <div class="mb-6">
+        <%= form_with model: @user, local: true, method: :patch, multipart: true,
+              data: { controller: "avatar-upload" } do |f| %>
+          <label class="block text-sm font-medium text-gray-700 mb-2" for="user_avatar">
+            Change Avatar
+          </label>
+          <%= f.file_field :avatar,
+                id:      "user_avatar",
+                accept:  "image/jpeg,image/png",
+                class:   "hidden",
+                data:    { "avatar-upload-target": "input",
+                           action: "change->avatar-upload#preview" } %>
+          <label for="user_avatar" class="cursor-pointer inline-block px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition">
+            Choose File
+          </label>
+          <%# Live preview %>
+          <img id="avatar-preview" class="hidden mt-2 w-24 h-24 rounded-md object-cover"
+               data-avatar-upload-target="preview" alt="preview" />
+          <div class="mt-2">
+            <%= f.submit "Save", class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition cursor-pointer" %>
+          </div>
+          <% if @user.errors[:avatar].any? %>
+            <p class="mt-2 text-sm text-red-600">Avatar <%= @user.errors[:avatar].first %></p>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Nav links %>
+    <nav class="space-y-2">
+      <a href="#items-tab" class="block px-4 py-2 rounded-md bg-blue-600 text-white transition" id="nav-items"
+         onclick="showTab('items'); return false;">
+        🛒 My Items
+      </a>
+      <% if current_user == @user %>
+        <a href="#transactions-tab" class="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition" id="nav-transactions"
+           onclick="showTab('transactions'); return false;">
+          📋 My Transactions
+        </a>
+      <% end %>
+    </nav>
+  </aside>
+
+  <%# ── Main content ─────────────────────────────────────────────────────── %>
+  <main class="flex-1">
+
+    <%# ── My Items tab ──────────────────────────────────────────────────── %>
+    <section id="items-tab" class="block">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-900">My Items</h3>
+        <% if current_user == @user %>
+          <%= link_to "＋ New Listing", new_listing_path, class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition" %>
+        <% end %>
+      </div>
+
+      <% if @products.any? %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% @products.each do |product| %>
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
+              <%= link_to product_path(product) do %>
+                <div class="p-4">
+                  <h4 class="text-lg font-semibold text-gray-900 mb-2"><%= product.name %></h4>
+                  <p class="text-gray-600 text-sm mb-3"><%= truncate(product.description, length: 60) %></p>
+                  <div class="flex justify-between items-center">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+                      <% case product.sale_status %>
+                        <% when 'active' %>
+                          bg-green-100 text-green-800
+                        <% when 'pending' %>
+                          bg-yellow-100 text-yellow-800
+                        <% when 'sold' %>
+                          bg-gray-100 text-gray-800
+                      <% end %>">
+                      <%= product.sale_status.capitalize %>
+                    </span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-12 bg-gray-50 rounded-lg">
+          <p class="text-gray-600 mb-4">No items listed yet.</p>
+          <% if current_user == @user %>
+            <p><%= link_to "Start selling now →", new_listing_path, class: "text-blue-600 hover:text-blue-700 font-medium" %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+
+    <%# ── My Transactions tab (owner only) ─────────────────────────────── %>
+    <% if current_user == @user %>
+      <section id="transactions-tab" class="hidden">
+        <div class="mb-6">
+          <h3 class="text-2xl font-bold text-gray-900 mb-4">My Transactions</h3>
+        </div>
+
+        <%# Status filter tabs %>
+        <div class="flex flex-wrap gap-2 mb-6">
+          <button class="txn-filter px-4 py-2 rounded-md bg-blue-600 text-white transition" onclick="filterTxn('all', this)">All</button>
+          <button class="txn-filter px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition" onclick="filterTxn('pending', this)">Pending</button>
+          <button class="txn-filter px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition" onclick="filterTxn('in_progress', this)">In Progress</button>
+          <button class="txn-filter px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition" onclick="filterTxn('completed', this)">Completed</button>
+          <button class="txn-filter px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition" onclick="filterTxn('reviewed', this)">Reviewed</button>
+        </div>
+
+        <% if @transactions.present? %>
+          <div class="space-y-3">
+            <% @transactions.each do |txn| %>
+              <div class="txn-item bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500" data-status="<%= txn.status %>">
+                <div class="flex justify-between items-start gap-4">
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900"><%= txn.product.name %></h4>
+                    <p class="text-sm text-gray-600 mt-1">
+                      <% if txn.buyer == current_user %>
+                        Bought from <strong><%= txn.seller.name %></strong>
+                      <% else %>
+                        Sold to <strong><%= txn.buyer.name %></strong>
+                      <% end %>
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1"><%= txn.created_at.strftime("%Y-%m-%d") %></p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+                      <% case txn.status %>
+                        <% when 'pending' %>
+                          bg-yellow-100 text-yellow-800
+                        <% when 'in_progress' %>
+                          bg-blue-100 text-blue-800
+                        <% when 'completed' %>
+                          bg-green-100 text-green-800
+                        <% when 'reviewed' %>
+                          bg-gray-100 text-gray-800
+                      <% end %>">
+                      <%= txn.status.humanize %>
+                    </span>
+                    <% if txn.status == "completed" %>
+                      <button class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-600 text-sm rounded-md transition">Review</button>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-12 bg-gray-50 rounded-lg">
+            <p class="text-gray-600 mb-4">You have no transactions yet.</p>
+            <p><%= link_to "Browse products →", products_path, class: "text-blue-600 hover:text-blue-700 font-medium" %></p>
+          </div>
+        <% end %>
+      </section>
+    <% else %>
+      <%# Public view: prompt to log in %>
+      <section class="hidden" id="transactions-login-prompt">
+        <div class="mb-6">
+          <h3 class="text-2xl font-bold text-gray-900">Transactions</h3>
+        </div>
+        <div class="text-center py-12 bg-gray-50 rounded-lg">
+          <%= link_to "Log in", new_session_path, class: "text-blue-600 hover:text-blue-700 font-medium" %>
+          to see this user's transaction history.
+        </div>
+      </section>
+    <% end %>
+
+  </main>
+</div>
+
+<%# ── Tab-switching JS (vanilla, no extra deps) ───────────────────────────── %>
+<script>
+  function showTab(name) {
+    // Hide all tabs and reset nav links
+    document.querySelectorAll('#items-tab, #transactions-tab, #transactions-login-prompt').forEach(function(el) {
+      el.classList.add('hidden');
+    });
+    document.querySelectorAll('#nav-items, #nav-transactions').forEach(function(el) {
+      el.classList.remove('bg-blue-600', 'text-white');
+      el.classList.add('text-gray-700', 'hover:bg-gray-100');
+    });
+    
+    // Show selected tab and highlight nav
+    var tab = document.getElementById(name + '-tab');
+    if (tab) {
+      tab.classList.remove('hidden');
+    }
+    var nav = document.getElementById('nav-' + name);
+    if (nav) {
+      nav.classList.add('bg-blue-600', 'text-white');
+      nav.classList.remove('text-gray-700', 'hover:bg-gray-100');
+    }
+  }
+
+  function filterTxn(status, btn) {
+    // Reset all filter buttons
+    document.querySelectorAll('.txn-filter').forEach(function(b) {
+      b.classList.remove('bg-blue-600', 'text-white');
+      b.classList.add('text-gray-700', 'hover:bg-gray-100');
+    });
+    
+    // Highlight active button
+    btn.classList.add('bg-blue-600', 'text-white');
+    btn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+    
+    // Filter items
+    document.querySelectorAll('.txn-item').forEach(function(item) {
+      if (status === 'all' || item.dataset.status === status) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+</script>
