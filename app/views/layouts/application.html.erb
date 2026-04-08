@@ -18,10 +18,10 @@
 
   <body>
     <% if notice.present? %>
-      <p><%= notice %></p>
+      <div class="flash flash--notice" role="alert"><%= notice %></div>
     <% end %>
     <% if alert.present? %>
-      <p><%= alert %></p>
+      <div class="flash flash--alert" role="alert"><%= alert %></div>
     <% end %>
     <%= yield %>
   </body>
