@@ -38,5 +38,8 @@ module CuhkMarketplace
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Use libvips for Active Storage image variant processing
+    config.active_storage.variant_processor = :vips
   end
 end

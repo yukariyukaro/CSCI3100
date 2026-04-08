@@ -9,7 +9,7 @@ RSpec.describe "Products Search", type: :system do
   end
 
   it "allows users to search products from the home page" do
-    visit root_path
+    visit home_path
 
     fill_in "query", with: "MacBook"
     click_button "Search"

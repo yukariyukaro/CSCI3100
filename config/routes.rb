@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  root "home#index"
+  root "products#index"
+
+  get "/home", to: "home#index", as: :home
 
   resources :products, only: %i[index show] do
     get "autocomplete", on: :collection

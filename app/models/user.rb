@@ -1,7 +1,9 @@
 class User < ApplicationRecord
   has_secure_password
 
-  has_one_attached :avatar
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_fill: [96, 96], saver: { quality: 80 }
+  end
   has_many :products,            class_name: "Product",     foreign_key: "seller_id", dependent: :destroy
   has_many :bought_transactions, class_name: "Transaction", foreign_key: "buyer_id",  dependent: :destroy
   has_many :sold_transactions,   class_name: "Transaction", foreign_key: "seller_id", dependent: :destroy
