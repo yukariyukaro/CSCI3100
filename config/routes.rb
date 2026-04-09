@@ -5,6 +5,9 @@ Rails.application.routes.draw do
 
   resources :products, only: %i[index show] do
     get "autocomplete", on: :collection
+    post "reserve", on: :member, to: "transactions#create"
+    delete "cancel_reservation", on: :member, to: "transactions#destroy"
+    patch "mark_sold", on: :member, to: "transactions#complete"
   end
   resources :chats, only: %i[index show]
   resources :payments, only: %i[index new show create]

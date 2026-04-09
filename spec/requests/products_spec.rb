@@ -101,4 +101,99 @@ RSpec.describe "Products", type: :request do
       expect(response.body).to include("Good condition")
     end
   end
+
+  describe "Product status flow" do
+    let!(:seller) do
+      User.create!(
+        name: "Seller",
+        email: "seller@example.com",
+        password: "password123",
+        password_confirmation: "password123"
+      )
+    end
+
+    let!(:buyer) do
+      User.create!(
+        name: "Buyer",
+        email: "buyer@example.com",
+        password: "password123",
+        password_confirmation: "password123"
+      )
+    end
+
+    let!(:product) do
+      Product.create!(name: "二手iPhone 13", description: "9成新，电池健康度85%", price: 2500, seller: seller)
+    end
+
+    def login_as(user)
+      post sessions_path, params: { email: user.email, password: "password123" }
+      expect(response).to have_http_status(:found)
+    end
+
+    it "requires login to reserve" do
+      post reserve_product_path(product)
+      expect(response).to redirect_to(new_session_path)
+    end
+
+    it "allows buyer to reserve an active product and creates a transaction" do
+      login_as(buyer)
+
+      expect do
+        post reserve_product_path(product)
+      end.to change(Transaction, :count).by(1)
+
+      expect(response).to redirect_to(product_path(product))
+      product.reload
+      expect(product.sale_status).to eq("pending")
+
+      tx = product.active_transaction
+      expect(tx).to be_present
+      expect(tx.buyer_id).to eq(buyer.id)
+      expect(tx.seller_id).to eq(seller.id)
+      expect(tx.status).to eq("in_progress")
+    end
+
+    it "prevents seller from reserving own product" do
+      login_as(seller)
+      post reserve_product_path(product)
+      expect(response).to redirect_to(product_path(product))
+      product.reload
+      expect(product.sale_status).to eq("active")
+      expect(Transaction.count).to eq(0)
+    end
+
+    it "allows buyer to cancel reservation and keeps history" do
+      login_as(buyer)
+      post reserve_product_path(product)
+      product.reload
+      tx = product.active_transaction
+      expect(tx).to be_present
+
+      delete cancel_reservation_product_path(product)
+      expect(response).to redirect_to(product_path(product))
+      product.reload
+      tx.reload
+
+      expect(product.sale_status).to eq("active")
+      expect(tx.status).to eq("cancelled")
+    end
+
+    it "allows seller to mark sold and completes transaction" do
+      login_as(buyer)
+      post reserve_product_path(product)
+      product.reload
+      tx = product.active_transaction
+      expect(tx).to be_present
+
+      login_as(seller)
+      patch mark_sold_product_path(product)
+      expect(response).to redirect_to(product_path(product))
+      product.reload
+      tx.reload
+
+      expect(product.sale_status).to eq("sold")
+      expect(tx.status).to eq("completed")
+      expect(tx.completed_at).to be_present
+    end
+  end
 end

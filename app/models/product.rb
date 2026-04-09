@@ -1,9 +1,13 @@
 class Product < ApplicationRecord
   include PgSearch::Model
 
-  belongs_to :seller, class_name: "User", foreign_key: "seller_id", optional: true
-  # Renamed from :transaction to avoid conflict with ActiveRecord's built-in #transaction method
-  has_one :sale, class_name: "Transaction", dependent: :destroy
+  belongs_to :seller, class_name: "User", optional: true, inverse_of: :products
+  has_many :transactions, dependent: :destroy, inverse_of: :product
+  has_one :active_transaction,
+          -> { where(status: :in_progress) },
+          class_name: "Transaction",
+          dependent: :destroy,
+          inverse_of: :product
 
   enum :sale_status, { active: 0, pending: 1, sold: 2 }
 
@@ -51,7 +55,74 @@ class Product < ApplicationRecord
       .pluck(:name)
   end
 
+  def reserve_by!(buyer)
+    return false unless reservable_by?(buyer)
+
+    with_lock { reserve_in_lock?(buyer) }
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+    false
+  end
+
+  def cancel_reservation_by!(actor)
+    return false if actor.blank?
+
+    with_lock { cancel_in_lock?(actor) }
+  rescue ActiveRecord::RecordInvalid
+    false
+  end
+
+  def mark_sold_by!(actor)
+    return false if actor.blank? || seller_id.blank? || seller_id != actor.id
+
+    with_lock { mark_sold_in_lock? }
+  rescue ActiveRecord::RecordInvalid
+    false
+  end
+
   private
+
+  def reservable_by?(buyer)
+    buyer.present? && seller_id.present? && seller_id != buyer.id
+  end
+
+  def reserve_in_lock?(buyer)
+    return false unless active? && active_transaction.blank?
+
+    transaction do
+      update!(sale_status: :pending)
+      transactions.create!(buyer: buyer, seller: seller, status: :in_progress)
+    end
+
+    true
+  end
+
+  def cancel_in_lock?(actor)
+    return false unless pending?
+
+    tx = active_transaction
+    return false if tx.blank? || [seller_id, tx.buyer_id].exclude?(actor.id)
+
+    transaction do
+      update!(sale_status: :active)
+      tx.update!(status: :cancelled)
+    end
+
+    true
+  end
+
+  def mark_sold_in_lock?
+    return false unless pending?
+
+    tx = active_transaction
+    return false if tx.blank?
+
+    transaction do
+      update!(sale_status: :sold)
+      tx.update!(status: :completed)
+    end
+
+    true
+  end
 
   def reset_ai_summary
     self.ai_summary = nil

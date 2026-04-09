@@ -23,6 +23,14 @@
       <div>
         <div class="flex items-center gap-2 mb-3">
           <span class="badge badge-secondary"><%= @product.condition %></span>
+          <% case @product.sale_status %>
+          <% when "active" %>
+            <span class="badge badge-success">Available</span>
+          <% when "pending" %>
+            <span class="badge badge-warning">Reserved</span>
+          <% when "sold" %>
+            <span class="badge badge-error">Sold</span>
+          <% end %>
           <span class="text-sm text-gray-500">ID: <%= @product.id %></span>
         </div>
         <h1 class="text-3xl font-bold mb-4 text-gray-900"><%= @product.name %></h1>
@@ -82,9 +90,38 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex gap-4 mt-8 pt-6 border-t border-base-200">
-        <button class="btn btn-primary flex-1 btn-lg text-lg">立即购买</button>
-        <button class="btn btn-outline flex-1 btn-lg text-lg text-gray-900">加入购物车</button>
+      <% active_tx = @product.active_transaction %>
+      <div class="mt-8 pt-6 border-t border-base-200">
+        <% if @product.active? %>
+          <% if !logged_in? %>
+            <%= link_to "登录后预定", new_session_path, class: "btn btn-primary w-full btn-lg text-lg" %>
+          <% elsif @product.seller_id.present? && @product.seller_id == current_user.id %>
+            <div class="text-sm text-gray-500 italic text-center">This is your listing.</div>
+          <% elsif @product.seller_id.blank? %>
+            <div class="alert alert-warning">
+              <span>该商品暂不可预定。</span>
+            </div>
+          <% else %>
+            <%= button_to "预定 / Reserve", reserve_product_path(@product), method: :post, class: "btn btn-primary w-full btn-lg text-lg" %>
+          <% end %>
+        <% elsif @product.pending? %>
+          <div class="alert alert-warning mb-4">
+            <span>Under Reservation</span>
+          </div>
+
+          <% if logged_in? && @product.seller_id.present? && @product.seller_id == current_user.id %>
+            <div class="flex gap-2">
+              <%= button_to "标记已售出 / Mark Sold", mark_sold_product_path(@product), method: :patch, class: "btn btn-success flex-1 btn-lg" %>
+              <%= button_to "取消预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-outline btn-error flex-1 btn-lg" %>
+            </div>
+          <% elsif logged_in? && active_tx.present? && active_tx.buyer_id == current_user.id %>
+            <%= button_to "取消我的预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-error w-full btn-lg" %>
+          <% else %>
+            <div class="text-sm text-gray-500 text-center">该商品已被预定。</div>
+          <% end %>
+        <% elsif @product.sold? %>
+          <button class="btn btn-disabled w-full btn-lg text-lg" disabled>已售出 / Sold Out</button>
+        <% end %>
       </div>
 
       <div class="mt-2 text-center lg:text-left">

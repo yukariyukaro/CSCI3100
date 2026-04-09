@@ -22,7 +22,7 @@ class ProductsController < ApplicationController
   end
 
   def show
-    @product = Product.find(params[:id])
+    @product = Product.includes(active_transaction: :buyer).find(params[:id])
 
     # Try to get or generate AI summary in background.
     Ai::Summarizer.new(@product).call
@@ -36,10 +36,10 @@ class ProductsController < ApplicationController
         flash.now[:alert] = t("products.search.too_short")
         Product.none
       else
-        Product.search(@query)
+        Product.search(@query).includes(active_transaction: :buyer)
       end
     else
-      Product.all
+      Product.includes(active_transaction: :buyer).all
     end
   end
 
