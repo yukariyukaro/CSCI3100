@@ -3,7 +3,10 @@ require "rails_helper"
 RSpec.describe Message, type: :model do
   let(:seller)  { User.create!(name: "Seller", email: "seller2@example.com", password: "password123") }
   let(:buyer)   { User.create!(name: "Buyer",  email: "buyer2@example.com",  password: "password123") }
-  let(:product) { Product.create!(name: "iPhone", description: "Mint condition iPhone with original box", price: 2000, seller: seller) }
+  let(:product) do
+    Product.create!(name: "iPhone", description: "Mint condition iPhone with original box",
+                    price: 2000, seller: seller)
+  end
   let(:conversation) { Conversation.create!(product: product, buyer: buyer, seller: seller) }
 
   describe "validations" do

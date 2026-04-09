@@ -51,3 +51,5 @@ en:
     users:
       update:
         success: "Profile updated successfully."
+  conversations:
+    product_not_found: "Product not found."

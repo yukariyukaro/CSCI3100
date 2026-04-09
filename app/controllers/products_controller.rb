@@ -23,23 +23,19 @@ class ProductsController < ApplicationController
 
   def show
     @product = Product.find(params[:id])
-
-    # Try to get or generate AI summary in background.
     Ai::Summarizer.new(@product).call
-
-    # Find existing conversation for the "Contact Seller" button (logged-in buyers only)
-    if logged_in? && @product.seller.present? && current_user != @product.seller
-      @conversation = Conversation.find_by(
-        product: @product,
-        buyer:   current_user,
-        seller:  @product.seller
-      )
-    end
+    @conversation = find_chat_conversation
   rescue ActiveRecord::RecordNotFound
     render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
   end
 
   private
+
+  def find_chat_conversation
+    return unless logged_in? && @product.seller.present? && current_user != @product.seller
+
+    Conversation.find_by(product: @product, buyer: current_user, seller: @product.seller)
+  end
 
   def load_products
     if @query.present?

@@ -9,7 +9,7 @@ class MessagesController < ApplicationController
       # ActionCable broadcast is triggered by after_create_commit in Message model.
       head :ok
     else
-      head :unprocessable_entity
+      head :unprocessable_content
     end
   end
 
@@ -23,9 +23,7 @@ class MessagesController < ApplicationController
 
   def find_authorized_conversation
     conversation = Conversation.find(params[:conversation_id])
-    unless conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
-      head :forbidden
-    end
+    head :forbidden unless conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
     conversation
   end
 end

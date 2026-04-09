@@ -18,12 +18,12 @@ class ConversationsController < ApplicationController
     product = Product.find(params.dig(:conversation, :product_id))
     @conversation = Conversation.find_or_create_by!(
       product: product,
-      buyer:   current_user,
-      seller:  product.seller
+      buyer: current_user,
+      seller: product.seller
     )
     redirect_to conversation_path(@conversation)
   rescue ActiveRecord::RecordNotFound
-    redirect_to products_path, alert: "Product not found."
+    redirect_to products_path, alert: t("conversations.product_not_found")
   end
 
   private
@@ -31,14 +31,12 @@ class ConversationsController < ApplicationController
   def require_login
     return if logged_in?
 
-    redirect_to new_session_path, alert: "You must be logged in."
+    redirect_to new_session_path, alert: t("auth.login_required")
   end
 
   def find_authorized_conversation
     conversation = Conversation.find(params[:id])
-    unless conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
-      head :forbidden
-    end
+    head :forbidden unless conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
     conversation
   end
 end

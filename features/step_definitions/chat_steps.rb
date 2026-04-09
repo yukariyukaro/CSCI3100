@@ -71,7 +71,6 @@ Then("I should be forbidden") do
   expect(page.status_code).to eq(403)
 end
 
-
 Given("a conversation exists between Bob and Alice about {string}") do |product_name|
   alice = User.find_by!(email: "alice_chat@example.com")
   bob   = User.find_by!(email: "bob_chat@example.com")
