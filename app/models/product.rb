@@ -1,7 +1,7 @@
 class Product < ApplicationRecord
   include PgSearch::Model
 
-  belongs_to :seller, class_name: "User", foreign_key: "seller_id", optional: true
+  belongs_to :seller, class_name: "User", inverse_of: :products, optional: true
   # Renamed from :transaction to avoid conflict with ActiveRecord's built-in #transaction method
   has_one :sale, class_name: "Transaction", dependent: :destroy
 

@@ -1,11 +1,10 @@
 class Transaction < ApplicationRecord
   belongs_to :product
-  belongs_to :buyer,  class_name: "User", foreign_key: "buyer_id"
-  belongs_to :seller, class_name: "User", foreign_key: "seller_id"
+  belongs_to :buyer,  class_name: "User", inverse_of: :bought_transactions
+  belongs_to :seller, class_name: "User", inverse_of: :sold_transactions
 
   enum :status, { pending: 0, in_progress: 1, completed: 2, reviewed: 3 }
 
-  validates :product_id, :buyer_id, :seller_id, presence: true
   validate :buyer_and_seller_must_differ
 
   before_update :set_completed_at, if: :will_save_change_to_status?
