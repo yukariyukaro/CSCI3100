@@ -1,18 +1,12 @@
 class Product < ApplicationRecord
   include PgSearch::Model
 
-<<<<<<< feat/product-status-flow
   belongs_to :seller, class_name: "User", optional: true, inverse_of: :products
   has_many :transactions, dependent: :destroy, inverse_of: :product
   has_one :active_transaction,
           -> { where(status: :in_progress) },
           class_name: "Transaction",
           inverse_of: :product
-=======
-  belongs_to :seller, class_name: "User", inverse_of: :products, optional: true
-  # Renamed from :transaction to avoid conflict with ActiveRecord's built-in #transaction method
-  has_one :sale, class_name: "Transaction", dependent: :destroy
->>>>>>> main
 
   enum :sale_status, { active: 0, pending: 1, sold: 2 }
 
