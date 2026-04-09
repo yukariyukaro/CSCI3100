@@ -1,17 +1,10 @@
 require "rails_helper"
 
 RSpec.describe "Conversations", type: :request do
-  describe "GET /index" do
-    it "returns http success" do
-      get "/conversations/index"
-      expect(response).to have_http_status(:success)
-    end
-  end
-
-  describe "GET /show" do
-    it "returns http success" do
-      get "/conversations/show"
-      expect(response).to have_http_status(:success)
+  describe "GET /conversations" do
+    it "redirects to login when not authenticated" do
+      get "/conversations"
+      expect(response).to redirect_to(new_session_path)
     end
   end
 end
