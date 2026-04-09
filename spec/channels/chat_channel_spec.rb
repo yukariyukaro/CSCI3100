@@ -17,14 +17,14 @@ RSpec.describe ChatChannel, type: :channel do
         stub_connection current_user: buyer
         subscribe conversation_id: conversation.id
         expect(subscription).to be_confirmed
-        expect(streams).to include("conversation_#{conversation.id}")
+        expect(subscription).to have_stream_from("conversation_#{conversation.id}")
       end
 
       it "subscribes and streams for the seller" do
         stub_connection current_user: seller
         subscribe conversation_id: conversation.id
         expect(subscription).to be_confirmed
-        expect(streams).to include("conversation_#{conversation.id}")
+        expect(subscription).to have_stream_from("conversation_#{conversation.id}")
       end
     end
 
