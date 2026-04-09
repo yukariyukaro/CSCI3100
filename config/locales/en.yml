@@ -34,5 +34,21 @@ en:
     logged_out: "You are logged out."
     invalid_credentials: "Invalid email or password."
     login_required: "You must be logged in."
+  users:
+    profile:
+      updated: "Profile updated successfully."
+    update:
+      success: "Profile updated successfully."
+  transactions:
+    reserve_success: "Reservation successful!"
+    reserve_failed: "Cannot reserve this product."
+    cancel_success: "Reservation cancelled."
+    cancel_failed: "Cannot cancel reservation."
+    sold_success: "Product marked as sold."
+    sold_failed: "Cannot mark as sold."
+  controllers:
+    users:
+      update:
+        success: "Profile updated successfully."
   conversations:
     product_not_found: "Product not found."

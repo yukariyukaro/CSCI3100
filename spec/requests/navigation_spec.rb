@@ -12,8 +12,8 @@ RSpec.describe "Global Navigation Bar", type: :request do
   end
 
   # Helper: simulate login by posting to sessions#create
-  def log_in_as(u)
-    post sessions_path, params: { email: u.email, password: "password123" }
+  def log_in_as(user)
+    post sessions_path, params: { email: user.email, password: "password123" }
   end
 
   # ─── 未登录用户 ────────────────────────────────────────────────────────────

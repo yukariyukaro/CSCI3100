@@ -1,4 +1,4 @@
-User.find_or_create_by!(email: "demo_user@example.com") do |user|
+demo_user = User.find_or_create_by!(email: "demo_user@example.com") do |user|
   user.name = "Demo User"
   user.password = "password123"
   user.password_confirmation = "password123"
@@ -15,5 +15,10 @@ end
     p.description = attrs[:description]
     p.price       = attrs[:price]
     p.condition   = attrs[:condition]
+    p.seller_id   = demo_user.id
   end
+end
+
+Product.where(seller_id: nil).find_each do |p|
+  p.update!(seller_id: demo_user.id)
 end

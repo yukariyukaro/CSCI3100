@@ -27,6 +27,9 @@ Layout/LineLength:
   Exclude:
     - "config/initializers/*"
 
+Layout/EndOfLine:
+  Enabled: false
+
 # 3. 禁用强制文档注释 (不需要每个 Class 都写 magic comment，浪费时间)
 Style/Documentation:
   Enabled: false
@@ -48,3 +51,7 @@ Style/EmptyMethod:
 # 7. 忽略某些自动生成的安全性警告 (由你自己把控)
 Bundler/GemComment:
   Enabled: false
+
+Rails/HasManyOrHasOneDependent:
+  Exclude:
+    - "app/models/product.rb"

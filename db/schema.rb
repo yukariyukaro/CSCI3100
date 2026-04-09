@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_07_164000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_09_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -90,6 +90,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_164000) do
     t.datetime "updated_at", null: false
     t.index ["buyer_id", "created_at"], name: "index_transactions_on_buyer_id_and_created_at"
     t.index ["buyer_id"], name: "index_transactions_on_buyer_id"
+    t.index ["product_id"], name: "idx_only_one_active_transaction_per_product", unique: true, where: "(status = 1)"
     t.index ["product_id"], name: "index_transactions_on_product_id"
     t.index ["seller_id", "created_at"], name: "index_transactions_on_seller_id_and_created_at"
     t.index ["seller_id"], name: "index_transactions_on_seller_id"

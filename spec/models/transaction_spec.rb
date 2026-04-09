@@ -80,6 +80,29 @@ RSpec.describe Transaction, type: :model do
       transaction.reviewed!
       expect(transaction.reload.status).to eq("reviewed")
     end
+
+    it "can transition to cancelled" do
+      transaction = described_class.create!(
+        product: product, buyer: buyer, seller: seller, status: :in_progress
+      )
+      transaction.cancelled!
+      expect(transaction.reload.status).to eq("cancelled")
+    end
+
+    it "can transition to expired" do
+      transaction = described_class.create!(
+        product: product, buyer: buyer, seller: seller, status: :in_progress
+      )
+      transaction.expired!
+      expect(transaction.reload.status).to eq("expired")
+    end
+  end
+
+  describe "database constraints" do
+    it "has a unique index preventing multiple in_progress transactions per product" do
+      index_names = ActiveRecord::Base.connection.indexes(:transactions).map(&:name)
+      expect(index_names).to include("idx_only_one_active_transaction_per_product")
+    end
   end
 
   describe "associations" do

@@ -3,6 +3,12 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def authenticate_user!
+    return if logged_in?
+
+    redirect_to new_session_path, alert: t("auth.login_required")
+  end
+
   def current_user
     return @current_user if defined?(@current_user)
 
