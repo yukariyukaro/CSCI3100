@@ -79,6 +79,4 @@ test:
 #
 production:
   <<: *default
-  database: cuhk_marketplace_production
-  username: cuhk_marketplace
-  password: <%= ENV["CUHK_MARKETPLACE_DATABASE_PASSWORD"] %>
+  url: <%= ENV["DATABASE_URL"] %>

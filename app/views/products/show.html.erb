@@ -1,2 +1,95 @@
-<h1>Product Detail Placeholder</h1>
-<p>Product ID: <%= @product_id %></p>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col lg:flex-row gap-8">
+    <!-- Left: Image Gallery -->
+    <div class="lg:w-1/2 flex flex-col gap-4">
+      <div class="aspect-square bg-base-200 rounded-xl overflow-hidden flex items-center justify-center border border-base-300">
+        <span class="text-base-content/30 flex flex-col items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          商品图片画廊
+        </span>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-2">
+        <div class="w-20 h-20 bg-base-200 rounded-lg shrink-0 border border-base-300"></div>
+        <div class="w-20 h-20 bg-base-200 rounded-lg shrink-0 border border-base-300"></div>
+        <div class="w-20 h-20 bg-base-200 rounded-lg shrink-0 border border-base-300"></div>
+        <div class="w-20 h-20 bg-base-200 rounded-lg shrink-0 border border-base-300"></div>
+      </div>
+    </div>
+
+    <!-- Right: Info & Actions -->
+    <div class="lg:w-1/2 flex flex-col gap-6">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge badge-secondary"><%= @product.condition %></span>
+          <span class="text-sm text-gray-500">ID: <%= @product.id %></span>
+        </div>
+        <h1 class="text-3xl font-bold mb-4 text-gray-900"><%= @product.name %></h1>
+        <p class="text-3xl text-primary font-bold"><%= number_to_currency(@product.price) %></p>
+      </div>
+
+      <!-- AI Summary Card -->
+      <div class="my-2">
+        <% case @product.ai_summary_status %>
+        <% when 'completed' %>
+          <div class="card bg-base-200 border-l-4 border-primary shadow-sm animate-fade-in">
+            <div class="card-body p-4">
+              <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-2">
+                ✨ AI 智能卖点总结
+              </h3>
+              <div class="leading-relaxed text-sm text-gray-700">
+                <%= simple_format(@product.ai_summary) %>
+              </div>
+              <span class="text-xs text-gray-400 mt-2 block">自动生成，仅供参考</span>
+            </div>
+          </div>
+        <% when 'generating', nil %>
+          <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
+            <div class="card-body p-4">
+               <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3">
+                <span class="animate-pulse">✨ AI 正在分析卖点...</span>
+              </h3>
+              <div class="flex flex-col gap-2">
+                <div class="skeleton h-3 w-full"></div>
+                <div class="skeleton h-3 w-5/6"></div>
+                <div class="skeleton h-3 w-4/6"></div>
+              </div>
+            </div>
+          </div>
+        <% when 'failed', 'skipped' %>
+          <!-- 优雅隐藏 -->
+          <div class="hidden"></div>
+        <% else %>
+          <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3 animate-pulse">
+                ✨ 正在唤醒 AI 助手...
+              </h3>
+              <div class="flex flex-col gap-2">
+                <div class="skeleton h-3 w-full"></div>
+                <div class="skeleton h-3 w-3/4"></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Description -->
+      <div class="mt-2">
+        <h2 class="text-lg font-semibold mb-3 text-gray-900">商品描述</h2>
+        <div class="leading-relaxed text-gray-700 whitespace-pre-wrap text-sm"><%= @product.description %></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-4 mt-8 pt-6 border-t border-base-200">
+        <button class="btn btn-primary flex-1 btn-lg text-lg">立即购买</button>
+        <button class="btn btn-outline flex-1 btn-lg text-lg text-gray-900">加入购物车</button>
+      </div>
+
+      <div class="mt-2 text-center lg:text-left">
+        <%= link_to "← 返回商品列表", products_path, class: "link link-hover text-sm text-gray-500" %>
+      </div>
+    </div>
+  </div>
+</div>

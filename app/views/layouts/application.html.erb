@@ -5,12 +5,29 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    
+    <% if respond_to?(:tailwind_css_tag) %>
+      <%= tailwind_css_tag "application", "data-turbo-track": "reload" %>
+    <% elsif Rails.application.assets&.find_asset("tailwind.css") || Rails.application.assets_manifest&.assets&.key?("tailwind.css") %>
+      <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <% end %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <%= render "shared/navigation_bar" %>
+
+    <% if notice.present? %>
+      <div class="flash flash--notice" role="alert"><%= notice %></div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="flash flash--alert" role="alert"><%= alert %></div>
+    <% end %>
+
+    <main class="min-h-screen">
+      <%= yield %>
+    </main>
   </body>
 </html>

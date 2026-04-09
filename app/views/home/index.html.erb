@@ -1,10 +1,36 @@
-<h1>CUHK Marketplace</h1>
-<p>Front-end and back-end architecture placeholders are ready.</p>
-<ul>
-  <li><%= link_to "Products", products_path %></li>
-  <li><%= link_to "Chats", chats_path %></li>
-  <li><%= link_to "Payments", payments_path %></li>
-  <li><%= link_to "Listings", listings_path %></li>
-  <li><%= link_to "Login", new_session_path %></li>
-  <li><%= link_to "Users", users_path %></li>
-</ul>
+<div class="hero min-h-[70vh] bg-base-200 rounded-2xl my-8 overflow-visible relative">
+  <!-- Use a subtle gradient or pattern instead of external image to avoid loading issues -->
+  <div class="hero-overlay bg-gradient-to-br from-primary/80 to-secondary/80 rounded-2xl"></div>
+  <div class="hero-content text-center text-neutral-content w-full max-w-3xl overflow-visible relative z-10">
+    <div class="w-full relative z-20">
+      <h1 class="mb-5 text-5xl font-bold text-white drop-shadow-md">CUHK Marketplace</h1>
+      <p class="mb-8 text-xl text-white/90 drop-shadow">
+        Welcome to the second-hand trading platform. Discover great deals from your campus!
+      </p>
+
+      <div class="relative w-full max-w-2xl mx-auto" data-controller="autocomplete" data-autocomplete-url-value="/products/autocomplete">
+        <%= form_with url: products_path, method: :get, local: true, class: "join w-full flex shadow-lg" do |form| %>
+          <div class="relative flex-1 flex">
+            <%= form.text_field :query, 
+                  placeholder: "Search for items...", 
+                  value: params[:query],
+                  autocomplete: "off",
+                  class: "input input-bordered input-lg join-item w-full flex-1 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary",
+                  data: { 
+                    autocomplete_target: "input", 
+                    action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
+                  },
+                  role: "combobox",
+                  "aria-autocomplete": "list"
+            %>
+            <span data-autocomplete-target="loading" class="hidden absolute right-4 top-1/2 -translate-y-1/2 loading loading-spinner loading-md text-primary"></span>
+          </div>
+          <%= form.submit "Search", class: "btn btn-primary btn-lg join-item border-none" %>
+        <% end %>
+        
+        <!-- Autocomplete results: very high z-index and glassmorphism -->
+        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute top-full left-0 right-0 z-[100] mt-2 bg-white/70 backdrop-blur-md shadow-xl rounded-box max-h-64 overflow-y-auto text-left text-gray-900 border border-base-200/50 p-2"></ul>
+      </div>
+    </div>
+  </div>
+</div>
