@@ -55,7 +55,7 @@ class Product < ApplicationRecord
       .pluck(:name)
   end
 
-  def reserve_by!(buyer)
+  def reserve_by(buyer)
     return false unless reservable_by?(buyer)
 
     with_lock { reserve_in_lock?(buyer) }
@@ -63,7 +63,7 @@ class Product < ApplicationRecord
     false
   end
 
-  def cancel_reservation_by!(actor)
+  def cancel_reservation_by(actor)
     return false if actor.blank?
 
     with_lock { cancel_in_lock?(actor) }
@@ -71,7 +71,7 @@ class Product < ApplicationRecord
     false
   end
 
-  def mark_sold_by!(actor)
+  def mark_sold_by(actor)
     return false if actor.blank? || seller_id.blank? || seller_id != actor.id
 
     with_lock { mark_sold_in_lock? }
@@ -88,10 +88,8 @@ class Product < ApplicationRecord
   def reserve_in_lock?(buyer)
     return false unless active? && active_transaction.blank?
 
-    transaction do
-      update!(sale_status: :pending)
-      transactions.create!(buyer: buyer, seller: seller, status: :in_progress)
-    end
+    update!(sale_status: :pending)
+    transactions.create!(buyer: buyer, seller: seller, status: :in_progress)
 
     true
   end
@@ -102,10 +100,8 @@ class Product < ApplicationRecord
     tx = active_transaction
     return false if tx.blank? || [seller_id, tx.buyer_id].exclude?(actor.id)
 
-    transaction do
-      update!(sale_status: :active)
-      tx.update!(status: :cancelled)
-    end
+    update!(sale_status: :active)
+    tx.update!(status: :cancelled)
 
     true
   end
@@ -116,10 +112,8 @@ class Product < ApplicationRecord
     tx = active_transaction
     return false if tx.blank?
 
-    transaction do
-      update!(sale_status: :sold)
-      tx.update!(status: :completed)
-    end
+    update!(sale_status: :sold)
+    tx.update!(status: :completed)
 
     true
   end

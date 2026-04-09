@@ -36,10 +36,10 @@ class ProductsController < ApplicationController
         flash.now[:alert] = t("products.search.too_short")
         Product.none
       else
-        Product.search(@query).includes(active_transaction: :buyer)
+        Product.search(@query)
       end
     else
-      Product.includes(active_transaction: :buyer).all
+      Product.all
     end
   end
 
