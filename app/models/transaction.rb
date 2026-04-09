@@ -1,9 +1,14 @@
 class Transaction < ApplicationRecord
+<<<<<<< feat/product-status-flow
+  belongs_to :product, inverse_of: :transactions
+  belongs_to :buyer, class_name: "User", inverse_of: :bought_transactions
+=======
   belongs_to :product
   belongs_to :buyer,  class_name: "User", inverse_of: :bought_transactions
+>>>>>>> main
   belongs_to :seller, class_name: "User", inverse_of: :sold_transactions
 
-  enum :status, { pending: 0, in_progress: 1, completed: 2, reviewed: 3 }
+  enum :status, { pending: 0, in_progress: 1, completed: 2, reviewed: 3, cancelled: 4, expired: 5 }
 
   validate :buyer_and_seller_must_differ
 
