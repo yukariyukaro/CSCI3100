@@ -4,6 +4,7 @@ class Product < ApplicationRecord
   belongs_to :seller, class_name: "User", foreign_key: "seller_id", optional: true
   # Renamed from :transaction to avoid conflict with ActiveRecord's built-in #transaction method
   has_one :sale, class_name: "Transaction", dependent: :destroy
+  has_many :conversations, dependent: :destroy
 
   enum :sale_status, { active: 0, pending: 1, sold: 2 }
 
