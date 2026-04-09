@@ -52,9 +52,7 @@ end
 # ─── Assertions ──────────────────────────────────────────────────────────────
 
 Then("I should see a {string} link") do |link_text|
-  expect(page).to have_link(link_text)
-    .or(have_button(link_text))
-    .or(have_content(link_text))
+  expect(page).to have_css("a, button, input[type=submit]", text: link_text)
 end
 
 Then("I should be on a conversation page") do
