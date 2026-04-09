@@ -64,10 +64,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
-
   create_table "payments", force: :cascade do |t|
     t.bigint "transaction_id", null: false
     t.decimal "amount", precision: 10, scale: 2, null: false
+    t.integer "status", default: 0, null: false
     t.integer "status", default: 0, null: false
     t.string "provider", null: false
     t.string "provider_reference"

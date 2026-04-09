@@ -26,15 +26,45 @@ RSpec.describe "Frontend placeholders", type: :request do
     expect(response).to redirect_to(conversation_path(1))
   end
 
-  it "renders payments pages and supports create placeholder" do
+  it "supports payments flow pages" do
+    get payments_path
+    expect(response).to redirect_to(new_session_path)
+
+    seller = User.create!(
+      name: "Seller",
+      email: "seller@example.com",
+      password: "password123",
+      password_confirmation: "password123"
+    )
+    buyer = User.create!(
+      name: "Buyer",
+      email: "buyer@example.com",
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    product = Product.create!(
+      name: "Test Product",
+      description: "Placeholder desc",
+      price: 12.34,
+      seller_id: seller.id,
+      sale_status: :pending
+    )
+    tx = Transaction.create!(product: product, buyer: buyer, seller: seller, status: :in_progress)
+
+    post sessions_path, params: { email: buyer.email, password: "password123" }
+    expect(response).to redirect_to(root_path)
+
+    post transaction_payments_path(tx)
+    expect(response).to have_http_status(:found)
+    expect(response.location).to include("/payments/")
+    expect(response.location).to include("/fake")
+
+    payment = Payment.last
     get payments_path
     expect(response).to have_http_status(:ok)
-    get new_payment_path
+    get payment_path(payment)
     expect(response).to have_http_status(:ok)
-    get payment_path(1)
-    expect(response).to have_http_status(:ok)
-    post payments_path
-    expect(response).to redirect_to(payments_path)
   end
 
   it "renders listings pages and supports create placeholder" do

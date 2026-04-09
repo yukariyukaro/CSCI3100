@@ -46,6 +46,12 @@ en:
     cancel_failed: "Cannot cancel reservation."
     sold_success: "Product marked as sold."
     sold_failed: "Cannot mark as sold."
+  payments:
+    empty: "No payments yet."
+    errors:
+      not_payable: "This transaction is not payable."
+    manual_intervention:
+      resolved: "Marked as resolved."
   controllers:
     users:
       update:

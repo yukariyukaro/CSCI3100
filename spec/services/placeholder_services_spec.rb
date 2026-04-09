@@ -6,7 +6,7 @@ RSpec.describe "Placeholder services", type: :model do
   end
 
   it "returns placeholder from payments gateway" do
-    expect(Payments::Gateway.new.call).to eq({ status: "placeholder" })
+    expect(Payments::Gateway.new.call).to eq({ provider: "fake" })
   end
 
   it "returns placeholder from search autocomplete" do

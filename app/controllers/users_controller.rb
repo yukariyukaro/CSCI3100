@@ -11,10 +11,10 @@ class UsersController < ApplicationController
                 .find(params[:id])
     @products = @user.products.recent_first
 
-    if current_user == @user
-      @transactions = (@user.bought_transactions + @user.sold_transactions)
-                      .sort_by(&:created_at).reverse
-    end
+    return unless current_user == @user
+
+    load_transactions
+    load_manual_intervention_payments
   rescue ActiveRecord::RecordNotFound
     render file: Rails.public_path.join("404.html"),
            status: :not_found, layout: false
@@ -62,5 +62,18 @@ class UsersController < ApplicationController
 
   def update_params
     params.require(:user).permit(:name, :avatar)
+  end
+
+  def load_transactions
+    @transactions = (@user.bought_transactions + @user.sold_transactions).sort_by(&:created_at).reverse
+  end
+
+  def load_manual_intervention_payments
+    @manual_intervention_payments = Payment
+                                    .joins(:product_transaction)
+                                    .includes(product_transaction: :product)
+                                    .where(transactions: { seller_id: @user.id })
+                                    .where(status: :manual_intervention_required, resolved_at: nil)
+                                    .order(created_at: :desc)
   end
 end
