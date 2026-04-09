@@ -33,3 +33,11 @@ en:
     logged_in: "You are logged in."
     logged_out: "You are logged out."
     invalid_credentials: "Invalid email or password."
+    login_required: "You must be logged in."
+  users:
+    update:
+      success: "Profile updated successfully."
+  controllers:
+    users:
+      update:
+        success: "Profile updated successfully."
