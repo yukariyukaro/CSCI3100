@@ -3,7 +3,10 @@ require "rails_helper"
 RSpec.describe Conversation, type: :model do
   let(:seller) { User.create!(name: "Seller", email: "seller@example.com", password: "password123") }
   let(:buyer)  { User.create!(name: "Buyer",  email: "buyer@example.com",  password: "password123") }
-  let(:product) { Product.create!(name: "MacBook", description: "Great laptop in perfect condition", price: 3000, seller: seller) }
+  let(:product) do
+    Product.create!(name: "MacBook", description: "Great laptop in perfect condition",
+                    price: 3000, seller: seller)
+  end
 
   describe "validations" do
     it "is valid with product, buyer and seller" do

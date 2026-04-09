@@ -4,7 +4,10 @@ RSpec.describe ChatChannel, type: :channel do
   let(:seller) { User.create!(name: "Seller", email: "cseller@example.com", password: "password123") }
   let(:buyer)  { User.create!(name: "Buyer",  email: "cbuyer@example.com",  password: "password123") }
   let(:product) do
-    Product.create!(name: "Laptop", description: "High-performance laptop in excellent condition", price: 5000, seller: seller)
+    Product.create!(
+      name: "Laptop", description: "High-performance laptop in excellent condition",
+      price: 5000, seller: seller
+    )
   end
   let(:conversation) { Conversation.create!(product: product, buyer: buyer, seller: seller) }
 

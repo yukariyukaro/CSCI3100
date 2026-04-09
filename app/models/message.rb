@@ -1,6 +1,6 @@
 class Message < ApplicationRecord
   belongs_to :conversation
-  belongs_to :sender, class_name: "User", foreign_key: "sender_id"
+  belongs_to :sender, class_name: "User", inverse_of: :messages
 
   validates :content, presence: true
 
@@ -12,11 +12,11 @@ class Message < ApplicationRecord
     ActionCable.server.broadcast(
       "conversation_#{conversation_id}",
       {
-        id:          id,
-        content:     content,
-        sender_id:   sender_id,
+        id: id,
+        content: content,
+        sender_id: sender_id,
         sender_name: sender.name,
-        created_at:  created_at.strftime("%H:%M")
+        created_at: created_at.strftime("%H:%M")
       }
     )
   end

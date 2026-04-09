@@ -9,7 +9,6 @@ module ApplicationCable
     private
 
     def find_verified_user
-      user_id = cookies.encrypted[:_session_id] && env["warden"]&.user
       verified = User.find_by(id: env["rack.session"]&.[](:user_id))
       verified || reject_unauthorized_connection
     end
