@@ -10,6 +10,9 @@ Rails.application.routes.draw do
     patch "mark_sold", on: :member, to: "transactions#complete"
   end
   resources :chats, only: %i[index show]
+  resources :conversations, only: %i[index show create] do
+    resources :messages, only: %i[create]
+  end
   resources :payments, only: %i[index new show create]
   resources :listings, only: %i[index new create]
   resources :sessions, only: %i[new create destroy]

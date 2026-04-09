@@ -124,6 +124,29 @@
         <% end %>
       </div>
 
+      <% if logged_in? && @product.seller.present? && current_user != @product.seller %>
+        <div class="mt-3">
+          <% if @conversation %>
+            <%= link_to conversation_path(@conversation), class: "btn btn-outline w-full btn-lg text-gray-900" do %>
+              💬 联系卖家
+            <% end %>
+          <% else %>
+            <%= button_to conversations_path,
+                  params: { conversation: { product_id: @product.id } },
+                  class: "btn btn-outline w-full btn-lg text-gray-900",
+                  form: { data: { turbo: false } } do %>
+              💬 联系卖家
+            <% end %>
+          <% end %>
+        </div>
+      <% elsif !logged_in? %>
+        <div class="mt-3">
+          <%= link_to new_session_path, class: "btn btn-outline w-full btn-lg text-gray-900" do %>
+            登录后联系卖家
+          <% end %>
+        </div>
+      <% end %>
+
       <div class="mt-2 text-center lg:text-left">
         <%= link_to "← 返回商品列表", products_path, class: "link link-hover text-sm text-gray-500" %>
       </div>
