@@ -33,6 +33,7 @@ en:
     logged_in: "You are logged in."
     logged_out: "You are logged out."
     invalid_credentials: "Invalid email or password."
+<<<<<<< feat/product-status-flow
     login_required: "Please log in first."
   users:
     profile:
@@ -44,3 +45,13 @@ en:
     cancel_failed: "Cannot cancel reservation."
     sold_success: "Product marked as sold."
     sold_failed: "Cannot mark as sold."
+=======
+    login_required: "You must be logged in."
+  users:
+    update:
+      success: "Profile updated successfully."
+  controllers:
+    users:
+      update:
+        success: "Profile updated successfully."
+>>>>>>> main
