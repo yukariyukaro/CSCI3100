@@ -36,11 +36,7 @@ class UsersController < ApplicationController
 
   def update
     if @user.update(update_params)
-<<<<<<< feat/product-status-flow
       redirect_to user_path(@user), notice: t("users.profile.updated")
-=======
-      redirect_to user_path(@user), notice: t(".success")
->>>>>>> main
     else
       @products     = @user.products.recent_first
       @transactions = nil
@@ -50,15 +46,6 @@ class UsersController < ApplicationController
 
   private
 
-<<<<<<< feat/product-status-flow
-=======
-  def require_login
-    return if logged_in?
-
-    redirect_to new_session_path, alert: t("auth.login_required")
-  end
-
->>>>>>> main
   def set_and_authorize
     @user = User.find(params[:id])
     return if current_user == @user
