@@ -59,4 +59,3 @@ RSpec.describe "Product status flow", type: :system do
     expect(page).to have_content("Available")
   end
 end
-

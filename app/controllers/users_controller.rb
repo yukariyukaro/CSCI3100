@@ -36,11 +36,11 @@ class UsersController < ApplicationController
 
   def update
     if @user.update(update_params)
-      redirect_to user_path(@user), notice: "Profile updated successfully."
+      redirect_to user_path(@user), notice: t("users.profile.updated")
     else
       @products     = @user.products.recent_first
       @transactions = nil
-      render :show, status: :unprocessable_entity
+      render :show, status: :unprocessable_content
     end
   end
 
@@ -49,7 +49,7 @@ class UsersController < ApplicationController
   def require_login
     return if logged_in?
 
-    redirect_to new_session_path, alert: "You must be logged in."
+    redirect_to new_session_path, alert: t("auth.login_required")
   end
 
   def set_and_authorize

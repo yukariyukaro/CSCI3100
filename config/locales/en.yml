@@ -34,6 +34,9 @@ en:
     logged_out: "You are logged out."
     invalid_credentials: "Invalid email or password."
     login_required: "Please log in first."
+  users:
+    profile:
+      updated: "Profile updated successfully."
   transactions:
     reserve_success: "Reservation successful!"
     reserve_failed: "Cannot reserve this product."

@@ -33,9 +33,9 @@ end
 Given("Alice has a product {string} with description {string} and status {string}") do |name, description, status|
   alice = User.find_by!(email: "alice@example.com")
   Product.create!(
-    name:        name,
+    name: name,
     description: description,
-    seller:      alice,
+    seller: alice,
     sale_status: status.to_sym
   )
 end

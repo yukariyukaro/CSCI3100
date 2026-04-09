@@ -27,6 +27,9 @@ Layout/LineLength:
   Exclude:
     - "config/initializers/*"
 
+Layout/EndOfLine:
+  Enabled: false
+
 # 3. 禁用强制文档注释 (不需要每个 Class 都写 magic comment，浪费时间)
 Style/Documentation:
   Enabled: false
