@@ -1,15 +1,22 @@
 import consumer from "channels/consumer"
 
-consumer.subscriptions.create("ChatChannel", {
-  connected() {
-    // Called when the subscription is ready for use on the server
-  },
+// ChatChannel is initialised per-conversation from the chat Stimulus controller.
+// See app/javascript/controllers/chat_controller.js
+export function subscribeToConversation(conversationId, currentUserId, onMessage) {
+  return consumer.subscriptions.create(
+    { channel: "ChatChannel", conversation_id: conversationId },
+    {
+      connected() {
+        console.log(`[ChatChannel] Connected to conversation ${conversationId}`)
+      },
 
-  disconnected() {
-    // Called when the subscription has been terminated by the server
-  },
+      disconnected() {
+        console.log(`[ChatChannel] Disconnected from conversation ${conversationId}`)
+      },
 
-  received(data) {
-    // Called when there's incoming data on the websocket for this channel
-  }
-});
+      received(data) {
+        onMessage(data, currentUserId)
+      }
+    }
+  )
+}
