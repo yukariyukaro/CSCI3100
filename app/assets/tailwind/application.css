@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@plugin "daisyui";
+
 .hidden {
   display: none !important;
 }
