@@ -22,7 +22,7 @@ class ProductsController < ApplicationController
   end
 
   def show
-    @product = Product.includes(active_transaction: :buyer).find(params[:id])
+    @product = Product.find(params[:id])
 
     # Try to get or generate AI summary in background.
     Ai::Summarizer.new(@product).call

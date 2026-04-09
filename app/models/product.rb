@@ -6,7 +6,6 @@ class Product < ApplicationRecord
   has_one :active_transaction,
           -> { where(status: :in_progress) },
           class_name: "Transaction",
-          dependent: :destroy,
           inverse_of: :product
 
   enum :sale_status, { active: 0, pending: 1, sold: 2 }

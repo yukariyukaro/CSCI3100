@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :require_login,      only: %i[update]
+  before_action :authenticate_user!, only: %i[update]
   before_action :set_and_authorize,  only: %i[update]
 
   def index
@@ -45,12 +45,6 @@ class UsersController < ApplicationController
   end
 
   private
-
-  def require_login
-    return if logged_in?
-
-    redirect_to new_session_path, alert: t("auth.login_required")
-  end
 
   def set_and_authorize
     @user = User.find(params[:id])
