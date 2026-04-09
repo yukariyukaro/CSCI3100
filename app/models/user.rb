@@ -15,9 +15,12 @@ class User < ApplicationRecord
            foreign_key: "seller_id",
            dependent: :destroy,
            inverse_of: :seller
-  has_many :buying_conversations,  class_name: "Conversation", foreign_key: "buyer_id",  dependent: :destroy, inverse_of: :buyer
-  has_many :selling_conversations, class_name: "Conversation", foreign_key: "seller_id", dependent: :destroy, inverse_of: :seller
-  has_many :messages,              class_name: "Message",       foreign_key: "sender_id", dependent: :destroy, inverse_of: :sender
+  has_many :buying_conversations,
+           class_name: "Conversation", foreign_key: "buyer_id", dependent: :destroy, inverse_of: :buyer
+  has_many :selling_conversations,
+           class_name: "Conversation", foreign_key: "seller_id", dependent: :destroy, inverse_of: :seller
+  has_many :messages,
+           class_name: "Message", foreign_key: "sender_id", dependent: :destroy, inverse_of: :sender
 
   validates :name,  presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false }
