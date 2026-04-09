@@ -84,7 +84,24 @@
       <!-- Actions -->
       <div class="flex gap-4 mt-8 pt-6 border-t border-base-200">
         <button class="btn btn-primary flex-1 btn-lg text-lg">立即购买</button>
-        <button class="btn btn-outline flex-1 btn-lg text-lg text-gray-900">加入购物车</button>
+        <% if logged_in? && current_user != @product.seller %>
+          <% if @conversation %>
+            <%= link_to conversation_path(@conversation), class: "btn btn-outline flex-1 btn-lg text-lg text-gray-900" do %>
+              💬 联系卖家
+            <% end %>
+          <% else %>
+            <%= button_to conversations_path,
+                  params: { conversation: { product_id: @product.id } },
+                  class: "btn btn-outline flex-1 btn-lg text-lg text-gray-900",
+                  form: { data: { turbo: false } } do %>
+              💬 联系卖家
+            <% end %>
+          <% end %>
+        <% elsif !logged_in? %>
+          <%= link_to new_session_path, class: "btn btn-outline flex-1 btn-lg text-lg text-gray-900" do %>
+            登录后联系卖家
+          <% end %>
+        <% end %>
       </div>
 
       <div class="mt-2 text-center lg:text-left">
