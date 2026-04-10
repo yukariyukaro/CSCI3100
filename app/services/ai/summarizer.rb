@@ -13,7 +13,7 @@ module Ai
       return if @product.description.blank? || @product.description.length < MIN_LENGTH
 
       # Enqueue background job
-      AiSummarizationJob.perform_later(@product.id) unless Rails.env.test?
+      AiSummarizationJob.perform_later(@product.id)
     end
 
     def fetch_summary_from_openai
