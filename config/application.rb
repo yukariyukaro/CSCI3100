@@ -28,6 +28,9 @@ module CuhkMarketplace
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Set Sidekiq as the backend adapter for Active Job
+    config.active_job.queue_adapter = :sidekiq
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
@@ -38,8 +41,5 @@ module CuhkMarketplace
 
     # Don't generate system test files.
     config.generators.system_tests = nil
-
-    # Use libvips for Active Storage image variant processing
-    config.active_storage.variant_processor = :vips
   end
 end
