@@ -37,6 +37,8 @@ en:
   users:
     profile:
       updated: "Profile updated successfully."
+    update:
+      success: "Profile updated successfully."
   transactions:
     reserve_success: "Reservation successful!"
     reserve_failed: "Cannot reserve this product."
@@ -44,9 +46,6 @@ en:
     cancel_failed: "Cannot cancel reservation."
     sold_success: "Product marked as sold."
     sold_failed: "Cannot mark as sold."
-  users:
-    update:
-      success: "Profile updated successfully."
   controllers:
     users:
       update:

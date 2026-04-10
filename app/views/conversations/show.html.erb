@@ -39,6 +39,7 @@
 
   <%# Send form %>
   <%= form_with url: conversation_messages_path(@conversation),
+        scope: :message,
         data: { chat_target: "form", action: "submit->chat#send" },
         class: "flex gap-2" do |f| %>
     <%= f.text_field :content,
