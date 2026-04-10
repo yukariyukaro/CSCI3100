@@ -6,7 +6,10 @@ class ApplicationController < ActionController::Base
   def authenticate_user!
     return if logged_in?
 
-    redirect_to new_session_path, alert: t("auth.login_required")
+    respond_to do |format|
+      format.html { redirect_to new_session_path, alert: t("auth.login_required") }
+      format.any { head :unauthorized }
+    end
   end
 
   def current_user

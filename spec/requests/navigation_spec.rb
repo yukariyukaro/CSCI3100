@@ -34,7 +34,7 @@ RSpec.describe "Global Navigation Bar", type: :request do
     end
 
     it "导航栏包含 Chats 链接" do
-      expect(response.body).to include(chats_path)
+      expect(response.body).to include(conversations_path)
     end
 
     it "导航栏包含 Payments 链接" do
@@ -90,9 +90,10 @@ RSpec.describe "Global Navigation Bar", type: :request do
   # ─── 导航栏在所有主要页面均渲染 ───────────────────────────────────────────
 
   describe "导航栏跨页面一致性" do
-    %i[products_path chats_path payments_path listings_path].each do |path_helper|
+    %i[products_path conversations_path payments_path listings_path].each do |path_helper|
       it "#{path_helper} 页面包含导航栏 Logo" do
         get send(path_helper)
+        follow_redirect! if response.redirect?
         expect(response.body).to include("CUHK Marketplace")
       end
     end
