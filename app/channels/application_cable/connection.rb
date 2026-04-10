@@ -9,7 +9,9 @@ module ApplicationCable
     private
 
     def find_verified_user
-      verified = User.find_by(id: env["rack.session"]&.[](:user_id))
+      session = env["rack.session"]
+      user_id = session&.[](:user_id) || session&.[]("user_id")
+      verified = User.find_by(id: user_id)
       verified || reject_unauthorized_connection
     end
   end

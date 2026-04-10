@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount ActionCable.server => "/cable"
+
   root "products#index"
 
   get "/home", to: "home#index", as: :home
@@ -9,9 +11,10 @@ Rails.application.routes.draw do
     delete "cancel_reservation", on: :member, to: "transactions#destroy"
     patch "mark_sold", on: :member, to: "transactions#complete"
   end
-  resources :chats, only: %i[index show]
+  get "/chats", to: redirect("/conversations", status: 301)
+  get "/chats/:id", to: redirect("/conversations/%{id}", status: 301)
   resources :conversations, only: %i[index show create] do
-    resources :messages, only: %i[create]
+    resources :messages, only: %i[index create]
   end
   resources :payments, only: %i[index new show create]
   resources :listings, only: %i[index new create]
