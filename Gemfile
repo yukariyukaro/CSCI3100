@@ -29,7 +29,7 @@ gem "json", ">= 2.19.2"
 gem "loofah", ">= 2.25.1"
 
 # Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+gem "redis", ">= 4.0.1"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"

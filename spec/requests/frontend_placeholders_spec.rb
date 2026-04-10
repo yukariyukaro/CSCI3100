@@ -16,11 +16,14 @@ RSpec.describe "Frontend placeholders", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "renders chats pages" do
+  it "redirects legacy chats pages" do
     get chats_path
-    expect(response).to have_http_status(:ok)
-    get chat_path(1)
-    expect(response).to have_http_status(:ok)
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response).to redirect_to(conversations_path)
+
+    get "/chats/1"
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response).to redirect_to(conversation_path(1))
   end
 
   it "renders payments pages and supports create placeholder" do
