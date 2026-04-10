@@ -6,6 +6,17 @@
 
 require "cucumber/rails"
 
+require "sidekiq/testing"
+# Force Sidekiq to run jobs inline during Cucumber tests to bypass Redis
+Sidekiq::Testing.inline!
+# Stub Redis connection globally for Cucumber
+module RedisStub
+  def connect(*)
+    # Do nothing
+  end
+end
+RedisClient.prepend(RedisStub) if defined?(RedisClient)
+
 # By default, any exception happening in your Rails application will bubble up
 # to Cucumber so that your scenario will fail. This is a different from how
 # your application behaves in the production environment, where an error page will
