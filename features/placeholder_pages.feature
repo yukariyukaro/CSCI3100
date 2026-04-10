@@ -7,7 +7,7 @@ Feature: Placeholder pages
       | path          | text                         |
       | /products     | 全部商品                     |
       | /chats        | Login                        |
-      | /payments     | Payments Placeholder         |
+      | /payments     | Login                        |
       | /listings     | Listings Placeholder         |
       | /sessions/new | Login                        |
       | /users/new    | Sign Up                      |

@@ -16,7 +16,14 @@ Rails.application.routes.draw do
   resources :conversations, only: %i[index show create] do
     resources :messages, only: %i[index create]
   end
-  resources :payments, only: %i[index new show create]
+  resources :payments, only: %i[index show] do
+    post "webhook", on: :collection
+    get "fake", on: :member
+    patch "resolve", on: :member
+  end
+  resources :transactions, only: [] do
+    resources :payments, only: %i[create]
+  end
   resources :listings, only: %i[index new create]
   resources :sessions, only: %i[new create destroy]
   resources :users, only: %i[index show new create update]

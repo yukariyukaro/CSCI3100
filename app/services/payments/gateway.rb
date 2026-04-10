@@ -1,7 +1,7 @@
 module Payments
   class Gateway
     def call
-      { status: "placeholder" }
+      { provider: ProviderFactory.instance.name }
     end
   end
 end

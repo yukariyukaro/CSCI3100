@@ -115,7 +115,10 @@
               <%= button_to "取消预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-outline btn-error flex-1 btn-lg" %>
             </div>
           <% elsif logged_in? && active_tx.present? && active_tx.buyer_id == current_user.id %>
-            <%= button_to "取消我的预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-error w-full btn-lg" %>
+            <div class="flex flex-col gap-2">
+              <%= button_to "支付 / Pay now", transaction_payments_path(active_tx), method: :post, class: "btn btn-primary w-full btn-lg" %>
+              <%= button_to "取消我的预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-outline btn-error w-full btn-lg" %>
+            </div>
           <% else %>
             <div class="text-sm text-gray-500 text-center">该商品已被预定。</div>
           <% end %>
