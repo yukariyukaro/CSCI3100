@@ -81,3 +81,5 @@ gem "dotenv-rails", "~> 3.2"
 gem "ruby-openai", "~> 8.3"
 
 gem "tailwindcss-rails", "~> 4.4"
+
+gem 'sidekiq'

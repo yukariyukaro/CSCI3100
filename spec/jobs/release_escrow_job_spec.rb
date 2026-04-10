@@ -1,5 +1,8 @@
-require "rails_helper"
+require 'rails_helper'
 
 RSpec.describe ReleaseEscrowJob, type: :job do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it "queues the job" do
+    ActiveJob::Base.queue_adapter = :test
+    expect { ReleaseEscrowJob.perform_later(1) }.to have_enqueued_job
+  end
 end
