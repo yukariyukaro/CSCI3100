@@ -68,7 +68,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
     t.bigint "transaction_id", null: false
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.integer "status", default: 0, null: false
-    t.integer "status", default: 0, null: false
     t.string "provider", null: false
     t.string "provider_reference"
     t.string "callback_token"
