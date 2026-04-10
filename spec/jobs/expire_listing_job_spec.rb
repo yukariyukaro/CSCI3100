@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe ExpireListingJob, type: :job do
   it "queues the job" do
