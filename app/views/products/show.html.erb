@@ -102,7 +102,9 @@
               <span>该商品暂不可预定。</span>
             </div>
           <% else %>
-            <%= button_to "预定 / Reserve", reserve_product_path(@product), method: :post, class: "btn btn-primary w-full btn-lg text-lg" %>
+            <div data-testid="reserve-button">
+              <%= button_to "预定 / Reserve", reserve_product_path(@product), method: :post, class: "btn btn-primary w-full btn-lg text-lg" %>
+            </div>
           <% end %>
         <% elsif @product.pending? %>
           <div class="alert alert-warning mb-4">
@@ -116,7 +118,9 @@
             </div>
           <% elsif logged_in? && active_tx.present? && active_tx.buyer_id == current_user.id %>
             <div class="flex flex-col gap-2">
-              <%= button_to "支付 / Pay now", transaction_payments_path(active_tx), method: :post, class: "btn btn-primary w-full btn-lg" %>
+              <div data-testid="pay-now-button">
+                <%= button_to "支付 / Pay now", transaction_payments_path(active_tx), method: :post, class: "btn btn-primary w-full btn-lg" %>
+              </div>
               <%= button_to "取消我的预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-outline btn-error w-full btn-lg" %>
             </div>
           <% else %>
@@ -130,16 +134,20 @@
       <% if logged_in? && @product.seller.present? && current_user != @product.seller %>
         <div class="mt-3">
           <% if @conversation %>
-            <%= link_to conversation_path(@conversation), class: "btn btn-outline w-full btn-lg text-gray-900" do %>
+            <%= link_to conversation_path(@conversation),
+                  class: "btn btn-outline w-full btn-lg text-gray-900",
+                  data: { testid: "contact-seller" } do %>
               💬 联系卖家
             <% end %>
           <% else %>
-            <%= button_to conversations_path,
-                  params: { conversation: { product_id: @product.id } },
-                  class: "btn btn-outline w-full btn-lg text-gray-900",
-                  form: { data: { turbo: false } } do %>
-              💬 联系卖家
-            <% end %>
+            <div data-testid="contact-seller">
+              <%= button_to conversations_path,
+                    params: { conversation: { product_id: @product.id } },
+                    class: "btn btn-outline w-full btn-lg text-gray-900",
+                    form: { data: { turbo: false } } do %>
+                💬 联系卖家
+              <% end %>
+            </div>
           <% end %>
         </div>
       <% elsif !logged_in? %>

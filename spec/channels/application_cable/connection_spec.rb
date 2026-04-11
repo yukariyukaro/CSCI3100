@@ -25,7 +25,7 @@ RSpec.describe ApplicationCable::Connection do
   end
 
   it "connects when session has user_id" do
-    user = User.create!(name: "U", email: "u@example.com", password: "password123")
+    user = User.create!(name: "U", email: TestData.unique_email(prefix: "user"), password: "password123")
     connection = described_class.new(ActionCable.server, build_env({ user_id: user.id }))
 
     connection.connect

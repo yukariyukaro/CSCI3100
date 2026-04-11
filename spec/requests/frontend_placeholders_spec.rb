@@ -27,8 +27,41 @@ RSpec.describe "Frontend placeholders", type: :request do
     get payments_path
     expect(response).to redirect_to(new_session_path)
 
-    get new_payment_path
-    expect(response).to redirect_to(new_session_path)
+    seller = User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+    buyer = User.create!(
+      name: "Buyer",
+      email: TestData.unique_email(prefix: "buyer"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    product = Product.create!(
+      name: "Test Product",
+      description: "Placeholder desc",
+      price: 12.34,
+      seller_id: seller.id,
+      sale_status: :pending
+    )
+    tx = Transaction.create!(product: product, buyer: buyer, seller: seller, status: :in_progress)
+
+    post sessions_path, params: { email: buyer.email, password: "password123" }
+    expect(response).to redirect_to(root_path)
+
+    post transaction_payments_path(tx)
+    expect(response).to have_http_status(:found)
+    expect(response.location).to include("/payments/")
+    expect(response.location).to include("/fake")
+
+    payment = Payment.last
+    get payments_path
+    expect(response).to have_http_status(:ok)
+    get payment_path(payment)
+    expect(response).to have_http_status(:ok)
   end
 
   it "renders listings index and protects listing creation when logged out" do
@@ -55,24 +88,26 @@ RSpec.describe "Frontend placeholders", type: :request do
   end
 
   it "registers a new user successfully" do
+    email = TestData.unique_email(prefix: "alice")
     post users_path,
          params: {
            user: {
              name: "Alice",
-             email: "alice@example.com",
+             email: email,
              password: "password123",
              password_confirmation: "password123"
            }
          }
 
     expect(response).to redirect_to(root_path)
-    expect(User.find_by(email: "alice@example.com")).to be_present
+    expect(User.find_by(email: email)).to be_present
   end
 
   it "logs in with valid credentials and logs out" do
+    email = TestData.unique_email(prefix: "alice")
     user = User.create!(
       name: "Alice",
-      email: "alice@example.com",
+      email: email,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -87,14 +122,15 @@ RSpec.describe "Frontend placeholders", type: :request do
   end
 
   it "rejects login with invalid credentials" do
+    email = TestData.unique_email(prefix: "alice")
     User.create!(
       name: "Alice",
-      email: "alice@example.com",
+      email: email,
       password: "password123",
       password_confirmation: "password123"
     )
 
-    post sessions_path, params: { email: "alice@example.com", password: "wrong-password" }
+    post sessions_path, params: { email: email, password: "wrong-password" }
     expect(response).to have_http_status(:unprocessable_content)
     expect(session[:user_id]).to be_nil
   end

@@ -40,7 +40,19 @@ When("I visit the conversations page") do
 end
 
 When("I click {string}") do |button_text|
-  click_on button_text
+  case button_text
+  when "联系卖家"
+    node = find('[data-testid="contact-seller"]', match: :first)
+    if node.tag_name == "a"
+      node.click
+    else
+      node.find("a, button, input[type=submit]", match: :first).click
+    end
+  when "Send"
+    find('[data-testid="send-message"]').click
+  else
+    click_on button_text
+  end
 end
 
 # ─── Interactions ────────────────────────────────────────────────────────────

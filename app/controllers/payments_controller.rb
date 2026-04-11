@@ -34,15 +34,9 @@ class PaymentsController < ApplicationController
 
   def create_transaction
     provider = Payments::ProviderFactory.instance
-    @payment = Payment.create!(
-      product_transaction: @product_transaction,
-      amount: @product_transaction.product.price,
-      provider: provider.name,
-      status: :pending
-    )
-
+    @payment = build_transaction_payment(provider)
     checkout = provider.create_checkout(payment: @payment)
-    @payment.update!(provider_reference: checkout[:provider_reference], callback_token: checkout[:callback_token])
+    update_transaction_checkout!(@payment, checkout)
 
     redirect_to checkout[:redirect_url]
   end
@@ -70,6 +64,23 @@ class PaymentsController < ApplicationController
 
   def set_product_transaction
     @product_transaction = Transaction.includes(:product).find(params[:id])
+  end
+
+  def build_transaction_payment(provider)
+    callback_token = provider.name == "fake" ? SecureRandom.hex(16) : nil
+
+    Payment.create!(
+      user: current_user,
+      product_transaction: @product_transaction,
+      amount: @product_transaction.product.price,
+      provider: provider.name,
+      callback_token: callback_token,
+      status: :pending
+    )
+  end
+
+  def update_transaction_checkout!(payment, checkout)
+    payment.update!(provider_reference: checkout[:provider_reference], callback_token: checkout[:callback_token])
   end
 
   def set_listing

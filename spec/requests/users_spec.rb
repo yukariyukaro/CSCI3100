@@ -2,10 +2,13 @@
 require "rails_helper"
 
 RSpec.describe "Users", type: :request do
+  let(:user_email) { TestData.unique_email(prefix: "alice") }
+  let(:other_user_email) { TestData.unique_email(prefix: "bob") }
+
   let(:user) do
     User.create!(
       name: "Alice",
-      email: "alice@example.com",
+      email: user_email,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -14,7 +17,7 @@ RSpec.describe "Users", type: :request do
   let(:other_user) do
     User.create!(
       name: "Bob",
-      email: "bob@example.com",
+      email: other_user_email,
       password: "password123",
       password_confirmation: "password123"
     )
