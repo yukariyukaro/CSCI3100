@@ -18,4 +18,9 @@ class Payment < ApplicationRecord
        }
 
   validates :amount, presence: true, numericality: { greater_than: 0 }
+  validates :callback_token, presence: true, if: :fake_provider?
+
+  def fake_provider?
+    provider == "fake"
+  end
 end

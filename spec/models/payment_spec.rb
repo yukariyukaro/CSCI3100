@@ -25,4 +25,16 @@ RSpec.describe Payment, type: :model do
     payment = Payment.new(user: user, amount: -10, transaction_type: :deposit, status: :pending)
     expect(payment).not_to be_valid
   end
+
+  it "requires callback token for fake provider" do
+    payment = Payment.new(
+      user: user,
+      transaction_type: :deposit,
+      amount: 50.0,
+      status: :pending,
+      provider: "fake"
+    )
+
+    expect(payment).not_to be_valid
+  end
 end
