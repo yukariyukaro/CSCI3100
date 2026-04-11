@@ -52,17 +52,11 @@ class PaymentsController < ApplicationController
   end
 
   def webhook
-    provider = Payments::ProviderFactory.instance
-    payload = provider.verify_webhook(request)
-    payment = Payment.find_by(provider_reference: payload.fetch("provider_reference"))
+    payload = Payments::ProviderFactory.instance.verify_webhook(request)
+    payment = find_payment_by_reference(payload)
     return head :not_found if payment.blank?
 
-    if payload.fetch("outcome", "succeeded") == "succeeded"
-      PaymentSettlement.call(payment, provider_amount: payload.fetch("amount"))
-    else
-      payment.update!(status: :failed, error_details: "user_cancelled")
-    end
-
+    process_webhook_outcome(payment, payload)
     head :ok
   rescue KeyError
     head :bad_request
@@ -153,6 +147,20 @@ class PaymentsController < ApplicationController
 
   def successful_status?(status)
     %w[succeeded processing requires_capture].include?(status)
+  end
+
+  def find_payment_by_reference(payload)
+    Payment.find_by(provider_reference: payload.fetch("provider_reference"))
+  end
+
+  def process_webhook_outcome(payment, payload)
+    return settle_webhook_payment(payment, payload) if payload.fetch("outcome", "succeeded") == "succeeded"
+
+    payment.update!(status: :failed, error_details: "user_cancelled")
+  end
+
+  def settle_webhook_payment(payment, payload)
+    PaymentSettlement.call(payment, provider_amount: payload.fetch("amount"))
   end
 
   def handle_successful_payment(payment_intent_id)
