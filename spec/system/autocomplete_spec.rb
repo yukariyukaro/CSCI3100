@@ -4,9 +4,16 @@ RSpec.describe "Autocomplete Search", type: :system, js: true do
   before do
     driven_by(:rack_test)
 
-    Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1299.99)
-    Product.create!(name: "MacBook Air", description: "Apple laptop", price: 999.99)
-    Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 799.99)
+    seller = User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1299.99, seller: seller)
+    Product.create!(name: "MacBook Air", description: "Apple laptop", price: 999.99, seller: seller)
+    Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 799.99, seller: seller)
   end
 
   it "skips js dependent tests because headless chrome is not available in wsl" do

@@ -7,7 +7,7 @@ import { subscribeToConversation } from "channels/chat_channel"
 //        data-chat-current-user-id-value="<%= current_user.id %>"
 export default class extends Controller {
   static targets = ["messages", "input", "form", "status"]
-  static values  = { conversationId: Number, currentUserId: Number }
+  static values = { conversationId: Number, currentUserId: Number }
 
   connect() {
     this.setStatus("")
@@ -22,6 +22,10 @@ export default class extends Controller {
       },
       onDisconnected: () => {
         this.setStatus("Disconnected. Reconnecting…")
+        this.setFormEnabled(false)
+      },
+      onMaintenance: (data) => {
+        this.setStatus(data?.message || "Demo data reset. Please refresh.")
         this.setFormEnabled(false)
       },
       onRejected: () => {
@@ -99,7 +103,7 @@ export default class extends Controller {
       .then((messages) => {
         messages.forEach((m) => this.appendMessage(m, this.currentUserIdValue))
       })
-      .catch(() => {})
+      .catch(() => { })
   }
 
   lastMessageId() {

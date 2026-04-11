@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "conversations/show.html.erb", type: :view do
   let(:seller) { User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"), password: "password123") }
   let(:buyer)  { User.create!(name: "Buyer", email: TestData.unique_email(prefix: "buyer"),  password: "password123") }
-  let(:product) { Product.create!(name: "Laptop", description: "Works well", seller: seller) }
+  let(:product) { Product.create!(name: "Laptop", description: "Works well", seller: seller, price: 1000) }
   let(:conversation) { Conversation.create!(product: product, buyer: buyer, seller: seller) }
   let(:message) { Message.create!(conversation: conversation, sender: buyer, content: "Is this still available?") }
 

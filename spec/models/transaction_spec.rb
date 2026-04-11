@@ -11,7 +11,7 @@ RSpec.describe Transaction, type: :model do
                  password: "password123", password_confirmation: "password123")
   end
   let(:product) do
-    Product.create!(name: "iPhone 14", description: "Good condition", seller: seller)
+    Product.create!(name: "iPhone 14", description: "Good condition", seller: seller, price: 1000)
   end
 
   describe "validations" do
@@ -133,7 +133,7 @@ RSpec.describe Transaction, type: :model do
       @t1 = described_class.create!(
         product: product, buyer: buyer, seller: seller, status: :pending
       )
-      other_product = Product.create!(name: "MacBook", description: "Laptop", seller: buyer)
+      other_product = Product.create!(name: "MacBook", description: "Laptop", seller: buyer, price: 2000)
       @t2 = described_class.create!(
         product: other_product, buyer: seller, seller: buyer, status: :completed
       )

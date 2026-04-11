@@ -55,6 +55,16 @@ module Demo
         deleted
       end
       private_class_method :delete_keys_by_prefix
+
+      def self.broadcast_maintenance_notice!(message:)
+        payload = { type: "maintenance", message: message, at: Time.current.iso8601 }
+        ids = Demo::Tasks::Scope.conversation_ids
+        ids.each { |id| ActionCable.server.broadcast("conversation_#{id}", payload) }
+        ids.length
+      rescue StandardError => e
+        warn "ActionCable maintenance broadcast 失败：#{e.class} #{e.message}"
+        0
+      end
     end
   end
 end
