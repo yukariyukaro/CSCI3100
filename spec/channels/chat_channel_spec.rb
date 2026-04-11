@@ -1,8 +1,8 @@
 require "rails_helper"
 
 RSpec.describe ChatChannel, type: :channel do
-  let(:seller) { User.create!(name: "Seller", email: "cseller@example.com", password: "password123") }
-  let(:buyer)  { User.create!(name: "Buyer",  email: "cbuyer@example.com",  password: "password123") }
+  let(:seller) { User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"), password: "password123") }
+  let(:buyer)  { User.create!(name: "Buyer",  email: TestData.unique_email(prefix: "buyer"),  password: "password123") }
   let(:product) do
     Product.create!(
       name: "Laptop", description: "High-performance laptop in excellent condition",
@@ -30,7 +30,8 @@ RSpec.describe ChatChannel, type: :channel do
 
     context "when user is NOT a participant" do
       it "rejects the subscription" do
-        outsider = User.create!(name: "Outsider", email: "outsider@example.com", password: "password123")
+        outsider = User.create!(name: "Outsider", email: TestData.unique_email(prefix: "outsider"),
+                                password: "password123")
         stub_connection current_user: outsider
         subscribe conversation_id: conversation.id
         expect(subscription).to be_rejected

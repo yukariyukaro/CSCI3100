@@ -3,11 +3,11 @@ require "rails_helper"
 
 RSpec.describe Transaction, type: :model do
   let(:seller) do
-    User.create!(name: "Seller", email: "seller@example.com",
+    User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"),
                  password: "password123", password_confirmation: "password123")
   end
   let(:buyer) do
-    User.create!(name: "Buyer", email: "buyer@example.com",
+    User.create!(name: "Buyer", email: TestData.unique_email(prefix: "buyer"),
                  password: "password123", password_confirmation: "password123")
   end
   let(:product) do
