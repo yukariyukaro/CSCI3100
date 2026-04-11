@@ -1,11 +1,12 @@
 require_relative "db_guard_failures"
+require_relative "db_guard_connection"
 
 module DbGuard
   TEST_DB_NAME = "cuhk_marketplace_test".freeze
 
   def self.prepare_env!
     return unless ENV["RAILS_ENV"] == "test"
-    return if ENV["CI"] || present?(ENV.fetch("TEST_DATABASE_URL", nil))
+    return if ENV["CI"] || ENV.fetch("TEST_DATABASE_URL", "").to_s != ""
 
     ENV.delete("DATABASE_URL")
   end
@@ -23,11 +24,11 @@ module DbGuard
 
   def self.handle_connection_error!(error)
     if error.is_a?(ActiveRecord::ConnectionNotEstablished)
-      DbGuardFailures.connection_failed!(error.message, connection_summary)
+      DbGuardFailures.connection_failed!(error.message, DbGuardConnection.connection_summary)
     end
 
     if defined?(PG::ConnectionBad) && error.is_a?(PG::ConnectionBad)
-      DbGuardFailures.connection_failed!(error.message, connection_summary)
+      DbGuardFailures.connection_failed!(error.message, DbGuardConnection.connection_summary)
     end
 
     raise error
@@ -49,71 +50,28 @@ module DbGuard
   def self.ensure_safe_test_database!
     return unless defined?(Rails) && Rails.env.test?
 
-    db_name = current_db_name.to_s
-    DbGuardFailures.unknown_db!(connection_summary) if db_name.empty?
+    db_name = DbGuardConnection.current_db_name.to_s
+    DbGuardFailures.unknown_db!(DbGuardConnection.connection_summary) if db_name.empty?
 
     downcased = db_name.downcase
     if downcased.include?("production") || downcased.include?("development")
-      DbGuardFailures.suspect_db_name!(db_name, connection_summary)
+      DbGuardFailures.suspect_db_name!(db_name, DbGuardConnection.connection_summary)
     end
 
-    DbGuardFailures.non_test_db!(db_name, connection_summary) unless db_name.end_with?("_test")
+    DbGuardFailures.non_test_db!(db_name, DbGuardConnection.connection_summary) unless safe_test_db_name?(db_name)
   end
+  private_class_method :ensure_safe_test_database!
 
-  def self.connection_summary
-    cfg = safe_connection_config
-    lines = ["ActiveRecord connection:"]
-    add_summary_line(lines, cfg, :adapter)
-    add_summary_line(lines, cfg, :database)
-    add_summary_line(lines, cfg, :host, optional: true)
-    add_summary_line(lines, cfg, :port, optional: true)
-    add_summary_line(lines, cfg, :username, optional: true)
-    lines.join("\n")
-  end
+  def self.safe_test_db_name?(db_name)
+    return true if db_name.end_with?("_test")
+    return true if File.basename(db_name).downcase.end_with?("_test.sqlite3")
 
-  def self.add_summary_line(lines, cfg, key, optional: false)
-    value = cfg_value(cfg, key)
-    return if optional && (value.nil? || value.to_s.empty?)
+    adapter = DbGuardConnection.adapter_name
+    return false unless adapter.casecmp("sqlite3").zero?
 
-    lines << "  #{key}=#{value}"
-  end
-  private_class_method :add_summary_line
-
-  def self.cfg_value(cfg, key)
-    cfg[key] || cfg[key.to_s]
-  end
-  private_class_method :cfg_value
-
-  def self.safe_connection_config
-    return {} unless defined?(ActiveRecord::Base)
-
-    cfg = ActiveRecord::Base.connection_db_config
-    raw = cfg&.configuration_hash || {}
-    sanitize_connection_config(raw)
+    File.basename(db_name).match?(/\Atest(\.|_).*\.sqlite3\z/i) || File.basename(db_name).casecmp("test.sqlite3").zero?
   rescue StandardError
-    {}
+    false
   end
-
-  def self.sanitize_connection_config(raw)
-    sanitized = raw.dup
-    sanitized.delete(:password)
-    sanitized.delete("password")
-    sanitized.delete(:url)
-    sanitized.delete("url")
-    sanitized
-  end
-  private_class_method :sanitize_connection_config
-
-  def self.current_db_name
-    return unless defined?(ActiveRecord::Base)
-
-    cfg = ActiveRecord::Base.connection_db_config
-    cfg&.database
-  rescue StandardError
-    nil
-  end
-
-  def self.present?(value)
-    value && !value.to_s.empty?
-  end
+  private_class_method :safe_test_db_name?
 end

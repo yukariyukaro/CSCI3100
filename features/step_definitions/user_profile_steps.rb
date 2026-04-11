@@ -36,6 +36,7 @@ Given("Alice has a product {string} with description {string} and status {string
     name: name,
     description: description,
     seller: alice,
+    price: 1,
     sale_status: status.to_sym
   )
 end
@@ -48,6 +49,7 @@ Given("Alice has a completed transaction for product {string} with Bob as buyer"
   product = Product.find_or_create_by!(name: product_name) do |p|
     p.description = "#{product_name} description"
     p.seller      = alice
+    p.price       = 1
     p.sale_status = :sold
   end
   Transaction.find_or_create_by!(product: product) do |t|

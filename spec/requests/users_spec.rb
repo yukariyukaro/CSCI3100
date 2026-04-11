@@ -48,8 +48,8 @@ RSpec.describe "Users", type: :request do
 
     context "with products belonging to the user" do
       before do
-        Product.create!(name: "Sold iPhone", description: "Great phone", seller: user, sale_status: :active)
-        Product.create!(name: "Old MacBook", description: "Good laptop", seller: user, sale_status: :sold)
+        Product.create!(name: "Sold iPhone", description: "Great phone", seller: user, price: 100, sale_status: :active)
+        Product.create!(name: "Old MacBook", description: "Good laptop", seller: user, price: 200, sale_status: :sold)
       end
 
       it "displays the user's active products" do
@@ -65,7 +65,7 @@ RSpec.describe "Users", type: :request do
 
     context "transaction history visibility" do
       let(:product) do
-        Product.create!(name: "Laptop", description: "Good", seller: user)
+        Product.create!(name: "Laptop", description: "Good", seller: user, price: 300)
       end
 
       before do

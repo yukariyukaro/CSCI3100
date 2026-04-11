@@ -1,34 +1,57 @@
 require "rails_helper"
 
 RSpec.describe Product, type: :model do
+  let(:seller) do
+    User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+  end
+
   describe "validations" do
-    it "is valid with a name and description" do
-      product = Product.new(name: "Test Product", description: "Test Description")
+    it "is valid with a name, description, seller, and price" do
+      product = Product.new(name: "Test Product", description: "Test Description", seller: seller, price: 0)
       expect(product).to be_valid
     end
 
     it "is invalid without a name" do
-      product = Product.new(description: "Test Description")
+      product = Product.new(description: "Test Description", seller: seller, price: 0)
+      expect(product).not_to be_valid
+    end
+
+    it "is invalid without a seller" do
+      product = Product.new(name: "Test Product", description: "Test Description", price: 0)
+      expect(product).not_to be_valid
+    end
+
+    it "is invalid with a negative price" do
+      product = Product.new(name: "Test Product", description: "Test Description", seller: seller, price: -0.01)
       expect(product).not_to be_valid
     end
   end
 
   describe "search" do
     before do
-      Product.create!(name: "MacBook Pro", description: "Apple laptop")
-      Product.create!(name: "iPhone 15", description: "Apple smartphone")
-      Product.create!(name: "ThinkPad", description: "Lenovo laptop")
-      Product.create!(name: "Apple Watch", description: "Smart watch by Apple")
-      Product.create!(name: "Generic Watch", description: "Works with Apple devices")
+      Product.create!(name: "MacBook Pro", description: "Apple laptop", seller: seller, price: 1000)
+      Product.create!(name: "iPhone 15", description: "Apple smartphone", seller: seller, price: 800)
+      Product.create!(name: "ThinkPad", description: "Lenovo laptop", seller: seller, price: 600)
+      Product.create!(name: "Apple Watch", description: "Smart watch by Apple", seller: seller, price: 200)
+      Product.create!(name: "Generic Watch", description: "Works with Apple devices", seller: seller, price: 50)
 
       # For Chinese/English mixed content testing
       Product.create!(
         name: "【急售】95新二手iPhone 14 Pro Max暗夜紫",
-        description: "用了大半年，一直带壳贴膜，无任何磕碰。电池健康度89%。支持面交或者邮寄。送几个Casetify手机壳。诚心要的话价格可小刀。"
+        description: "用了大半年，一直带壳贴膜，无任何磕碰。电池健康度89%。支持面交或者邮寄。送几个Casetify手机壳。诚心要的话价格可小刀。",
+        seller: seller,
+        price: 3200
       )
       Product.create!(
         name: "自用MacBook Air M2 芯片 16+512",
-        description: "因为换了Windows打游戏，这台MacBook平时就用来看看B站或者写写代码，非常新。无暗病，键盘无打油。"
+        description: "因为换了Windows打游戏，这台MacBook平时就用来看看B站或者写写代码，非常新。无暗病，键盘无打油。",
+        seller: seller,
+        price: 7800
       )
     end
 

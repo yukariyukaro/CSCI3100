@@ -1,11 +1,22 @@
 require "rails_helper"
 
 RSpec.describe "Products", type: :request do
+  let(:seller) do
+    User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+  end
+
   describe "GET /products" do
     before do
-      Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1000, created_at: 2.days.ago)
-      Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 800, created_at: 1.day.ago)
-      Product.create!(name: "二手iPhone 13", description: "9成新", price: 500, created_at: 3.days.ago)
+      Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1000, seller: seller,
+                      created_at: 2.days.ago)
+      Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 800, seller: seller,
+                      created_at: 1.day.ago)
+      Product.create!(name: "二手iPhone 13", description: "9成新", price: 500, seller: seller, created_at: 3.days.ago)
     end
 
     it "returns all products when no query is provided" do
@@ -44,12 +55,12 @@ RSpec.describe "Products", type: :request do
 
   describe "GET /products/autocomplete" do
     before do
-      Product.create!(name: "MacBook Pro 14", description: "Apple laptop", price: 2000)
-      Product.create!(name: "MacBook Pro 16", description: "Apple laptop", price: 2500)
-      Product.create!(name: "MacBook Air", description: "Apple laptop", price: 1000)
-      Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 800)
+      Product.create!(name: "MacBook Pro 14", description: "Apple laptop", price: 2000, seller: seller)
+      Product.create!(name: "MacBook Pro 16", description: "Apple laptop", price: 2500, seller: seller)
+      Product.create!(name: "MacBook Air", description: "Apple laptop", price: 1000, seller: seller)
+      Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 800, seller: seller)
       # Duplicate name for testing uniq
-      Product.create!(name: "MacBook Air", description: "Another Air", price: 900)
+      Product.create!(name: "MacBook Air", description: "Another Air", price: 900, seller: seller)
     end
 
     it "returns empty array when query is less than 2 characters" do
@@ -61,7 +72,7 @@ RSpec.describe "Products", type: :request do
     it "returns matching product names uniquely, limited to 8" do
       # Create more to test limit
       (1..6).each do |i|
-        Product.create!(name: "MacBook Model #{i}", description: "Test", price: 100)
+        Product.create!(name: "MacBook Model #{i}", description: "Test", price: 100, seller: seller)
       end
 
       get autocomplete_products_path, params: { query: "MacBook" }
@@ -84,7 +95,7 @@ RSpec.describe "Products", type: :request do
   describe "GET /products/:id" do
     it "returns the product details without AI summary if description is too short" do
       product = Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1000,
-                                ai_summary_status: "skipped")
+                                seller: seller, ai_summary_status: "skipped")
       get product_path(product)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("MacBook Pro")
@@ -94,7 +105,7 @@ RSpec.describe "Products", type: :request do
 
     it "renders the AI summary card if the product has a summary" do
       product = Product.create!(name: "Used iPhone", description: "Long long desc", price: 500,
-                                ai_summary: "✅ Good condition", ai_summary_status: "completed")
+                                seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed")
       get product_path(product)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("AI 智能卖点总结")
