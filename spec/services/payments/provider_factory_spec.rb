@@ -2,20 +2,23 @@ require "rails_helper"
 
 RSpec.describe Payments::ProviderFactory, type: :model do
   def with_env(vars)
-    old = {}
-    vars.each do |k, v|
-      old[k] = ENV.key?(k) ? ENV[k] : :__missing__
-      ENV[k] = v
-    end
+    snapshot = env_snapshot(vars.keys)
+    apply_env(vars)
     yield
   ensure
-    old.each do |k, v|
-      if v == :__missing__
-        ENV.delete(k)
-      else
-        ENV[k] = v
-      end
-    end
+    restore_env(snapshot)
+  end
+
+  def env_snapshot(keys)
+    keys.index_with { |k| ENV.key?(k) ? ENV[k] : :__missing__ }
+  end
+
+  def apply_env(vars)
+    vars.each { |k, v| ENV[k] = v }
+  end
+
+  def restore_env(snapshot)
+    snapshot.each { |k, v| v == :__missing__ ? ENV.delete(k) : ENV[k] = v }
   end
 
   def in_production
@@ -39,4 +42,3 @@ RSpec.describe Payments::ProviderFactory, type: :model do
     end
   end
 end
-
