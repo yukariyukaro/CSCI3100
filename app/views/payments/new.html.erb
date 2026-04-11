@@ -1,2 +1,45 @@
-<h1>Payment Create Placeholder</h1>
-<p>New payment page placeholder.</p>
+<script src="https://js.stripe.com/v3/"></script>
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+	<h1 class="text-3xl font-bold mb-4">Pay Intention Deposit</h1>
+
+	<div class="card bg-base-100 border border-base-300 shadow-sm mb-6">
+		<div class="card-body">
+			<h2 class="card-title"><%= @listing.title %></h2>
+			<p class="text-sm text-gray-600">Seller: <%= @listing.user.name %></p>
+			<p class="text-lg font-semibold">Deposit: <%= number_to_currency(@escrow.amount, unit: "HK$") %></p>
+			<p class="text-xs text-gray-500">Policy: Buyer cancel → forfeited. Seller cancel → full refund.</p>
+		</div>
+	</div>
+
+	<div
+		data-controller="stripe-payment"
+		data-stripe-payment-publishable-key-value="<%= @stripe_publishable_key %>"
+		data-stripe-payment-client-secret-value="<%= @client_secret %>"
+		data-stripe-payment-payment-intent-id-value="<%= @payment_intent_id %>">
+
+		<div class="card bg-base-100 border border-base-300 shadow-sm">
+			<div class="card-body space-y-4">
+				<div>
+					<label class="label">Card details</label>
+					<div data-stripe-payment-target="card" class="p-3 border rounded-lg bg-white"></div>
+				</div>
+
+				<p data-stripe-payment-target="error" class="text-error text-sm"></p>
+
+				<button
+					type="button"
+					data-action="stripe-payment#submit"
+					data-stripe-payment-target="submit"
+					class="btn btn-primary w-full">
+					Confirm Payment
+				</button>
+			</div>
+		</div>
+
+		<%= form_with url: listing_payments_path(@listing), method: :post, data: { stripe_payment_target: "form" } do |f| %>
+			<%= hidden_field_tag :escrow_id, @escrow.id %>
+			<%= hidden_field_tag :payment_intent_id, "", data: { stripe_payment_target: "paymentIntentInput" } %>
+		<% end %>
+	</div>
+</div>

@@ -1,3 +1,36 @@
-<h1>Payments Placeholder</h1>
-<p>Payment flow list placeholder.</p>
-<div data-controller="payments-placeholder"></div>
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+	<h1 class="text-3xl font-bold mb-6">My Payments</h1>
+
+	<% if @payments.any? %>
+		<div class="overflow-x-auto">
+			<table class="table table-zebra w-full">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Type</th>
+						<th>Status</th>
+						<th>Amount</th>
+						<th>Listing</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<% @payments.each do |payment| %>
+						<tr>
+							<td><%= payment.id %></td>
+							<td><%= payment.transaction_type %></td>
+							<td><%= payment.status %></td>
+							<td><%= number_to_currency(payment.amount, unit: "HK$") %></td>
+							<td><%= payment.escrow&.listing&.title || "-" %></td>
+							<td><%= link_to "View", payment_path(payment), class: "btn btn-sm btn-outline" %></td>
+						</tr>
+					<% end %>
+				</tbody>
+			</table>
+		</div>
+	<% else %>
+		<div class="alert">
+			<span>No payments yet.</span>
+		</div>
+	<% end %>
+</div>

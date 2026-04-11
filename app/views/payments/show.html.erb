@@ -1,2 +1,24 @@
-<h1>Payment Detail Placeholder</h1>
-<p>Payment ID: <%= @payment_id %></p>
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+	<h1 class="text-3xl font-bold mb-6">Payment Details</h1>
+
+	<div class="card bg-base-100 border border-base-300 shadow-sm">
+		<div class="card-body space-y-2">
+			<p><strong>Payment ID:</strong> <%= @payment.id %></p>
+			<p><strong>Type:</strong> <%= @payment.transaction_type %></p>
+			<p><strong>Status:</strong> <%= @payment.status %></p>
+			<p><strong>Amount:</strong> <%= number_to_currency(@payment.amount, unit: "HK$") %></p>
+			<p><strong>Stripe PaymentIntent:</strong> <%= @payment.stripe_payment_intent_id.presence || "-" %></p>
+
+			<% if @payment.escrow.present? %>
+				<div class="divider"></div>
+				<p><strong>Escrow Status:</strong> <%= @payment.escrow.status %></p>
+				<p><strong>Listing:</strong> <%= @payment.escrow.listing.title %></p>
+				<%= link_to "Go to Listing", listing_path(@payment.escrow.listing), class: "btn btn-outline btn-sm" %>
+			<% end %>
+		</div>
+	</div>
+
+	<div class="mt-4">
+		<%= link_to "← Back to Payments", payments_path, class: "link" %>
+	</div>
+</div>
