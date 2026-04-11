@@ -32,13 +32,13 @@ RSpec.describe "Frontend placeholders", type: :request do
 
     seller = User.create!(
       name: "Seller",
-      email: "seller@example.com",
+      email: TestData.unique_email(prefix: "seller"),
       password: "password123",
       password_confirmation: "password123"
     )
     buyer = User.create!(
       name: "Buyer",
-      email: "buyer@example.com",
+      email: TestData.unique_email(prefix: "buyer"),
       password: "password123",
       password_confirmation: "password123"
     )
@@ -89,24 +89,26 @@ RSpec.describe "Frontend placeholders", type: :request do
   end
 
   it "registers a new user successfully" do
+    email = TestData.unique_email(prefix: "alice")
     post users_path,
          params: {
            user: {
              name: "Alice",
-             email: "alice@example.com",
+             email: email,
              password: "password123",
              password_confirmation: "password123"
            }
          }
 
     expect(response).to redirect_to(root_path)
-    expect(User.find_by(email: "alice@example.com")).to be_present
+    expect(User.find_by(email: email)).to be_present
   end
 
   it "logs in with valid credentials and logs out" do
+    email = TestData.unique_email(prefix: "alice")
     user = User.create!(
       name: "Alice",
-      email: "alice@example.com",
+      email: email,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -121,14 +123,15 @@ RSpec.describe "Frontend placeholders", type: :request do
   end
 
   it "rejects login with invalid credentials" do
+    email = TestData.unique_email(prefix: "alice")
     User.create!(
       name: "Alice",
-      email: "alice@example.com",
+      email: email,
       password: "password123",
       password_confirmation: "password123"
     )
 
-    post sessions_path, params: { email: "alice@example.com", password: "wrong-password" }
+    post sessions_path, params: { email: email, password: "wrong-password" }
     expect(response).to have_http_status(:unprocessable_content)
     expect(session[:user_id]).to be_nil
   end

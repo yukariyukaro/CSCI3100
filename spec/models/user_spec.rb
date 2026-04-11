@@ -4,7 +4,7 @@ RSpec.describe User, type: :model do
   it "is valid with name, email, and password" do
     user = described_class.new(
       name: "Alice",
-      email: "alice@example.com",
+      email: TestData.unique_email(prefix: "alice"),
       password: "password123",
       password_confirmation: "password123"
     )
@@ -14,7 +14,7 @@ RSpec.describe User, type: :model do
 
   it "is invalid without a name" do
     user = described_class.new(
-      email: "alice@example.com",
+      email: TestData.unique_email(prefix: "alice"),
       password: "password123",
       password_confirmation: "password123"
     )
@@ -33,15 +33,16 @@ RSpec.describe User, type: :model do
   end
 
   it "enforces unique email" do
+    email = TestData.unique_email(prefix: "alice")
     described_class.create!(
       name: "Alice",
-      email: "alice@example.com",
+      email: email,
       password: "password123",
       password_confirmation: "password123"
     )
     duplicate_user = described_class.new(
       name: "Bob",
-      email: "alice@example.com",
+      email: email,
       password: "password123",
       password_confirmation: "password123"
     )
