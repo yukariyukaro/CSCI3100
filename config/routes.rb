@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  mount ActionCable.server => "/cable"
-
   root "products#index"
 
   get "/home", to: "home#index", as: :home
@@ -11,21 +9,15 @@ Rails.application.routes.draw do
     delete "cancel_reservation", on: :member, to: "transactions#destroy"
     patch "mark_sold", on: :member, to: "transactions#complete"
   end
-  get "/chats", to: redirect("/conversations", status: 301)
-  get "/chats/:id", to: redirect("/conversations/%{id}", status: 301)
+  resources :chats, only: %i[index show]
   resources :conversations, only: %i[index show create] do
-    resources :messages, only: %i[index create]
+    resources :messages, only: %i[create]
   end
-  resources :payments, only: %i[index show] do
-    post "webhook", on: :collection
-    get "fake", on: :member
-    patch "resolve", on: :member
+  resources :payments, only: %i[index new show create] do
+    get :fake, on: :member
+    post :webhook, on: :collection
   end
-  resources :transactions, only: [] do
-    resources :payments, only: %i[create]
-  end
-<<<<<<< HEAD
-  resources :payments, only: %i[index new show create]
+  post "/transactions/:id/payments", to: "payments#create_transaction", as: :transaction_payments
   resources :listings, only: %i[index show new create] do
     resources :payments, only: %i[new create]
   end
@@ -33,9 +25,6 @@ Rails.application.routes.draw do
     post :confirm, on: :member
     post :cancel, on: :member
   end
-=======
-  resources :listings, only: %i[index new create]
->>>>>>> main
   resources :sessions, only: %i[new create destroy]
   resources :users, only: %i[index show new create update]
 

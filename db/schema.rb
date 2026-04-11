@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_10_123000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -55,6 +55,36 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
     t.index ["seller_id"], name: "index_conversations_on_seller_id"
   end
 
+  create_table "escrows", force: :cascade do |t|
+    t.bigint "listing_id", null: false
+    t.bigint "buyer_id", null: false
+    t.bigint "seller_id", null: false
+    t.decimal "amount", precision: 12, scale: 2, null: false
+    t.integer "status", default: 0, null: false
+    t.string "stripe_payment_intent_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["buyer_id"], name: "index_escrows_on_buyer_id"
+    t.index ["listing_id", "buyer_id"], name: "index_escrows_on_listing_id_and_buyer_id", unique: true
+    t.index ["listing_id"], name: "index_escrows_on_listing_id"
+    t.index ["seller_id"], name: "index_escrows_on_seller_id"
+    t.index ["status"], name: "index_escrows_on_status"
+    t.index ["stripe_payment_intent_id"], name: "index_escrows_on_stripe_payment_intent_id"
+  end
+
+  create_table "listings", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.decimal "price", precision: 12, scale: 2, null: false
+    t.text "description", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_listings_on_created_at"
+    t.index ["status"], name: "index_listings_on_status"
+    t.index ["user_id"], name: "index_listings_on_user_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.bigint "conversation_id", null: false
     t.bigint "sender_id", null: false
@@ -64,8 +94,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
+
   create_table "payments", force: :cascade do |t|
-    t.bigint "transaction_id", null: false
+    t.bigint "transaction_id"
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.integer "status", default: 0, null: false
     t.string "provider", null: false
@@ -76,10 +107,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
     t.bigint "resolved_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.bigint "escrow_id"
+    t.integer "transaction_type"
+    t.string "stripe_payment_intent_id"
+    t.index ["escrow_id"], name: "index_payments_on_escrow_id"
     t.index ["provider", "provider_reference"], name: "index_payments_on_provider_and_provider_reference", unique: true, where: "(provider_reference IS NOT NULL)"
     t.index ["resolved_by_id"], name: "index_payments_on_resolved_by_id"
     t.index ["status"], name: "index_payments_on_status"
+    t.index ["stripe_payment_intent_id"], name: "index_payments_on_stripe_payment_intent_id"
     t.index ["transaction_id"], name: "index_payments_on_transaction_id"
+    t.index ["transaction_type"], name: "index_payments_on_transaction_type"
+    t.index ["user_id"], name: "index_payments_on_user_id"
   end
 
   create_table "products", force: :cascade do |t|
@@ -127,9 +166,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
   add_foreign_key "conversations", "products"
   add_foreign_key "conversations", "users", column: "buyer_id"
   add_foreign_key "conversations", "users", column: "seller_id"
+  add_foreign_key "escrows", "listings"
+  add_foreign_key "escrows", "users", column: "buyer_id"
+  add_foreign_key "escrows", "users", column: "seller_id"
+  add_foreign_key "listings", "users"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "payments", "escrows"
   add_foreign_key "payments", "transactions"
+  add_foreign_key "payments", "users"
   add_foreign_key "payments", "users", column: "resolved_by_id"
   add_foreign_key "products", "users", column: "seller_id"
   add_foreign_key "transactions", "products"

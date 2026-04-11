@@ -46,15 +46,31 @@ en:
     cancel_failed: "Cannot cancel reservation."
     sold_success: "Product marked as sold."
     sold_failed: "Cannot mark as sold."
-  payments:
-    empty: "No payments yet."
-    errors:
-      not_payable: "This transaction is not payable."
-    manual_intervention:
-      resolved: "Marked as resolved."
   controllers:
     users:
       update:
         success: "Profile updated successfully."
   conversations:
     product_not_found: "Product not found."
+  listings:
+    create:
+      success: "Listing created successfully."
+  escrows:
+    confirm:
+      success: "Transaction complete, funds released"
+    cancel:
+      buyer_success: "Transaction cancelled, deposit forfeited as penalty"
+      seller_success: "Seller cancelled transaction, deposit refunded"
+    errors:
+      unauthorized: "Unauthorized"
+      not_ready_for_confirmation: "Escrow is not ready for confirmation"
+  payments:
+    notices:
+      deposit_frozen: "Deposit frozen, awaiting seller confirmation"
+    errors:
+      unauthorized: "Unauthorized"
+      listing_not_found: "Listing not found"
+      own_listing: "You cannot buy your own listing"
+      missing_payment_intent: "Missing payment intent"
+      not_completed: "Payment not completed"
+      escrow_not_found: "Escrow not found"

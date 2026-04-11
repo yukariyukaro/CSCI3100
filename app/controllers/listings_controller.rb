@@ -18,7 +18,7 @@ class ListingsController < ApplicationController
     @listing = current_user.listings.new(listing_params)
 
     if @listing.save
-      redirect_to listing_path(@listing), notice: "Listing created successfully."
+      redirect_to listing_path(@listing), notice: t(".success")
     else
       render :new, status: :unprocessable_content
     end

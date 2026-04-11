@@ -40,13 +40,11 @@ class Escrow < ApplicationRecord
     transaction do
       update!(status: :completed)
       listing.update!(status: :sold)
-      Payment.create!(
+      create_payment!(
         user: seller,
-        escrow: self,
         transaction_type: :release,
-        amount: amount,
         status: :succeeded,
-        stripe_payment_intent_id: stripe_payment_intent_id
+        payment_intent_id: stripe_payment_intent_id
       )
     end
   end
@@ -55,13 +53,11 @@ class Escrow < ApplicationRecord
     transaction do
       update!(status: :cancelled)
       listing.update!(status: :available)
-      Payment.create!(
+      create_payment!(
         user: seller,
-        escrow: self,
         transaction_type: :penalty,
-        amount: amount,
         status: :succeeded,
-        stripe_payment_intent_id: stripe_payment_intent_id
+        payment_intent_id: stripe_payment_intent_id
       )
     end
   end
@@ -70,14 +66,26 @@ class Escrow < ApplicationRecord
     transaction do
       update!(status: :cancelled)
       listing.update!(status: :available)
-      Payment.create!(
+      create_payment!(
         user: buyer,
-        escrow: self,
         transaction_type: :refund,
-        amount: amount,
         status: :refunded,
-        stripe_payment_intent_id: payment_intent_id
+        payment_intent_id:
       )
     end
+  end
+
+  private
+
+  def create_payment!(user:, transaction_type:, status:, payment_intent_id:)
+    Payment.create!(
+      user:,
+      escrow: self,
+      provider: "escrow",
+      transaction_type:,
+      amount:,
+      status:,
+      stripe_payment_intent_id: payment_intent_id
+    )
   end
 end
