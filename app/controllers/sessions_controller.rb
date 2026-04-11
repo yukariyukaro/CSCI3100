@@ -9,7 +9,7 @@ class SessionsController < ApplicationController
     else
       flash.now[:alert] = t("auth.invalid_credentials")
       @user = User.new
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 

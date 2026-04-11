@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # filepath: /home/yukari/CSCI3100/spec/requests/turbo_flash_debug_spec.rb
 
 require "rails_helper"

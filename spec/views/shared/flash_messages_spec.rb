@@ -19,7 +19,7 @@ require "rails_helper"
 
 RSpec.describe "shared/_flash_messages", type: :view do
   # Helper: stub flash with a plain hash so the partial can iterate it
-  def set_flash(pairs)
+  def add_flash(pairs)
     pairs.each { |key, val| flash[key.to_s] = val }
   end
 
@@ -27,7 +27,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "notice (success) message" do
     before do
-      set_flash(notice: "You are logged in.")
+      add_flash(notice: "You are logged in.")
       render partial: "shared/flash_messages"
     end
 
@@ -45,26 +45,26 @@ RSpec.describe "shared/_flash_messages", type: :view do
       expect(rendered).not_to include("alert-info")
     end
 
-    it "includes the Stimulus data-controller attribute" do
-      expect(rendered).to include('data-controller="flash"')
+    it "includes the alert message element" do
+      expect(rendered).to include("You are logged in.")
     end
 
     it "marks auto-close as true for success messages" do
-      expect(rendered).to include("true")
+      expect(rendered).to include("5000")
     end
 
     it "includes role='alert' for screen readers" do
       expect(rendered).to include('role="alert"')
     end
 
-    it "includes a close button bound to flash#close" do
-      expect(rendered).to match(/data-action="click->flash#close"/)
+    it "includes a close button with onclick handler" do
+      expect(rendered).to include('onclick="this.closest(\'.flash-message\').remove()"')
     end
   end
 
   describe "flash[:success] (explicit success key)" do
     before do
-      set_flash(success: "Operation successful.")
+      add_flash(success: "Operation successful.")
       render partial: "shared/flash_messages"
     end
 
@@ -81,7 +81,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "alert (error) message" do
     before do
-      set_flash(alert: "Invalid email or password.")
+      add_flash(alert: "Invalid email or password.")
       render partial: "shared/flash_messages"
     end
 
@@ -99,26 +99,22 @@ RSpec.describe "shared/_flash_messages", type: :view do
       expect(rendered).not_to include("alert-info")
     end
 
-    it "marks auto-close as false for error messages" do
-      expect(rendered).to include("false")
-    end
-
-    it "includes the Stimulus data-controller attribute" do
-      expect(rendered).to include('data-controller="flash"')
+    it "does not include auto-close script for error messages" do
+      expect(rendered).not_to include("5000")
     end
 
     it "includes role='alert' for screen readers" do
       expect(rendered).to include('role="alert"')
     end
 
-    it "includes a close button" do
-      expect(rendered).to match(/data-action="click->flash#close"/)
+    it "includes a close button with onclick handler" do
+      expect(rendered).to include('onclick="this.closest(\'.flash-message\').remove()"')
     end
   end
 
   describe "flash[:error] (explicit error key)" do
     before do
-      set_flash(error: "Something went wrong.")
+      add_flash(error: "Something went wrong.")
       render partial: "shared/flash_messages"
     end
 
@@ -131,7 +127,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "warning message" do
     before do
-      set_flash(warning: "This action cannot be undone.")
+      add_flash(warning: "This action cannot be undone.")
       render partial: "shared/flash_messages"
     end
 
@@ -150,11 +146,11 @@ RSpec.describe "shared/_flash_messages", type: :view do
     end
 
     it "marks auto-close as true for warning messages" do
-      expect(rendered).to include("true")
+      expect(rendered).to include("5000")
     end
 
-    it "includes a close button" do
-      expect(rendered).to match(/data-action="click->flash#close"/)
+    it "includes a close button with onclick handler" do
+      expect(rendered).to include('onclick="this.closest(\'.flash-message\').remove()"')
     end
   end
 
@@ -162,7 +158,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "info message" do
     before do
-      set_flash(info: "You must be logged in.")
+      add_flash(info: "You must be logged in.")
       render partial: "shared/flash_messages"
     end
 
@@ -181,11 +177,11 @@ RSpec.describe "shared/_flash_messages", type: :view do
     end
 
     it "marks auto-close as true for info messages" do
-      expect(rendered).to include("true")
+      expect(rendered).to include("5000")
     end
 
-    it "includes a close button" do
-      expect(rendered).to match(/data-action="click->flash#close"/)
+    it "includes a close button with onclick handler" do
+      expect(rendered).to include('onclick="this.closest(\'.flash-message\').remove()"')
     end
   end
 
@@ -193,7 +189,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "multiple messages at once" do
     before do
-      set_flash(notice: "Profile updated.", alert: "But something else failed.")
+      add_flash(notice: "Profile updated.", alert: "But something else failed.")
       render partial: "shared/flash_messages"
     end
 
@@ -208,7 +204,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
     end
 
     it "renders two separate alert elements" do
-      expect(rendered.scan('data-controller="flash"').size).to eq(2)
+      expect(rendered.scan('class="flash-message').size).to eq(2)
     end
   end
 
@@ -242,7 +238,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "blank message value" do
     before do
-      set_flash(notice: "")
+      add_flash(notice: "")
       render partial: "shared/flash_messages"
     end
 
@@ -256,7 +252,7 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "outer container" do
     before do
-      set_flash(notice: "Hello.")
+      add_flash(notice: "Hello.")
       render partial: "shared/flash_messages"
     end
 
@@ -277,25 +273,25 @@ RSpec.describe "shared/_flash_messages", type: :view do
 
   describe "SVG icons" do
     it "renders an SVG icon for notice messages" do
-      set_flash(notice: "Done!")
+      add_flash(notice: "Done!")
       render partial: "shared/flash_messages"
       expect(rendered).to include("<svg")
     end
 
     it "renders an SVG icon for alert messages" do
-      set_flash(alert: "Error!")
+      add_flash(alert: "Error!")
       render partial: "shared/flash_messages"
       expect(rendered).to include("<svg")
     end
 
     it "renders an SVG icon for warning messages" do
-      set_flash(warning: "Careful!")
+      add_flash(warning: "Careful!")
       render partial: "shared/flash_messages"
       expect(rendered).to include("<svg")
     end
 
     it "renders an SVG icon for info messages" do
-      set_flash(info: "FYI.")
+      add_flash(info: "FYI.")
       render partial: "shared/flash_messages"
       expect(rendered).to include("<svg")
     end

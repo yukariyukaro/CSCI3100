@@ -283,10 +283,12 @@ RSpec.describe "Turbo Flash Messages Integration", type: :request do
       # Just verify the partial renders correctly for multiple types
       # by inspecting the view directly (not via request)
       view = double
-      allow(view).to receive(:flash).and_return({
-        notice: "Success!",
-        warning: "But also a warning..."
-      })
+      allow(view).to receive(:flash).and_return(
+        {
+          notice: "Success!",
+          warning: "But also a warning..."
+        }
+      )
 
       # In a real scenario, render the partial with multiple flash entries
       # For now, this is a placeholder for future JavaScript-based tests
@@ -327,9 +329,11 @@ RSpec.describe "Turbo Flash Messages Integration", type: :request do
 
   describe "Login failure handling and redirect behavior" do
     before do
+      turbo_accept_header = "text/vnd.turbo-stream.html, text/html, application/xhtml+xml, " \
+                            "application/xml;q=0.9, image/avif, image/webp, image/apng, */*;q=0.8"
       post sessions_path,
            params: { email: user.email, password: "wrongpassword" },
-           headers: { "Accept" => "text/vnd.turbo-stream.html, text/html, application/xhtml+xml, application/xml;q=0.9, image/avif, image/webp, image/apng, */*;q=0.8" }
+           headers: { "Accept" => turbo_accept_header }
     end
 
     it "returns 422 unprocessable entity (not 302)" do

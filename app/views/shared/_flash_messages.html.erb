@@ -13,7 +13,7 @@
               onclick="this.closest('.flash-message').remove()">&#x2715;</button>
     </div>
   </div>
-  <% if auto_close_for(type) %>
+  <% if auto_close?(type) %>
     <script>
       (function(){
         var el = document.currentScript.previousElementSibling;

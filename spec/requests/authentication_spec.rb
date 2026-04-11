@@ -109,7 +109,7 @@ RSpec.describe "Authentication Flows", type: :request do
       end
 
       it "handles very long email addresses gracefully" do
-        long_email = "a" * 200 + "@example.com"
+        long_email = "#{'a' * 200}@example.com"
         post sessions_path, params: { email: long_email, password: password }
 
         expect(response).to have_http_status(:unprocessable_entity)
@@ -166,7 +166,7 @@ RSpec.describe "Authentication Flows", type: :request do
 
     context "with valid data" do
       it "creates a new user" do
-        expect {
+        expect do
           post users_path, params: {
             user: {
               name: "Charlie",
@@ -175,7 +175,7 @@ RSpec.describe "Authentication Flows", type: :request do
               password_confirmation: "SecurePassword123!"
             }
           }
-        }.to change(User, :count).by(1)
+        end.to change(User, :count).by(1)
       end
 
       it "logs in the new user" do
@@ -270,7 +270,7 @@ RSpec.describe "Authentication Flows", type: :request do
       end
 
       it "does not create a new user" do
-        expect {
+        expect do
           post users_path, params: {
             user: {
               name: "Eve",
@@ -279,7 +279,7 @@ RSpec.describe "Authentication Flows", type: :request do
               password_confirmation: "SecurePassword123!"
             }
           }
-        }.not_to change(User, :count)
+        end.not_to change(User, :count)
       end
 
       it "does not log in user" do
@@ -440,12 +440,12 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        # Note: The app may accept any email format; adjust based on validation
+        # NOTE: The app may accept any email format; adjust based on validation
         expect(response).to have_http_status(:unprocessable_entity).or have_http_status(:redirect)
       end
 
       it "handles very long email addresses" do
-        long_email = "a" * 200 + "@example.com"
+        long_email = "#{'a' * 200}@example.com"
         post users_path, params: {
           user: {
             name: "Mike",

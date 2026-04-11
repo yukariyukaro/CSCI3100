@@ -44,8 +44,8 @@ RSpec.describe "Flash Messages", type: :request do
   end
 
   # Helper: POST to sessions and simulate login
-  def log_in_as(u)
-    post sessions_path, params: { email: u.email, password: "password123" }
+  def log_in_as(user)
+    post sessions_path, params: { email: user.email, password: "password123" }
   end
 
   # ── 1. Authentication flash messages ─────────────────────────────────────
