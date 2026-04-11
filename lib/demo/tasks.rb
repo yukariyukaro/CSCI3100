@@ -1,6 +1,8 @@
+require_relative "tasks/assets"
 require_relative "tasks/cable"
 require_relative "tasks/chat"
 require_relative "tasks/cleanup"
+require_relative "tasks/env_guard"
 require_relative "tasks/payments"
 require_relative "tasks/products"
 require_relative "tasks/scenario"
@@ -43,27 +45,56 @@ module Demo
     }.freeze
 
     def self.seed!
+      EnvGuard.ensure_allowed!(destructive: false)
       Scenario.ensure!
+      Assets.ensure!
+      Scenario.validate_alignment!
       Rails.logger.debug "demo:seed 完成"
     end
 
     def self.reset!
+      EnvGuard.ensure_allowed!(destructive: true)
       Rails.logger.debug "demo:reset 将清理 demo 场景数据（users/products/transactions/payments/conversations/messages）"
       Cleanup.deep_cleanup!
       Cable.clear_prefix_if_enabled!
       Scenario.ensure!
+      Assets.restore!
+      Scenario.validate_alignment!
+      Cable.broadcast_maintenance_notice!(message: "Demo 数据已重建。如页面仍显示旧状态，请刷新以重新同步。")
       Rails.logger.debug "demo:reset 完成"
       Rails.logger.debug "demo:reset 完成。若浏览器正在打开聊天页面，请刷新或重新进入会话以重新同步。"
     end
 
+    def self.restore_assets!
+      EnvGuard.ensure_allowed!(destructive: true)
+      Assets.restore!
+      Rails.logger.debug "demo:restore_assets 完成"
+    end
+
     def self.reset_chat!
+      EnvGuard.ensure_allowed!(destructive: true)
       Chat.reset!
       Rails.logger.debug "demo:reset_chat 完成"
     end
 
     def self.prepare_payment!
+      EnvGuard.ensure_allowed!(destructive: false)
       Payments.prepare!
+      Scenario.validate_alignment!
       Rails.logger.debug "demo:prepare_payment 完成"
+    end
+
+    def self.purge_unattached_blobs!(dry_run: false)
+      EnvGuard.ensure_non_production!
+
+      scope = ActiveStorage::Blob.unattached
+      count = scope.count
+      Rails.logger.info "demo:purge_unattached_blobs scope=unattached count=#{count} dry_run=#{dry_run}"
+
+      return count if dry_run
+
+      scope.find_each(&:purge)
+      count
     end
   end
 end

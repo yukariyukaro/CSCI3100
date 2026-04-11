@@ -4,6 +4,7 @@ import consumer from "channels/consumer"
 // See app/javascript/controllers/chat_controller.js
 export function subscribeToConversation(conversationId, currentUserId, callbacks = {}) {
   const onMessage = callbacks.onMessage
+  const onMaintenance = callbacks.onMaintenance
   const onConnected = callbacks.onConnected
   const onDisconnected = callbacks.onDisconnected
   const onRejected = callbacks.onRejected
@@ -24,6 +25,10 @@ export function subscribeToConversation(conversationId, currentUserId, callbacks
       },
 
       received(data) {
+        if (data && data.type === "maintenance") {
+          onMaintenance?.(data)
+          return
+        }
         onMessage?.(data, currentUserId)
       }
     }

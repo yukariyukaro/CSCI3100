@@ -2,9 +2,11 @@ module Demo
   module Tasks
     module Cleanup
       def self.deep_cleanup!
-        Demo::Tasks::Chat.cleanup!
-        cleanup_transactions_and_payments!
-        Demo::Tasks::Products.reset_statuses_to_active!
+        ActiveRecord::Base.transaction do
+          Demo::Tasks::Chat.cleanup!
+          cleanup_transactions_and_payments!
+          Demo::Tasks::Products.reset_statuses_to_active!
+        end
       end
 
       def self.cleanup_transactions_and_payments!

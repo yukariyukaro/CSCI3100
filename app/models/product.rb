@@ -1,7 +1,11 @@
 class Product < ApplicationRecord
   include PgSearch::Model
+  include ProductSearch
 
-  belongs_to :seller, class_name: "User", optional: true, inverse_of: :products
+  belongs_to :seller, class_name: "User", inverse_of: :products
+  has_one_attached :image do |attachable|
+    attachable.variant :thumb, resize_to_fill: [512, 512], saver: { quality: 82 }
+  end
   has_many :transactions, dependent: :destroy, inverse_of: :product
   has_one :active_transaction,
           -> { where(status: :in_progress) },
@@ -13,6 +17,7 @@ class Product < ApplicationRecord
 
   validates :name, presence: true
   validates :description, presence: true
+  validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   scope :recent_first, -> { order(created_at: :desc) }
   scope :by_status,    ->(status) { where(sale_status: status) }
@@ -34,26 +39,6 @@ class Product < ApplicationRecord
                     tsearch: { prefix: true, dictionary: "simple" },
                     trigram: { threshold: 0.1, word_similarity: true } # Typo tolerance
                   }
-
-  def self.search(query)
-    if query.present?
-      advanced_search(query)
-    else
-      all
-    end
-  end
-
-  def self.suggest(query)
-    return [] if query.blank?
-
-    # Change from prefix match (query%) to fuzzy match (%query%) to support
-    # mid-string matches like "iPhone" in "二手iPhone"
-    where("name ILIKE ?", "%#{sanitize_sql_like(query)}%")
-      .select(:name)
-      .distinct
-      .limit(8)
-      .pluck(:name)
-  end
 
   def reserve_by(buyer)
     return false unless reservable_by?(buyer)
