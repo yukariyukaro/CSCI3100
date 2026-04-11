@@ -2,7 +2,9 @@ module Payments
   class ProviderFactory
     def self.instance
       provider_name = configured_provider_name
-      raise "Fake payment provider is not allowed in production" if Rails.env.production? && provider_name == "fake"
+      if Rails.env.production? && provider_name == "fake" && ENV["ALLOW_FAKE_PAYMENT_PROVIDER"].to_s != "true"
+        raise "Fake payment provider is not allowed in production"
+      end
 
       build_provider(provider_name)
     end
