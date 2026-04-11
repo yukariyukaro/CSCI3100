@@ -23,24 +23,23 @@ RSpec.describe "Frontend placeholders", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "renders payments pages and supports create placeholder" do
+  it "requires login for payments pages" do
     get payments_path
-    expect(response).to have_http_status(:ok)
+    expect(response).to redirect_to(new_session_path)
+
     get new_payment_path
-    expect(response).to have_http_status(:ok)
-    get payment_path(1)
-    expect(response).to have_http_status(:ok)
-    post payments_path
-    expect(response).to redirect_to(payments_path)
+    expect(response).to redirect_to(new_session_path)
   end
 
-  it "renders listings pages and supports create placeholder" do
+  it "renders listings index and protects listing creation when logged out" do
     get listings_path
     expect(response).to have_http_status(:ok)
+
     get new_listing_path
-    expect(response).to have_http_status(:ok)
+    expect(response).to redirect_to(new_session_path)
+
     post listings_path
-    expect(response).to redirect_to(listings_path)
+    expect(response).to redirect_to(new_session_path)
   end
 
   it "renders login page" do

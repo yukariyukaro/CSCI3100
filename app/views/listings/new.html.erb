@@ -1,2 +1,31 @@
-<h1>Listing Publish Placeholder</h1>
-<p>New listing page placeholder.</p>
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+	<h1 class="text-3xl font-bold mb-6">Create Listing</h1>
+
+	<%= form_with model: @listing, class: "space-y-4" do |f| %>
+		<% if @listing.errors.any? %>
+			<div class="alert alert-error">
+				<span><%= @listing.errors.full_messages.to_sentence %></span>
+			</div>
+		<% end %>
+
+		<div class="form-control">
+			<%= f.label :title, class: "label" %>
+			<%= f.text_field :title, class: "input input-bordered w-full" %>
+		</div>
+
+		<div class="form-control">
+			<%= f.label :description, class: "label" %>
+			<%= f.text_area :description, rows: 5, class: "textarea textarea-bordered w-full" %>
+		</div>
+
+		<div class="form-control">
+			<%= f.label :price, class: "label" %>
+			<%= f.number_field :price, step: 0.01, min: 0.01, class: "input input-bordered w-full" %>
+		</div>
+
+		<div class="pt-2">
+			<%= f.submit "Publish Listing", class: "btn btn-primary" %>
+			<%= link_to "Back", listings_path, class: "btn btn-ghost" %>
+		</div>
+	<% end %>
+</div>

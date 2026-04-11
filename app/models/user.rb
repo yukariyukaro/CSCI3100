@@ -21,6 +21,12 @@ class User < ApplicationRecord
            class_name: "Conversation", foreign_key: "seller_id", dependent: :destroy, inverse_of: :seller
   has_many :messages,
            class_name: "Message", foreign_key: "sender_id", dependent: :destroy, inverse_of: :sender
+  has_many :listings, dependent: :destroy
+  has_many :payments, dependent: :destroy
+  has_many :buyer_escrows,
+           class_name: "Escrow", foreign_key: "buyer_id", dependent: :destroy, inverse_of: :buyer
+  has_many :seller_escrows,
+           class_name: "Escrow", foreign_key: "seller_id", dependent: :destroy, inverse_of: :seller
 
   validates :name,  presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false }

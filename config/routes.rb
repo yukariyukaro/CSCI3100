@@ -14,7 +14,13 @@ Rails.application.routes.draw do
     resources :messages, only: %i[create]
   end
   resources :payments, only: %i[index new show create]
-  resources :listings, only: %i[index new create]
+  resources :listings, only: %i[index show new create] do
+    resources :payments, only: %i[new create]
+  end
+  resources :escrows, only: [] do
+    post :confirm, on: :member
+    post :cancel, on: :member
+  end
   resources :sessions, only: %i[new create destroy]
   resources :users, only: %i[index show new create update]
 

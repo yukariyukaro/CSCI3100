@@ -1,3 +1,42 @@
-<h1>Listings Placeholder</h1>
-<p>Listing management placeholder.</p>
-<div data-controller="listings-placeholder"></div>
+<div class="container mx-auto px-4 py-8">
+	<div class="flex items-center justify-between mb-6">
+		<h1 class="text-3xl font-bold">Listings</h1>
+		<% if logged_in? %>
+			<%= link_to "Create Listing", new_listing_path, class: "btn btn-primary" %>
+		<% else %>
+			<%= link_to "Login to Create", new_session_path, class: "btn btn-outline" %>
+		<% end %>
+	</div>
+
+	<% if @listings.any? %>
+		<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<% @listings.each do |listing| %>
+				<div class="card bg-base-100 border border-base-300 shadow-sm">
+					<div class="card-body">
+						<div class="flex items-center justify-between">
+							<h2 class="card-title"><%= listing.title %></h2>
+							<% case listing.status %>
+							<% when "available" %>
+								<span class="badge badge-success">Available</span>
+							<% when "reserved" %>
+								<span class="badge badge-warning">Reserved</span>
+							<% when "sold" %>
+								<span class="badge badge-neutral">Sold</span>
+							<% end %>
+						</div>
+						<p class="text-sm text-gray-600 line-clamp-2"><%= listing.description %></p>
+						<p class="text-xl font-semibold"><%= number_to_currency(listing.price, unit: "HK$") %></p>
+						<p class="text-xs text-gray-500">Seller: <%= listing.user.name %></p>
+						<div class="card-actions justify-end">
+							<%= link_to "View", listing_path(listing), class: "btn btn-sm btn-outline" %>
+						</div>
+					</div>
+				</div>
+			<% end %>
+		</div>
+	<% else %>
+		<div class="alert">
+			<span>No listings yet.</span>
+		</div>
+	<% end %>
+</div>

@@ -1,0 +1,47 @@
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body">
+      <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold"><%= @listing.title %></h1>
+        <% case @listing.status %>
+        <% when "available" %>
+          <span class="badge badge-success">Available</span>
+        <% when "reserved" %>
+          <span class="badge badge-warning">Reserved</span>
+        <% when "sold" %>
+          <span class="badge badge-neutral">Sold</span>
+        <% end %>
+      </div>
+
+      <p class="text-2xl font-semibold text-primary"><%= number_to_currency(@listing.price, unit: "HK$") %></p>
+      <p class="whitespace-pre-wrap"><%= @listing.description %></p>
+      <p class="text-sm text-gray-500">Seller: <%= @listing.user.name %></p>
+
+      <% if @listing.available? %>
+        <% if !logged_in? %>
+          <%= link_to "Login to Buy", new_session_path, class: "btn btn-outline mt-2" %>
+        <% elsif current_user.id == @listing.user_id %>
+          <div class="text-sm italic text-gray-500 mt-2">This is your listing.</div>
+        <% else %>
+          <%= link_to "Buy Now (Pay Deposit)", new_listing_payment_path(@listing), class: "btn btn-primary mt-2" %>
+        <% end %>
+      <% elsif @escrow.present? && @escrow.deposited? %>
+        <div class="divider">Escrow Actions</div>
+        <p class="text-sm">Deposit: <strong><%= number_to_currency(@escrow.amount, unit: "HK$") %></strong></p>
+
+        <% if logged_in? && current_user.id == @escrow.seller_id %>
+          <div class="flex gap-2 mt-2">
+            <%= button_to "Confirm Transaction", confirm_escrow_path(@escrow), method: :post, class: "btn btn-success" %>
+            <%= button_to "Cancel (Refund Buyer)", cancel_escrow_path(@escrow), method: :post, class: "btn btn-outline btn-error" %>
+          </div>
+        <% elsif logged_in? && current_user.id == @escrow.buyer_id %>
+          <%= button_to "Cancel (Forfeit Deposit)", cancel_escrow_path(@escrow), method: :post, class: "btn btn-error mt-2" %>
+        <% end %>
+      <% end %>
+
+      <div class="mt-4">
+        <%= link_to "← Back to Listings", listings_path, class: "link" %>
+      </div>
+    </div>
+  </div>
+</div>
