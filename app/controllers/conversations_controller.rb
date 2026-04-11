@@ -1,5 +1,5 @@
 class ConversationsController < ApplicationController
-  before_action :require_login
+  before_action :authenticate_user!
 
   def index
     @conversations = Conversation.for_user(current_user)
@@ -9,6 +9,8 @@ class ConversationsController < ApplicationController
 
   def show
     @conversation = find_authorized_conversation
+    return unless @conversation
+
     @messages = @conversation.messages.includes(:sender).order(created_at: :asc)
     @message = Message.new
   end
@@ -28,15 +30,11 @@ class ConversationsController < ApplicationController
 
   private
 
-  def require_login
-    return if logged_in?
-
-    redirect_to new_session_path, alert: t("auth.login_required")
-  end
-
   def find_authorized_conversation
     conversation = Conversation.find(params[:id])
-    head :forbidden unless conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
-    conversation
+    return conversation if conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
+
+    head :forbidden
+    nil
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_09_190000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_10_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -64,6 +64,23 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_09_190000) do
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
+  create_table "payments", force: :cascade do |t|
+    t.bigint "transaction_id", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.integer "status", default: 0, null: false
+    t.string "provider", null: false
+    t.string "provider_reference"
+    t.string "callback_token"
+    t.text "error_details"
+    t.datetime "resolved_at"
+    t.bigint "resolved_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "provider_reference"], name: "index_payments_on_provider_and_provider_reference", unique: true, where: "(provider_reference IS NOT NULL)"
+    t.index ["resolved_by_id"], name: "index_payments_on_resolved_by_id"
+    t.index ["status"], name: "index_payments_on_status"
+    t.index ["transaction_id"], name: "index_payments_on_transaction_id"
+  end
 
   create_table "products", force: :cascade do |t|
     t.string "name"
@@ -112,6 +129,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_09_190000) do
   add_foreign_key "conversations", "users", column: "seller_id"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "payments", "transactions"
+  add_foreign_key "payments", "users", column: "resolved_by_id"
   add_foreign_key "products", "users", column: "seller_id"
   add_foreign_key "transactions", "products"
   add_foreign_key "transactions", "users", column: "buyer_id"

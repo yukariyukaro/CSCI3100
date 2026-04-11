@@ -6,8 +6,8 @@ Feature: Placeholder pages
     Examples:
       | path          | text                         |
       | /products     | 全部商品                     |
-      | /chats        | Chats Placeholder            |
-      | /payments     | Payments Placeholder         |
+      | /chats        | Login                        |
+      | /payments     | Login                        |
       | /listings     | Listings Placeholder         |
       | /sessions/new | Login                        |
       | /users/new    | Sign Up                      |

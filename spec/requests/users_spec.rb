@@ -135,7 +135,7 @@ RSpec.describe "Users", type: :request do
           "text/plain"
         )
         patch user_path(user), params: { user: { avatar: bad_file } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("avatar").or include("Avatar")
       end
     end
