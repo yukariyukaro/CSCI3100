@@ -58,3 +58,9 @@ en:
         success: "Profile updated successfully."
   conversations:
     product_not_found: "Product not found."
+  flash:
+    success: "Operation successful."
+    access_denied: "You do not have permission to perform this action."
+    login_required: "You must be logged in to continue."
+    warning: "Please review before continuing."
+    info: "Here is some information for you."

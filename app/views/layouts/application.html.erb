@@ -19,12 +19,7 @@
   <body>
     <%= render "shared/navigation_bar" %>
 
-    <% if notice.present? %>
-      <div class="flash flash--notice" role="alert"><%= notice %></div>
-    <% end %>
-    <% if alert.present? %>
-      <div class="flash flash--alert" role="alert"><%= alert %></div>
-    <% end %>
+    <%= render "shared/flash_messages" %>
 
     <main class="min-h-screen">
       <%= yield %>

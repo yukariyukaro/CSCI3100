@@ -1,0 +1,30 @@
+<% flash.each do |type, message| %>
+  <% next if message.blank? %>
+  <div
+    id="flash-<%= type %>-<%= SecureRandom.hex(4) %>"
+    class="flash-message fixed top-20 right-4 z-50 max-w-sm w-full animate-slide-in"
+    role="alert"
+    style="pointer-events:auto"
+  >
+    <div class="alert <%= alert_class(type) %> shadow-lg">
+      <%= icon_for(type) %>
+      <span><%= message %></span>
+      <button type="button" class="btn btn-sm btn-ghost" aria-label="Close"
+              onclick="this.closest('.flash-message').remove()">&#x2715;</button>
+    </div>
+  </div>
+  <% if auto_close_for(type) %>
+    <script>
+      (function(){
+        var el = document.currentScript.previousElementSibling;
+        setTimeout(function(){
+          if(el && el.parentNode){
+            el.style.opacity = '0';
+            el.style.transition = 'opacity 0.3s';
+            setTimeout(function(){ if(el && el.parentNode) el.remove(); }, 300);
+          }
+        }, 5000);
+      })();
+    </script>
+  <% end %>
+<% end %>
