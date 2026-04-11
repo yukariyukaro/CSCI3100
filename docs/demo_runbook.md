@@ -14,8 +14,17 @@
 
 - `demo:seed`：补齐 demo 用户/商品/聊天/支付等演示数据（不清理现有数据）
 - `demo:reset`：仅清理 demo 范围内的数据后重建演示数据
+- `demo:restore_assets`：覆盖式恢复 demo 头像/商品图片等资源（会 purge 旧附件）
 - `demo:reset_chat`：仅重置 demo 的会话与消息
 - `demo:prepare_payment`：准备 demo 支付相关数据（pending + 异常支付记录）
+- `demo:purge_unattached_blobs`：非生产环境清理未引用的 ActiveStorage blobs（`DRY_RUN=1` 可预览）
+
+## 安全保护（重要）
+
+- demo 相关任务在 `test` 环境会直接拒绝执行（避免污染测试数据）
+- 在 `production` 环境执行带“破坏性”的 demo 任务（例如 `demo:reset`、`demo:restore_assets`、`demo:reset_chat`）需要：
+  - `CONFIRM_PRODUCTION_DATA_DESTRUCTION='true'`
+  - 任务会在执行前输出 `current_database=<...>`，便于二次确认目标库
 
 ## Demo 账号（默认）
 
@@ -36,6 +45,9 @@
 - 1 组会话 + 消息（ActionCable 广播可用）
 - 1 条 fake 支付（pending），可用于展示支付页面跳转
 - 1 条异常支付记录（manual_intervention_required），可用于展示人工介入与卖家侧处理
+- demo 用户头像与商品图片会尽量自动恢复：
+  - 默认读取 `lib/assets/demo_avatar.png`、`lib/assets/demo_product.jpg`（允许用 base64 文本占位）
+  - 若文件缺失或不可用，会使用内置的最小占位图进行 attach
 
 ## Heroku 部署（main 自动部署）
 
@@ -52,4 +64,3 @@
   - 只会按 `config/cable.yml` 的 `channel_prefix` 做定向清理
   - 不会执行 `flushall`
 - 完成后建议前端刷新页面或重新打开聊天页以触发重连
-

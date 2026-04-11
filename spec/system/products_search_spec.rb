@@ -3,9 +3,17 @@ require "rails_helper"
 RSpec.describe "Products Search", type: :system do
   before do
     driven_by(:rack_test)
-    Product.create!(name: "MacBook Pro", description: "Apple laptop")
-    Product.create!(name: "iPhone 15", description: "Apple smartphone")
-    Product.create!(name: "ThinkPad", description: "Lenovo laptop")
+
+    seller = User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    Product.create!(name: "MacBook Pro", description: "Apple laptop", seller: seller, price: 1000)
+    Product.create!(name: "iPhone 15", description: "Apple smartphone", seller: seller, price: 800)
+    Product.create!(name: "ThinkPad", description: "Lenovo laptop", seller: seller, price: 600)
   end
 
   it "allows users to search products from the home page" do

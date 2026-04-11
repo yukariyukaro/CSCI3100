@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_10_123000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_11_121000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -122,16 +122,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_10_123000) do
   end
 
   create_table "products", force: :cascade do |t|
-    t.string "name"
-    t.text "description"
-    t.decimal "price"
+    t.string "name", null: false
+    t.text "description", null: false
+    t.decimal "price", precision: 10, scale: 2, default: "0.0", null: false
     t.string "condition"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "ai_summary"
     t.string "ai_summary_status", default: "pending"
     t.datetime "ai_summary_requested_at"
-    t.bigint "seller_id"
+    t.bigint "seller_id", null: false
     t.integer "sale_status", default: 0, null: false
     t.index ["seller_id"], name: "index_products_on_seller_id"
   end

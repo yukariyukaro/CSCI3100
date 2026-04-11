@@ -11,7 +11,13 @@ RSpec.describe "Frontend placeholders", type: :request do
     get products_path
     expect(response).to have_http_status(:ok)
 
-    product = Product.create!(name: "Test Product", description: "Placeholder desc")
+    seller = User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+    product = Product.create!(name: "Test Product", description: "Placeholder desc", seller: seller, price: 12.34)
     get product_path(product)
     expect(response).to have_http_status(:ok)
   end
