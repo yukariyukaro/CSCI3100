@@ -106,7 +106,7 @@ RSpec.describe "Products", type: :request do
     let!(:seller) do
       User.create!(
         name: "Seller",
-        email: "seller@example.com",
+        email: TestData.unique_email(prefix: "seller"),
         password: "password123",
         password_confirmation: "password123"
       )
@@ -115,7 +115,7 @@ RSpec.describe "Products", type: :request do
     let!(:buyer) do
       User.create!(
         name: "Buyer",
-        email: "buyer@example.com",
+        email: TestData.unique_email(prefix: "buyer"),
         password: "password123",
         password_confirmation: "password123"
       )

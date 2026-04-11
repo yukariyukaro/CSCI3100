@@ -2,11 +2,11 @@ require "rails_helper"
 
 RSpec.describe PaymentSettlement, type: :model do
   let(:seller) do
-    User.create!(name: "Seller", email: "seller_settle@example.com",
+    User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"),
                  password: "password123", password_confirmation: "password123")
   end
   let(:buyer) do
-    User.create!(name: "Buyer", email: "buyer_settle@example.com",
+    User.create!(name: "Buyer", email: TestData.unique_email(prefix: "buyer"),
                  password: "password123", password_confirmation: "password123")
   end
   let(:product) do

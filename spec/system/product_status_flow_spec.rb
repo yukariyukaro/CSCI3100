@@ -8,7 +8,7 @@ RSpec.describe "Product status flow", type: :system do
   let!(:seller) do
     User.create!(
       name: "Seller",
-      email: "seller_status_flow@example.com",
+      email: TestData.unique_email(prefix: "seller"),
       password: "password123",
       password_confirmation: "password123"
     )
@@ -17,7 +17,7 @@ RSpec.describe "Product status flow", type: :system do
   let!(:buyer) do
     User.create!(
       name: "Buyer",
-      email: "buyer_status_flow@example.com",
+      email: TestData.unique_email(prefix: "buyer"),
       password: "password123",
       password_confirmation: "password123"
     )

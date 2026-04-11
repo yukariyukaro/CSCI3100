@@ -1,8 +1,12 @@
 require "rails_helper"
 
 RSpec.describe Message, type: :model do
-  let(:seller)  { User.create!(name: "Seller", email: "seller2@example.com", password: "password123") }
-  let(:buyer)   { User.create!(name: "Buyer",  email: "buyer2@example.com",  password: "password123") }
+  let(:seller) do
+    User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"), password: "password123")
+  end
+  let(:buyer) do
+    User.create!(name: "Buyer", email: TestData.unique_email(prefix: "buyer"), password: "password123")
+  end
   let(:product) do
     Product.create!(name: "iPhone", description: "Mint condition iPhone with original box",
                     price: 2000, seller: seller)
