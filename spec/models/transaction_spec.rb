@@ -133,7 +133,8 @@ RSpec.describe Transaction, type: :model do
       @t1 = described_class.create!(
         product: product, buyer: buyer, seller: seller, status: :pending
       )
-      other_product = Product.create!(name: "MacBook", description: "Laptop", seller: buyer, price: 2000)
+      other_product = Product.create!(name: "MacBook", description: "Good condition laptop, barely used.",
+                                      seller: buyer, price: 2000)
       @t2 = described_class.create!(
         product: other_product, buyer: seller, seller: buyer, status: :completed
       )

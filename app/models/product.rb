@@ -16,8 +16,9 @@ class Product < ApplicationRecord
   enum :sale_status, { active: 0, pending: 1, sold: 2 }
 
   validates :name, presence: true
-  validates :description, presence: true
+  validates :description, presence: true, length: { minimum: 10 }
   validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validate :image_content_type_and_size, if: -> { image.attached? }
 
   scope :recent_first, -> { order(created_at: :desc) }
   scope :by_status,    ->(status) { where(sale_status: status) }
@@ -107,5 +108,14 @@ class Product < ApplicationRecord
     self.ai_summary = nil
     self.ai_summary_status = "pending"
     self.ai_summary_requested_at = nil
+  end
+
+  def image_content_type_and_size
+    allowed_types = %w[image/jpeg image/png]
+    errors.add(:image, "must be a JPEG or PNG file") unless allowed_types.include?(image.content_type)
+
+    return unless image.byte_size > 5.megabytes
+
+    errors.add(:image, "must be smaller than 5MB")
   end
 end

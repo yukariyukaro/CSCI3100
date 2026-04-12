@@ -8,6 +8,6 @@ Feature: Placeholder pages
       | /products     | 全部商品                     |
       | /chats        | Login                        |
       | /payments     | Login                        |
-      | /listings     | Listings Placeholder         |
+      | /listings     | Login                        |
       | /sessions/new | Login                        |
       | /users/new    | Sign Up                      |

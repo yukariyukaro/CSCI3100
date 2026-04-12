@@ -16,7 +16,8 @@ RSpec.describe "Products", type: :request do
                       created_at: 2.days.ago)
       Product.create!(name: "iPhone 15", description: "Apple smartphone", price: 800, seller: seller,
                       created_at: 1.day.ago)
-      Product.create!(name: "二手iPhone 13", description: "9成新", price: 500, seller: seller, created_at: 3.days.ago)
+      Product.create!(name: "二手iPhone 13", description: "9成新，无划痕，电池健康度良好", price: 500, seller: seller,
+                      created_at: 3.days.ago)
     end
 
     it "returns all products when no query is provided" do
@@ -72,7 +73,8 @@ RSpec.describe "Products", type: :request do
     it "returns matching product names uniquely, limited to 8" do
       # Create more to test limit
       (1..6).each do |i|
-        Product.create!(name: "MacBook Model #{i}", description: "Test", price: 100, seller: seller)
+        Product.create!(name: "MacBook Model #{i}", description: "Good condition Apple laptop.", price: 100,
+                        seller: seller)
       end
 
       get autocomplete_products_path, params: { query: "MacBook" }
