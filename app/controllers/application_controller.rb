@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
     return if logged_in?
 
     respond_to do |format|
-      format.html { redirect_to new_session_path, alert: t("auth.login_required") }
+      format.html { redirect_to new_session_path, flash: { info: t("auth.login_required") } }
       format.any { head :unauthorized }
     end
   end
