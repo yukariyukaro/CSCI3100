@@ -79,7 +79,7 @@ RSpec.describe "shared/_navigation_bar", type: :view do
       toggle_pos = rendered.index('data-controller="theme"')
       dropdown_pos = rendered.index("dropdown-end")
       expect(toggle_pos).to be < dropdown_pos,
-        "Expected theme toggle to appear before the user dropdown in the HTML"
+                            "Expected theme toggle to appear before the user dropdown in the HTML"
     end
   end
 end

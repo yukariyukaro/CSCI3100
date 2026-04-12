@@ -19,34 +19,34 @@ RSpec.describe "shared/_navigation_bar theme-toggle visibility", type: :view do
   end
 
   it "uses btn-ghost so there is no heavy border in either theme" do
-    button_block = rendered[/<button[\s\S]*?data-controller="theme"[\s\S]*?<\/button>/]
+    button_block = rendered[%r{<button[\s\S]*?data-controller="theme"[\s\S]*?</button>}]
     expect(button_block).to be_present, "Could not find theme toggle button"
     expect(button_block).to include("btn-ghost"),
-      "Button must use btn-ghost for a borderless icon appearance"
+                            "Button must use btn-ghost for a borderless icon appearance"
   end
 
   it "uses btn-circle for a round icon button" do
-    button_block = rendered[/<button[\s\S]*?data-controller="theme"[\s\S]*?<\/button>/]
+    button_block = rendered[%r{<button[\s\S]*?data-controller="theme"[\s\S]*?</button>}]
     expect(button_block).to be_present, "Could not find theme toggle button"
     expect(button_block).to include("btn-circle"),
-      "Button must use btn-circle for round shape"
+                            "Button must use btn-circle for round shape"
   end
 
   it "uses text-base-content so icon is visible in both light and dark mode" do
-    button_block = rendered[/<button[\s\S]*?data-controller="theme"[\s\S]*?<\/button>/]
+    button_block = rendered[%r{<button[\s\S]*?data-controller="theme"[\s\S]*?</button>}]
     expect(button_block).to be_present, "Could not find theme toggle button"
     expect(button_block).to include("text-base-content"),
-      "Button must use text-base-content — auto white in dark, auto dark in light"
+                            "Button must use text-base-content — auto white in dark, auto dark in light"
   end
 
   it "has type='button' to prevent accidental form submission" do
-    button_block = rendered[/<button[\s\S]*?data-controller="theme"[\s\S]*?<\/button>/]
+    button_block = rendered[%r{<button[\s\S]*?data-controller="theme"[\s\S]*?</button>}]
     expect(button_block).to be_present, "Could not find theme toggle button"
     expect(button_block).to include('type="button"')
   end
 
   it "has an aria-label for accessibility" do
-    button_block = rendered[/<button[\s\S]*?data-controller="theme"[\s\S]*?<\/button>/]
+    button_block = rendered[%r{<button[\s\S]*?data-controller="theme"[\s\S]*?</button>}]
     expect(button_block).to be_present, "Could not find theme toggle button"
     expect(button_block).to match(/aria-label="[^"]+"/)
   end
