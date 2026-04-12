@@ -10,7 +10,8 @@ RSpec.describe Payment, type: :model do
                  password: "password123", password_confirmation: "password123")
   end
   let(:product) do
-    Product.create!(name: "Camera", description: "Good", price: 99.99, seller: seller, sale_status: :pending)
+    Product.create!(name: "Camera", description: "Good condition, barely used.", price: 99.99, seller: seller,
+                    sale_status: :pending)
   end
   let(:tx) do
     Transaction.create!(product: product, buyer: buyer, seller: seller, status: :in_progress)

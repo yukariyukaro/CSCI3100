@@ -48,6 +48,8 @@ en:
     sold_failed: "Cannot mark as sold."
   payments:
     empty: "No payments yet."
+    success: "Payment successful! Your order has been confirmed."
+    cancelled: "Payment was cancelled."
     errors:
       not_payable: "This transaction is not payable."
     manual_intervention:
@@ -58,6 +60,12 @@ en:
         success: "Profile updated successfully."
   conversations:
     product_not_found: "Product not found."
+  listings:
+    create:
+      success: "Product published successfully!"
+    errors:
+      image_too_large: "Image must be smaller than 5MB"
+      image_invalid_type: "Image must be a JPEG or PNG file"
   flash:
     success: "Operation successful."
     access_denied: "You do not have permission to perform this action."

@@ -74,12 +74,27 @@ RSpec.describe "Frontend placeholders", type: :request do
   end
 
   it "renders listings pages and supports create placeholder" do
+    # Unauthenticated requests are redirected to login
+    get listings_path
+    expect(response).to redirect_to(new_session_path)
+    get new_listing_path
+    expect(response).to redirect_to(new_session_path)
+    post listings_path
+    expect(response).to redirect_to(new_session_path)
+
+    # Authenticated user can access listings pages
+    seller = User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+    post sessions_path, params: { email: seller.email, password: "password123" }
+
     get listings_path
     expect(response).to have_http_status(:ok)
     get new_listing_path
     expect(response).to have_http_status(:ok)
-    post listings_path
-    expect(response).to redirect_to(listings_path)
   end
 
   it "renders login page" do

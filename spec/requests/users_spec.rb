@@ -65,7 +65,7 @@ RSpec.describe "Users", type: :request do
 
     context "transaction history visibility" do
       let(:product) do
-        Product.create!(name: "Laptop", description: "Good", seller: user, price: 300)
+        Product.create!(name: "Laptop", description: "Good condition, barely used.", seller: user, price: 300)
       end
 
       before do

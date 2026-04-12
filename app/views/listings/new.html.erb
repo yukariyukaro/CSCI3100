@@ -1,2 +1,157 @@
-<h1>Listing Publish Placeholder</h1>
-<p>New listing page placeholder.</p>
+<%# ─── Publish a Product ─────────────────────────────────────────────────── %>
+<div class="max-w-2xl mx-auto px-4 py-10">
+
+  <%# ── Page header ── %>
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Publish a Product</h1>
+    <p class="text-gray-500 mt-1">Fill in the details below to list your item for sale.</p>
+  </div>
+
+  <%# ── Error messages ── %>
+  <% if @product.errors.any? %>
+    <div class="alert alert-error mb-6" role="alert" data-testid="error-messages">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <p class="font-semibold">Please fix the following errors:</p>
+        <ul class="mt-1 list-disc list-inside text-sm">
+          <% @product.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ── Publication form ── %>
+  <%= form_with model: @product, url: listings_path, method: :post,
+        multipart: true,
+        data: { testid: "listing-form" },
+        class: "bg-white rounded-xl shadow-sm border border-base-200 p-8 space-y-6" do |f| %>
+
+    <%# Product Name %>
+    <div class="form-control">
+      <%= f.label :name, "Product Name", class: "label font-semibold text-gray-700" %>
+      <span class="text-error ml-1 text-sm">*</span>
+      <%= f.text_field :name,
+            placeholder: "e.g., MacBook Pro 14",
+            required: true,
+            class: "input input-bordered w-full mt-1 #{'input-error' if @product.errors[:name].any?}",
+            data: { testid: "product-name" } %>
+      <% if @product.errors[:name].any? %>
+        <p class="text-error text-sm mt-1"><%= @product.errors[:name].first %></p>
+      <% end %>
+    </div>
+
+    <%# Description %>
+    <div class="form-control">
+      <%= f.label :description, "Description", class: "label font-semibold text-gray-700" %>
+      <span class="text-error ml-1 text-sm">*</span>
+      <%= f.text_area :description,
+            placeholder: "Describe the product condition, features, and any extras included...",
+            required: true,
+            rows: 5,
+            class: "textarea textarea-bordered w-full mt-1 #{'textarea-error' if @product.errors[:description].any?}",
+            data: { testid: "product-description" } %>
+      <p class="text-gray-400 text-xs mt-1">Minimum 10 characters.</p>
+      <% if @product.errors[:description].any? %>
+        <p class="text-error text-sm mt-1"><%= @product.errors[:description].first %></p>
+      <% end %>
+    </div>
+
+    <%# Price %>
+    <div class="form-control">
+      <%= f.label :price, "Price (HKD)", class: "label font-semibold text-gray-700" %>
+      <span class="text-error ml-1 text-sm">*</span>
+      <label class="input input-bordered flex items-center gap-2 mt-1 w-full <%= 'input-error' if @product.errors[:price].any? %>">
+        <span class="text-gray-400 font-medium">HK$</span>
+        <%= f.number_field :price,
+              placeholder: "0.00",
+              min: 0,
+              step: "0.01",
+              required: true,
+              class: "grow",
+              data: { testid: "product-price" } %>
+      </label>
+      <% if @product.errors[:price].any? %>
+        <p class="text-error text-sm mt-1"><%= @product.errors[:price].first %></p>
+      <% end %>
+    </div>
+
+    <%# Condition %>
+    <div class="form-control">
+      <%= f.label :condition, "Condition", class: "label font-semibold text-gray-700" %>
+      <span class="text-gray-400 text-sm ml-1">(optional)</span>
+      <%= f.select :condition,
+            options_for_select(
+              [["— Select condition —", ""], ["Like New", "Like New"], ["Good", "Good"], ["Fair", "Fair"], ["Poor", "Poor"]],
+              @product.condition
+            ),
+            {},
+            class: "select select-bordered w-full mt-1",
+            data: { testid: "product-condition" } %>
+    </div>
+
+    <%# Image upload %>
+    <div class="form-control">
+      <%= f.label :image, "Product Image", class: "label font-semibold text-gray-700" %>
+      <span class="text-gray-400 text-sm ml-1">(optional, JPEG/PNG, max 5MB)</span>
+      <div class="mt-2 flex flex-col gap-3">
+        <%# Image preview area %>
+        <div id="image-preview-container" class="hidden">
+          <img id="image-preview" src="" alt="Image preview"
+               class="w-48 h-48 object-cover rounded-lg border border-base-200 shadow-sm" />
+        </div>
+        <label class="flex items-center gap-3 cursor-pointer w-fit">
+          <div class="btn btn-outline btn-sm gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Choose Image
+          </div>
+          <%= f.file_field :image,
+                accept: "image/jpeg,image/png",
+                class: "hidden",
+                data: { testid: "product-image", action: "change->listing-image#preview",
+                        "listing-image-target": "input" } %>
+        </label>
+      </div>
+      <% if @product.errors[:image].any? %>
+        <p class="text-error text-sm mt-1"><%= @product.errors[:image].first %></p>
+      <% end %>
+    </div>
+
+    <%# Divider %>
+    <div class="divider"></div>
+
+    <%# Submit + Cancel %>
+    <div class="flex items-center gap-4">
+      <%= f.submit "Publish Product",
+            class: "btn btn-primary px-8",
+            data: { testid: "submit-listing", disable_with: "Publishing..." } %>
+      <%= link_to "Cancel", products_path, class: "btn btn-ghost" %>
+    </div>
+
+  <% end %>
+</div>
+
+<%# ── Stimulus controller for image preview ── %>
+<script type="module">
+  import { Controller } from "https://unpkg.com/@hotwired/stimulus@3.2.1/dist/stimulus.js";
+  // Inline preview logic (no external stimulus controller needed)
+  document.addEventListener("change", function(e) {
+    if (e.target && e.target.dataset.testid === "product-image") {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const container = document.getElementById("image-preview-container");
+        const preview   = document.getElementById("image-preview");
+        preview.src = ev.target.result;
+        container.classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>

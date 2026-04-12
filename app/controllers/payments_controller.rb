@@ -34,8 +34,7 @@ class PaymentsController < ApplicationController
     return head :forbidden unless webhook_authorized?(payment, payload)
     return webhook_cancel(payment) if webhook_cancelled?(payload)
 
-    PaymentSettlement.call(payment, provider_amount: provider.extract_amount(payload))
-    head :ok
+    settle_and_respond(payment, payload)
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end
@@ -85,9 +84,23 @@ class PaymentsController < ApplicationController
     ActiveSupport::SecurityUtils.secure_compare(token.to_s, expected.to_s)
   end
 
+  def settle_and_respond(payment, payload)
+    PaymentSettlement.call(payment, provider_amount: provider.extract_amount(payload))
+    return head :ok unless provider.name == "fake"
+
+    redirect_to product_path(payment.product_transaction.product),
+                notice: t("payments.success")
+  end
+
   def webhook_cancel(payment)
     payment.update!(status: :cancelled)
-    head :ok
+
+    if provider.name == "fake"
+      redirect_to product_path(payment.product_transaction.product),
+                  alert: t("payments.cancelled")
+    else
+      head :ok
+    end
   end
 
   def payment_from_payload(payload)

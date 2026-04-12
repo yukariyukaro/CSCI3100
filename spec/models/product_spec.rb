@@ -12,23 +12,76 @@ RSpec.describe Product, type: :model do
 
   describe "validations" do
     it "is valid with a name, description, seller, and price" do
-      product = Product.new(name: "Test Product", description: "Test Description", seller: seller, price: 0)
+      product = Product.new(name: "Test Product", description: "Test Description long enough", seller: seller, price: 0)
       expect(product).to be_valid
     end
 
     it "is invalid without a name" do
-      product = Product.new(description: "Test Description", seller: seller, price: 0)
+      product = Product.new(description: "Test Description long enough", seller: seller, price: 0)
       expect(product).not_to be_valid
     end
 
     it "is invalid without a seller" do
-      product = Product.new(name: "Test Product", description: "Test Description", price: 0)
+      product = Product.new(name: "Test Product", description: "Test Description long enough", price: 0)
       expect(product).not_to be_valid
     end
 
     it "is invalid with a negative price" do
-      product = Product.new(name: "Test Product", description: "Test Description", seller: seller, price: -0.01)
+      product = Product.new(name: "Test Product", description: "Test Description long enough", seller: seller,
+                            price: -0.01)
       expect(product).not_to be_valid
+    end
+
+    it "is invalid without a description" do
+      product = Product.new(name: "Test Product", seller: seller, price: 0)
+      expect(product).not_to be_valid
+    end
+
+    it "is invalid when description is shorter than 10 characters" do
+      product = Product.new(name: "Test Product", description: "Too short", seller: seller, price: 0)
+      expect(product).not_to be_valid
+      expect(product.errors[:description]).to be_present
+    end
+
+    it "is valid when description is exactly 10 characters" do
+      product = Product.new(name: "Test Product", description: "1234567890", seller: seller, price: 0)
+      expect(product).to be_valid
+    end
+
+    it "defaults price to 0.0 and is valid when price is omitted" do
+      product = Product.new(name: "Test Product", description: "Test Description long enough", seller: seller)
+      expect(product).to be_valid
+      expect(product.price).to eq(0.0)
+    end
+  end
+
+  describe "image attachment validation" do
+    let(:product) do
+      Product.new(name: "Test Product", description: "Test Description long enough", seller: seller, price: 10)
+    end
+
+    it "is valid without an image attached" do
+      expect(product).to be_valid
+    end
+
+    it "is invalid when an image larger than 5MB is attached" do
+      large_file = fixture_file_upload(
+        Rails.root.join("spec/fixtures/files/large_image.jpg"),
+        "image/jpeg"
+      )
+      product.image.attach(large_file)
+      expect(product).not_to be_valid
+      expect(product.errors[:image]).to be_present
+    end
+
+    it "is invalid when a non-image file type is attached" do
+      pdf_file = fixture_file_upload(
+        Rails.root.join("spec/fixtures/files/test_document.pdf"),
+        "application/pdf"
+      )
+      product.image.attach(pdf_file)
+      expect(product).not_to be_valid
+      expect(product.errors[:image]).to be_present
     end
   end
 
