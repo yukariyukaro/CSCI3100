@@ -40,9 +40,11 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Mount Action Cable outside main process or domain.
-  # config.action_cable.mount_path = nil
-  # config.action_cable.url = "wss://example.com/cable"
-  # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
+  config.action_cable.mount_path = "/cable"
+  config.action_cable.url = "wss://#{ENV['HEROKU_APP_NAME']}.herokuapp.com/cable" if ENV['HEROKU_APP_NAME']
+  config.action_cable.allowed_request_origins = [
+    "https://#{ENV['HEROKU_APP_NAME']}.herokuapp.com"
+  ] if ENV['HEROKU_APP_NAME']
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.

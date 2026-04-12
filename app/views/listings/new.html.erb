@@ -3,8 +3,8 @@
 
   <%# ── Page header ── %>
   <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Publish a Product</h1>
-    <p class="text-gray-500 mt-1">Fill in the details below to list your item for sale.</p>
+    <h1 class="text-3xl font-bold text-base-content">Publish a Product</h1>
+    <p class="text-base-content/60 mt-1">Fill in the details below to list your item for sale.</p>
   </div>
 
   <%# ── Error messages ── %>
@@ -28,11 +28,11 @@
   <%= form_with model: @product, url: listings_path, method: :post,
         multipart: true,
         data: { testid: "listing-form" },
-        class: "bg-white rounded-xl shadow-sm border border-base-200 p-8 space-y-6" do |f| %>
+        class: "bg-base-100 rounded-xl shadow-sm border border-base-200 p-8 space-y-6" do |f| %>
 
     <%# Product Name %>
     <div class="form-control">
-      <%= f.label :name, "Product Name", class: "label font-semibold text-gray-700" %>
+      <%= f.label :name, "Product Name", class: "label font-semibold text-base-content" %>
       <span class="text-error ml-1 text-sm">*</span>
       <%= f.text_field :name,
             placeholder: "e.g., MacBook Pro 14",
@@ -46,7 +46,7 @@
 
     <%# Description %>
     <div class="form-control">
-      <%= f.label :description, "Description", class: "label font-semibold text-gray-700" %>
+      <%= f.label :description, "Description", class: "label font-semibold text-base-content" %>
       <span class="text-error ml-1 text-sm">*</span>
       <%= f.text_area :description,
             placeholder: "Describe the product condition, features, and any extras included...",
@@ -54,7 +54,7 @@
             rows: 5,
             class: "textarea textarea-bordered w-full mt-1 #{'textarea-error' if @product.errors[:description].any?}",
             data: { testid: "product-description" } %>
-      <p class="text-gray-400 text-xs mt-1">Minimum 10 characters.</p>
+      <p class="text-base-content/50 text-xs mt-1">Minimum 10 characters.</p>
       <% if @product.errors[:description].any? %>
         <p class="text-error text-sm mt-1"><%= @product.errors[:description].first %></p>
       <% end %>
@@ -62,10 +62,10 @@
 
     <%# Price %>
     <div class="form-control">
-      <%= f.label :price, "Price (HKD)", class: "label font-semibold text-gray-700" %>
+      <%= f.label :price, "Price (HKD)", class: "label font-semibold text-base-content" %>
       <span class="text-error ml-1 text-sm">*</span>
       <label class="input input-bordered flex items-center gap-2 mt-1 w-full <%= 'input-error' if @product.errors[:price].any? %>">
-        <span class="text-gray-400 font-medium">HK$</span>
+        <span class="text-base-content/50 font-medium">HK$</span>
         <%= f.number_field :price,
               placeholder: "0.00",
               min: 0,
@@ -81,8 +81,8 @@
 
     <%# Condition %>
     <div class="form-control">
-      <%= f.label :condition, "Condition", class: "label font-semibold text-gray-700" %>
-      <span class="text-gray-400 text-sm ml-1">(optional)</span>
+      <%= f.label :condition, "Condition", class: "label font-semibold text-base-content" %>
+      <span class="text-base-content/50 text-sm ml-1">(optional)</span>
       <%= f.select :condition,
             options_for_select(
               [["— Select condition —", ""], ["Like New", "Like New"], ["Good", "Good"], ["Fair", "Fair"], ["Poor", "Poor"]],
@@ -95,8 +95,8 @@
 
     <%# Image upload %>
     <div class="form-control">
-      <%= f.label :image, "Product Image", class: "label font-semibold text-gray-700" %>
-      <span class="text-gray-400 text-sm ml-1">(optional, JPEG/PNG, max 5MB)</span>
+      <%= f.label :image, "Product Image", class: "label font-semibold text-base-content" %>
+      <span class="text-base-content/50 text-sm ml-1">(optional, JPEG/PNG, max 5MB)</span>
       <div class="mt-2 flex flex-col gap-3">
         <%# Image preview area %>
         <div id="image-preview-container" class="hidden">
