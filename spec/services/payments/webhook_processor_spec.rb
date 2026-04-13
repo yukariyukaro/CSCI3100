@@ -1,7 +1,21 @@
 require "rails_helper"
 
 RSpec.describe Payments::WebhookProcessor do
-  let(:payment) { create(:payment, provider: "stripe", provider_reference: "cs_test_123", amount: 20.0) }
+  let(:seller) { User.create!(name: "Seller", email: "seller_#{SecureRandom.hex}@example.com", password: "password", password_confirmation: "password") }
+  let(:buyer) { User.create!(name: "Buyer", email: "buyer_#{SecureRandom.hex}@example.com", password: "password", password_confirmation: "password") }
+  let(:product) { Product.create!(name: "Laptop", description: "This is a test description", price: 20.0, seller: seller, sale_status: :pending) }
+  let(:transaction) { Transaction.create!(product: product, buyer: buyer, seller: seller, status: :in_progress) }
+  
+  let(:payment) do
+    Payment.create!(
+      transaction_id: transaction.id,
+      amount: 20.0,
+      provider: "stripe",
+      provider_reference: "cs_test_123",
+      status: :pending
+    )
+  end
+
   let(:provider) { Payments::ProviderFactory.instance }
   let(:request) { instance_double(ActionDispatch::Request) }
 
@@ -48,7 +62,7 @@ RSpec.describe Payments::WebhookProcessor do
       end
 
       it "returns :ok without settling again" do
-        expect(Payments::PaymentSettlement).not_to receive(:call)
+        expect(PaymentSettlement).not_to receive(:call)
         expect(process).to eq(:ok)
       end
     end
