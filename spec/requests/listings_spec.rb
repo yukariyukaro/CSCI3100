@@ -164,7 +164,7 @@ RSpec.describe "Listings", type: :request do
 
       it "re-renders the form" do
         post listings_path, params: { product: { description: "Long enough description here", price: 100 } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("form")
       end
 
@@ -183,7 +183,7 @@ RSpec.describe "Listings", type: :request do
 
       it "re-renders the form with an error" do
         post listings_path, params: { product: { name: "Test Item", description: "Too short", price: 100 } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("Description").or include("description")
       end
     end
@@ -199,7 +199,7 @@ RSpec.describe "Listings", type: :request do
       it "re-renders the form with an error" do
         post listings_path,
              params: { product: { name: "Test Item", description: "Long enough description here", price: -50 } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("Price").or include("price")
       end
     end
@@ -242,7 +242,7 @@ RSpec.describe "Listings", type: :request do
         }
       end.not_to change(Product, :count)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "rejects non-image file types" do
@@ -261,7 +261,7 @@ RSpec.describe "Listings", type: :request do
         }
       end.not_to change(Product, :count)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
