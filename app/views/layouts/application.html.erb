@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
   <head>
     <title>CuhkMarketplace</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%# Anti-flash: read saved theme before first paint to avoid white flash %>
+    <script>
+      (function() {
+        var saved = localStorage.getItem('theme');
+        var preferred = (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : (saved || 'light');
+        document.documentElement.setAttribute('data-theme', preferred);
+      })();
+    </script>
     
     <% if respond_to?(:tailwind_css_tag) %>
       <%= tailwind_css_tag "application", "data-turbo-track": "reload" %>
@@ -16,17 +24,10 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="bg-base-100 text-base-content min-h-screen transition-colors duration-300">
     <%= render "shared/navigation_bar" %>
-
-    <% if notice.present? %>
-      <div class="flash flash--notice" role="alert"><%= notice %></div>
-    <% end %>
-    <% if alert.present? %>
-      <div class="flash flash--alert" role="alert"><%= alert %></div>
-    <% end %>
-
-    <main class="min-h-screen">
+    <%= render "shared/flash_messages" %>
+    <main class="min-h-screen bg-base-100">
       <%= yield %>
     </main>
   </body>

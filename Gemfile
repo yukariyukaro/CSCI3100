@@ -84,3 +84,5 @@ gem "ruby-openai", "~> 8.3"
 gem "stripe", "~> 13.0"
 
 gem "tailwindcss-rails", "~> 4.4"
+
+gem "sidekiq"

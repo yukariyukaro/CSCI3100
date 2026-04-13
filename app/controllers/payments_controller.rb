@@ -79,6 +79,14 @@ class PaymentsController < ApplicationController
                 notice: t("payments.success")
   end
 
+  def settle_and_respond(payment, payload)
+    PaymentSettlement.call(payment, provider_amount: provider.extract_amount(payload))
+    return head :ok unless provider.name == "fake"
+
+    redirect_to product_path(payment.product_transaction.product),
+                notice: t("payments.success")
+  end
+
   def webhook_cancel(payment)
     return head :ok if payment.succeeded?
 

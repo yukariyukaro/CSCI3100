@@ -47,7 +47,7 @@
     <%= f.text_field :content,
           placeholder: "Type a message…",
           autocomplete: "off",
-          class: "input input-bordered flex-1",
+          class: "input input-bordered flex-1 text-base-content dark:text-base-content placeholder-base-content/50 dark:placeholder-base-content/40",
           data: { chat_target: "input" } %>
     <%= f.submit "Send", class: "btn btn-primary", data: { testid: "send-message" } %>
   <% end %>

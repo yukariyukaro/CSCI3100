@@ -6,11 +6,12 @@
 
 # Ignore bundler config.
 /.bundle
-
+openspec
 # Ignore all environment files (except templates).
 /.env*
 !/.env*.erb
-
+.claude
+.playwright
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*

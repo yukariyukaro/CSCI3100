@@ -53,8 +53,11 @@
 
 - 工作流：分支开发 → 发 PR → 合并到 `main` → GitHub Actions 自动部署到 Heroku
 - Release Phase：部署时会自动执行 `bundle exec rails db:migrate db:seed`
+- 若需要在 Heroku（production）使用 fake 支付（演示用途），需要在 Config Vars 中设置：
+  - `ALLOW_FAKE_PAYMENT_PROVIDER=true`
+  - （可选）`PAYMENT_PROVIDER=fake`
 - demo 场景数据（聊天/交易/支付）建议通过任务生成：
-  - `heroku run bin/rails demo:reset`
+  - 在 Heroku Dashboard → More → Run console 执行：`bin/rails demo:reset`
 
 ## 可选：清理 ActionCable Redis 前缀（谨慎）
 
