@@ -11,7 +11,7 @@ export default class extends Controller {
 
   connect() {
     this.setStatus("")
-    this.setFormEnabled(false)
+    this.setFormEnabled(true)
 
     this.subscription = subscribeToConversation(this.conversationIdValue, this.currentUserIdValue, {
       onMessage: this.appendMessage.bind(this),
@@ -19,18 +19,19 @@ export default class extends Controller {
         this.setStatus("")
         this.setFormEnabled(true)
         this.syncMissingMessages()
+        console.log("[ChatController] Connected to conversation channel")
       },
       onDisconnected: () => {
         this.setStatus("Disconnected. Reconnecting…")
-        this.setFormEnabled(false)
+        console.warn("[ChatController] Disconnected from conversation channel")
       },
       onMaintenance: (data) => {
         this.setStatus(data?.message || "Demo data reset. Please refresh.")
-        this.setFormEnabled(false)
+        this.setFormEnabled(true)
       },
       onRejected: () => {
         this.setStatus("Chat unavailable for this conversation.")
-        this.setFormEnabled(false)
+        console.error("[ChatController] Connection rejected. Subscription aborted.")
         this.subscription?.unsubscribe()
       }
     })
