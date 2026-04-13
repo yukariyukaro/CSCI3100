@@ -76,11 +76,13 @@ gem "cucumber-rails", "~> 4.0", group: :test, require: false
 
 gem "database_cleaner-active_record", "~> 2.2", group: :test
 gem "selenium-webdriver", group: :test
+gem "webmock", "~> 3.23", group: :test
 
 gem "pg_search", "~> 2.3"
 
 gem "dotenv-rails", "~> 3.2"
 gem "ruby-openai", "~> 8.3"
+gem "stripe", "~> 13.0"
 
 gem "tailwindcss-rails", "~> 4.4"
 

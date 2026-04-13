@@ -27,6 +27,16 @@ module Payments
       def extract_reference(payload)
         payload.fetch("provider_reference").to_s
       end
+
+      # rubocop:disable Naming/PredicateMethod
+      def authorize_webhook!(payment, payload)
+        token = payload["token"].to_s
+        expected = payment.callback_token.to_s
+        raise ActiveRecord::RecordNotFound unless ActiveSupport::SecurityUtils.secure_compare(token, expected)
+
+        true
+      end
+      # rubocop:enable Naming/PredicateMethod
     end
   end
 end

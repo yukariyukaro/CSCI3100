@@ -35,7 +35,7 @@ RSpec.describe "Authentication Flows", type: :request do
       it "returns 422 Unprocessable Entity when password is wrong" do
         post sessions_path, params: { email: valid_email, password: "WrongPassword" }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "re-renders login form on invalid password" do
@@ -53,7 +53,7 @@ RSpec.describe "Authentication Flows", type: :request do
       it "returns 422 when email doesn't exist" do
         post sessions_path, params: { email: "nonexistent@example.com", password: password }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "displays error message when email doesn't exist" do
@@ -87,39 +87,39 @@ RSpec.describe "Authentication Flows", type: :request do
       it "rejects empty email" do
         post sessions_path, params: { email: "", password: password }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "rejects empty password" do
         post sessions_path, params: { email: valid_email, password: "" }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "rejects missing email parameter" do
         post sessions_path, params: { password: password }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "rejects missing password parameter" do
         post sessions_path, params: { email: valid_email }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "handles very long email addresses gracefully" do
         long_email = "#{'a' * 200}@example.com"
         post sessions_path, params: { email: long_email, password: password }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "rejects SQL injection attempts in email" do
         sql_injection_email = "' OR '1'='1"
         post sessions_path, params: { email: sql_injection_email, password: password }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end
@@ -240,7 +240,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "re-renders signup form" do
@@ -307,7 +307,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "re-renders signup form" do
@@ -348,7 +348,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("name").or include("Name")
       end
 
@@ -362,7 +362,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("email").or include("Email")
       end
 
@@ -376,7 +376,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it "rejects missing name" do
@@ -388,7 +388,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -411,7 +411,7 @@ RSpec.describe "Authentication Flows", type: :request do
           }
         }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(User.count).to eq(1)
       end
 
@@ -441,7 +441,7 @@ RSpec.describe "Authentication Flows", type: :request do
         }
 
         # NOTE: The app may accept any email format; adjust based on validation
-        expect(response).to have_http_status(:unprocessable_entity).or have_http_status(:redirect)
+        expect(response).to have_http_status(:unprocessable_content).or have_http_status(:redirect)
       end
 
       it "handles very long email addresses" do
@@ -456,7 +456,7 @@ RSpec.describe "Authentication Flows", type: :request do
         }
 
         # The app may accept or reject long emails; both are acceptable
-        expect(response).to have_http_status(:unprocessable_entity).or have_http_status(:found)
+        expect(response).to have_http_status(:unprocessable_content).or have_http_status(:found)
       end
     end
 
@@ -473,7 +473,7 @@ RSpec.describe "Authentication Flows", type: :request do
 
         # The app uses parameterized queries; email is treated as literal string
         # May create user or reject based on email validation
-        expect(response).to have_http_status(:unprocessable_entity).or have_http_status(:found)
+        expect(response).to have_http_status(:unprocessable_content).or have_http_status(:found)
       end
 
       it "safely handles SQL injection in name" do

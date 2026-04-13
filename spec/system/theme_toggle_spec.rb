@@ -18,6 +18,42 @@ require "rails_helper"
 # ─────────────────────────────────────────────────────────────────────────────
 
 RSpec.describe "Theme Toggle", type: :system do
+  def host_os
+    RbConfig::CONFIG.fetch("host_os", "")
+  end
+
+  def chrome_windows_paths
+    [
+      "C:/Program Files/Google/Chrome/Application/chrome.exe",
+      "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"
+    ]
+  end
+
+  def chrome_on_path?
+    %w[
+      google-chrome
+      google-chrome-stable
+      chromium
+      chromium-browser
+      chrome
+    ].any? { |bin| system("#{bin} --version > /dev/null 2>&1") }
+  end
+
+  def chrome_on_macos?
+    host_os.include?("darwin") && File.exist?("/Applications/Google Chrome.app")
+  end
+
+  def chrome_on_windows?
+    host_os.match?(/mswin|msys|mingw|cygwin/) &&
+      chrome_windows_paths.any? { |path| File.exist?(path) }
+  end
+
+  def chrome_installed?
+    return true if ENV["CI"]
+
+    chrome_on_path? || chrome_on_macos? || chrome_on_windows?
+  end
+
   # ── Static structure (no JS required) ─────────────────────────────────────
 
   context "DOM structure (rack_test)" do
@@ -77,10 +113,15 @@ RSpec.describe "Theme Toggle", type: :system do
   # ── JavaScript behaviour (Selenium, CI only) ──────────────────────────────
 
   context "interactive toggle (Selenium / headless Chrome)", js: true do
-    before { driven_by(:selenium_chrome_headless) }
+    before do
+      pending "Google Chrome is not installed" unless chrome_installed?
+
+      driven_by(:selenium_chrome_headless)
+      visit root_path
+      page.execute_script("localStorage.setItem('theme', 'light');")
+    end
 
     it "toggles data-theme from light to dark on first click" do
-      skip "Headless Chrome not available in WSL — runs in CI"
       visit root_path
       expect(page).to have_css('[data-theme="light"]', wait: 2)
       find('[data-controller="theme"]').click
@@ -88,7 +129,6 @@ RSpec.describe "Theme Toggle", type: :system do
     end
 
     it "toggles data-theme back to light on second click" do
-      skip "Headless Chrome not available in WSL — runs in CI"
       visit root_path
       find('[data-controller="theme"]').click
       find('[data-controller="theme"]').click
@@ -96,7 +136,6 @@ RSpec.describe "Theme Toggle", type: :system do
     end
 
     it "persists theme preference to localStorage after toggle" do
-      skip "Headless Chrome not available in WSL — runs in CI"
       visit root_path
       find('[data-controller="theme"]').click
       saved = page.evaluate_script("localStorage.getItem('theme')")
@@ -104,7 +143,6 @@ RSpec.describe "Theme Toggle", type: :system do
     end
 
     it "restores saved theme from localStorage on page reload" do
-      skip "Headless Chrome not available in WSL — runs in CI"
       visit root_path
       find('[data-controller="theme"]').click                      # → dark
       visit root_path                                              # reload
@@ -112,7 +150,6 @@ RSpec.describe "Theme Toggle", type: :system do
     end
 
     it "updates data-dark attribute on button after toggle" do
-      skip "Headless Chrome not available in WSL — runs in CI"
       visit root_path
       btn = find('[data-controller="theme"]')
       expect(btn["data-dark"]).to eq("false")

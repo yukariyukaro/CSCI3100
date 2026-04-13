@@ -19,5 +19,11 @@ module Payments
     def extract_reference(payload)
       raise NotImplementedError
     end
+
+    # rubocop:disable Naming/PredicateMethod
+    def authorize_webhook!(_payment, _payload)
+      true # Default implementation for providers that verify via signature (e.g. Stripe)
+    end
+    # rubocop:enable Naming/PredicateMethod
   end
 end

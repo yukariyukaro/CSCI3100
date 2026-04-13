@@ -1,7 +1,8 @@
 class PaymentsController < ApplicationController
+  include PaymentsControllerHelpers
+
   before_action :authenticate_user!, except: %i[webhook]
   skip_forgery_protection only: %i[webhook]
-
   def index
     @payments = payment_scope.order(created_at: :desc)
   end
@@ -17,7 +18,7 @@ class PaymentsController < ApplicationController
     payment = find_or_create_pending_payment(transaction)
     checkout = provider.create_checkout(payment: payment)
     payment.update!(provider_reference: checkout[:provider_reference], callback_token: checkout[:callback_token])
-    redirect_to checkout[:redirect_url]
+    redirect_to checkout[:redirect_url], allow_other_host: true
   end
 
   def fake
@@ -29,14 +30,13 @@ class PaymentsController < ApplicationController
   end
 
   def webhook
-    payload = provider.verify_webhook(request)
-    payment = payment_from_payload(payload)
-    return head :forbidden unless webhook_authorized?(payment, payload)
-    return webhook_cancel(payment) if webhook_cancelled?(payload)
+    result = Payments::WebhookProcessor.call(request: request, provider: provider)
 
-    settle_and_respond(payment, payload)
-  rescue ActiveRecord::RecordNotFound
-    head :not_found
+    if result.is_a?(Hash) && result[:redirect]
+      redirect_to result[:redirect], notice: result[:notice], alert: result[:alert]
+    else
+      head result
+    end
   end
 
   def resolve
@@ -48,11 +48,6 @@ class PaymentsController < ApplicationController
   end
 
   private
-
-  def payment_scope
-    Payment.joins(:product_transaction)
-           .where("transactions.buyer_id = :id OR transactions.seller_id = :id", id: current_user.id)
-  end
 
   def provider
     @provider ||= Payments::ProviderFactory.instance
@@ -78,43 +73,12 @@ class PaymentsController < ApplicationController
     )
   end
 
-  def token_matches?(token, expected)
-    return false if token.blank? || expected.blank?
-
-    ActiveSupport::SecurityUtils.secure_compare(token.to_s, expected.to_s)
-  end
-
   def settle_and_respond(payment, payload)
     PaymentSettlement.call(payment, provider_amount: provider.extract_amount(payload))
     return head :ok unless provider.name == "fake"
 
     redirect_to product_path(payment.product_transaction.product),
                 notice: t("payments.success")
-  end
-
-  def webhook_cancel(payment)
-    payment.update!(status: :cancelled)
-
-    if provider.name == "fake"
-      redirect_to product_path(payment.product_transaction.product),
-                  alert: t("payments.cancelled")
-    else
-      head :ok
-    end
-  end
-
-  def payment_from_payload(payload)
-    Payment.find_by!(provider: provider.name, provider_reference: provider.extract_reference(payload))
-  end
-
-  def webhook_authorized?(payment, payload)
-    return true unless provider.name == "fake"
-
-    token_matches?(payload["token"], payment.callback_token)
-  end
-
-  def webhook_cancelled?(payload)
-    payload.fetch("outcome", "succeeded").to_s == "cancelled"
   end
 
   def resolvable_by_current_user?(payment)

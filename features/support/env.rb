@@ -5,17 +5,12 @@
 # files.
 
 require "cucumber/rails"
+require "webmock/cucumber"
 
-require "sidekiq/testing"
-# Force Sidekiq to run jobs inline during Cucumber tests to bypass Redis
-Sidekiq::Testing.inline!
-# Stub Redis connection globally for Cucumber
-module RedisStub
-  def connect(*)
-    # Do nothing
-  end
-end
-RedisClient.prepend(RedisStub) if defined?(RedisClient)
+# Disable real network connections in cucumber
+WebMock.disable_net_connect!(allow_localhost: true)
+
+ActiveJob::Base.queue_adapter = :inline
 
 # By default, any exception happening in your Rails application will bubble up
 # to Cucumber so that your scenario will fail. This is a different from how
