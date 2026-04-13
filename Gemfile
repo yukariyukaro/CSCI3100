@@ -76,6 +76,7 @@ gem "cucumber-rails", "~> 4.0", group: :test, require: false
 
 gem "database_cleaner-active_record", "~> 2.2", group: :test
 gem "selenium-webdriver", group: :test
+gem "webmock", "~> 3.23", group: :test
 
 gem "pg_search", "~> 2.3"
 

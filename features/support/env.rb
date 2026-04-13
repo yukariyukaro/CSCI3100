@@ -5,6 +5,10 @@
 # files.
 
 require "cucumber/rails"
+require "webmock/cucumber"
+
+# Disable real network connections in cucumber
+WebMock.disable_net_connect!(allow_localhost: true)
 
 ActiveJob::Base.queue_adapter = :inline
 
