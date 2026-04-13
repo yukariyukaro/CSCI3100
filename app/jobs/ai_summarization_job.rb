@@ -14,6 +14,13 @@ class AiSummarizationJob < ApplicationJob
       return
     end
 
+    # Skip gracefully if no API key is configured (no-AI mode)
+    if MODELSCOPE_API_KEY.blank?
+      Rails.logger.info("[AI] MODELSCOPE_API_KEY not configured — skipping summary for Product #{product.id}")
+      product.update!(ai_summary_status: "skipped")
+      return
+    end
+
     product.update!(ai_summary_status: "generating")
     generate_and_save_summary(product)
   end
@@ -21,14 +28,20 @@ class AiSummarizationJob < ApplicationJob
   private
 
   def generate_and_save_summary(product)
-    summary = Ai::Summarizer.new(product).fetch_summary_from_openai
+    summary = Ai::Summarizer.new(product).fetch_summary_from_modelscope
     if summary.present?
-      product.update!(ai_summary: summary, ai_summary_status: "completed", ai_summary_requested_at: Time.current)
+      product.update!(
+        ai_summary: summary,
+        ai_model: MODELSCOPE_MODEL_ID,
+        ai_summary_status: "completed",
+        ai_summary_requested_at: Time.current
+      )
     else
       product.update!(ai_summary_status: "failed")
     end
   rescue StandardError => e
-    Rails.logger.error("AiSummarizationJob failed for Product #{product.id}: #{e.message}")
+    # Log without exposing the API key
+    Rails.logger.error("AiSummarizationJob failed for Product #{product.id}: #{e.class} - #{e.message}")
     product.update!(ai_summary_status: "failed")
   end
 end

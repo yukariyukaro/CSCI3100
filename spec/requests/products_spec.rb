@@ -110,7 +110,7 @@ RSpec.describe "Products", type: :request do
                                 seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed")
       get product_path(product)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("AI 智能卖点总结")
+      expect(response.body).to include("AI Key Selling Points")
       expect(response.body).to include("Good condition")
     end
   end

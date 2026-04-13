@@ -41,25 +41,33 @@
       </div>
 
       <!-- AI Summary Card -->
-      <div class="my-2">
+      <%# The ai_summary Stimulus controller polls /api/products/:id/ai_summary
+          every 3 s while status is pending/generating, then updates this div in place.
+          When status is already completed/failed/skipped at render time, no polling occurs. %>
+      <div class="my-2"
+           data-controller="ai-summary"
+           data-ai-summary-product-id-value="<%= @product.id %>"
+           data-ai-summary-poll-interval-value="<%= %w[pending generating].include?(@product.ai_summary_status) || @product.ai_summary_status.nil? ? 3000 : 0 %>">
         <% case @product.ai_summary_status %>
         <% when 'completed' %>
+          <%# Already done — render inline, controller sees 0 interval and won't poll %>
           <div class="card bg-base-200 border-l-4 border-primary shadow-sm animate-fade-in">
             <div class="card-body p-4">
               <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-2">
-                ✨ AI 智能卖点总结
+                ✨ AI Key Selling Points
               </h3>
-              <div class="leading-relaxed text-sm text-gray-700">
+              <div class="leading-relaxed text-sm text-base-content/80">
                 <%= simple_format(@product.ai_summary) %>
               </div>
-              <span class="text-xs text-gray-400 mt-2 block">自动生成，仅供参考</span>
+              <span class="text-xs text-base-content/40 mt-2 block">Auto-generated · for reference only</span>
             </div>
           </div>
-        <% when 'generating', nil %>
+        <% when 'generating', 'pending', nil %>
+          <%# Skeleton — controller will replace this once the job finishes %>
           <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
             <div class="card-body p-4">
-               <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3">
-                <span class="animate-pulse">✨ AI 正在分析卖点...</span>
+              <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3">
+                <span class="animate-pulse">✨ AI is analysing key selling points...</span>
               </h3>
               <div class="flex flex-col gap-2">
                 <div class="skeleton h-3 w-full"></div>
@@ -69,20 +77,7 @@
             </div>
           </div>
         <% when 'failed', 'skipped' %>
-          <!-- 优雅隐藏 -->
-          <div class="hidden"></div>
-        <% else %>
-          <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
-            <div class="card-body p-4">
-              <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3 animate-pulse">
-                ✨ 正在唤醒 AI 助手...
-              </h3>
-              <div class="flex flex-col gap-2">
-                <div class="skeleton h-3 w-full"></div>
-                <div class="skeleton h-3 w-3/4"></div>
-              </div>
-            </div>
-          </div>
+          <%# Gracefully hidden — no card rendered %>
         <% end %>
       </div>
 
