@@ -22,14 +22,17 @@ RSpec.describe "Frontend placeholders", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "renders chats pages" do
+  it "redirects legacy chats pages" do
     get chats_path
-    expect(response).to have_http_status(:ok)
-    get chat_path(1)
-    expect(response).to have_http_status(:ok)
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response).to redirect_to(conversations_path)
+
+    get "/chats/1"
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response).to redirect_to(conversation_path(1))
   end
 
-  it "requires login for payments pages" do
+  it "supports payments flow pages" do
     get payments_path
     expect(response).to redirect_to(new_session_path)
 
@@ -70,15 +73,28 @@ RSpec.describe "Frontend placeholders", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "renders listings index and protects listing creation when logged out" do
+  it "renders listings pages and supports create placeholder" do
+    # Unauthenticated requests are redirected to login
     get listings_path
-    expect(response).to have_http_status(:ok)
-
+    expect(response).to redirect_to(new_session_path)
     get new_listing_path
     expect(response).to redirect_to(new_session_path)
-
     post listings_path
     expect(response).to redirect_to(new_session_path)
+
+    # Authenticated user can access listings pages
+    seller = User.create!(
+      name: "Seller",
+      email: TestData.unique_email(prefix: "seller"),
+      password: "password123",
+      password_confirmation: "password123"
+    )
+    post sessions_path, params: { email: seller.email, password: "password123" }
+
+    get listings_path
+    expect(response).to have_http_status(:ok)
+    get new_listing_path
+    expect(response).to have_http_status(:ok)
   end
 
   it "renders login page" do

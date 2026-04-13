@@ -1,24 +1,19 @@
 class ListingsController < ApplicationController
-  before_action :authenticate_user!, only: %i[new create]
-  before_action :set_listing, only: %i[show]
+  before_action :authenticate_user!
 
   def index
-    @listings = Listing.includes(:user).order(created_at: :desc)
-  end
-
-  def show
-    @escrow = @listing.escrow
   end
 
   def new
-    @listing = current_user.listings.new
+    @product = Product.new
   end
 
   def create
-    @listing = current_user.listings.new(listing_params)
+    @product = Product.new(listing_params)
+    @product.seller = current_user
 
-    if @listing.save
-      redirect_to listing_path(@listing), notice: t(".success")
+    if @product.save
+      redirect_to product_path(@product), notice: t(".success")
     else
       render :new, status: :unprocessable_content
     end
@@ -26,11 +21,7 @@ class ListingsController < ApplicationController
 
   private
 
-  def set_listing
-    @listing = Listing.find(params[:id])
-  end
-
   def listing_params
-    params.require(:listing).permit(:title, :description, :price)
+    params.require(:product).permit(:name, :description, :price, :condition, :image)
   end
 end

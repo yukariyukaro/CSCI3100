@@ -46,6 +46,14 @@ en:
     cancel_failed: "Cannot cancel reservation."
     sold_success: "Product marked as sold."
     sold_failed: "Cannot mark as sold."
+  payments:
+    empty: "No payments yet."
+    success: "Payment successful! Your order has been confirmed."
+    cancelled: "Payment was cancelled."
+    errors:
+      not_payable: "This transaction is not payable."
+    manual_intervention:
+      resolved: "Marked as resolved."
   controllers:
     users:
       update:
@@ -54,23 +62,13 @@ en:
     product_not_found: "Product not found."
   listings:
     create:
-      success: "Listing created successfully."
-  escrows:
-    confirm:
-      success: "Transaction complete, funds released"
-    cancel:
-      buyer_success: "Transaction cancelled, deposit forfeited as penalty"
-      seller_success: "Seller cancelled transaction, deposit refunded"
+      success: "Product published successfully!"
     errors:
-      unauthorized: "Unauthorized"
-      not_ready_for_confirmation: "Escrow is not ready for confirmation"
-  payments:
-    notices:
-      deposit_frozen: "Deposit frozen, awaiting seller confirmation"
-    errors:
-      unauthorized: "Unauthorized"
-      listing_not_found: "Listing not found"
-      own_listing: "You cannot buy your own listing"
-      missing_payment_intent: "Missing payment intent"
-      not_completed: "Payment not completed"
-      escrow_not_found: "Escrow not found"
+      image_too_large: "Image must be smaller than 5MB"
+      image_invalid_type: "Image must be a JPEG or PNG file"
+  flash:
+    success: "Operation successful."
+    access_denied: "You do not have permission to perform this action."
+    login_required: "You must be logged in to continue."
+    warning: "Please review before continuing."
+    info: "Here is some information for you."

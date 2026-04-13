@@ -19,12 +19,22 @@ RSpec.describe "Payments", type: :request do
     )
   end
 
-  let!(:listing) do
-    Listing.create!(
-      title: "Nintendo Switch",
+  let!(:product) do
+    Product.create!(
+      name: "Nintendo Switch",
       description: "Almost new",
       price: 2000,
-      user: seller
+      seller: seller,
+      sale_status: :pending
+    )
+  end
+
+  let!(:transaction) do
+    Transaction.create!(
+      product: product,
+      buyer: buyer,
+      seller: seller,
+      status: :in_progress
     )
   end
 
@@ -33,33 +43,52 @@ RSpec.describe "Payments", type: :request do
     expect(response).to have_http_status(:found)
   end
 
-  it "requires login for new payment" do
-    get new_listing_payment_path(listing)
+  it "requires login for payment creation" do
+    post transaction_payments_path(transaction)
     expect(response).to redirect_to(new_session_path)
   end
 
-  it "creates payment record after Stripe payment intent succeeds" do
+  it "creates payment and redirects to stripe checkout" do
     login_as(buyer)
 
-    allow_any_instance_of(Payments::StripePaymentService).to receive(:create_deposit_payment).and_return(
-      success: true,
-      payment_intent_id: "pi_test_success",
-      client_secret: "cs_test_secret"
+    allow(Payments::ProviderFactory).to receive(:configured_provider_name).and_return("stripe")
+    allow_any_instance_of(Payments::Providers::Stripe).to receive(:create_checkout).and_return(
+      redirect_url: "https://checkout.stripe.com/test",
+      provider_reference: "cs_test_123",
+      callback_token: nil
     )
-
-    allow_any_instance_of(Payments::StripePaymentService).to receive(:retrieve_payment_intent).and_return(
-      double(status: "succeeded")
-    )
-
-    get new_listing_payment_path(listing)
-    escrow = Escrow.find_by(listing: listing, buyer: buyer)
 
     expect do
-      post listing_payments_path(listing), params: { escrow_id: escrow.id, payment_intent_id: "pi_test_success" }
+      post transaction_payments_path(transaction)
     end.to change(Payment, :count).by(1)
 
-    expect(response).to redirect_to(payment_path(Payment.last))
-    expect(escrow.reload.status).to eq("deposited")
-    expect(listing.reload.status).to eq("reserved")
+    expect(response).to redirect_to("https://checkout.stripe.com/test")
+    payment = Payment.last
+    expect(payment.provider).to eq("stripe")
+    expect(payment.provider_reference).to eq("cs_test_123")
+    expect(payment.amount).to eq(2000)
+  end
+
+  it "handles webhook successfully" do
+    payment = Payment.create!(
+      transaction_id: transaction.id,
+      amount: 2000,
+      provider: "stripe",
+      provider_reference: "cs_test_123",
+      status: :pending
+    )
+
+    allow(Payments::ProviderFactory).to receive(:configured_provider_name).and_return("stripe")
+    allow_any_instance_of(Payments::Providers::Stripe).to receive(:verify_webhook).and_return(
+      "provider_reference" => "cs_test_123",
+      "amount" => "2000.00"
+    )
+
+    post webhook_payments_path, params: {}
+
+    expect(response).to have_http_status(:ok)
+    expect(payment.reload.status).to eq("succeeded")
+    expect(transaction.reload.status).to eq("completed")
+    expect(product.reload.sale_status).to eq("sold")
   end
 end

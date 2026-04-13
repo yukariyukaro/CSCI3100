@@ -10,15 +10,17 @@ module Payments
       end
 
       def verify_webhook(request)
-        raise NotImplementedError
+        # In a real app, we'd verify the signature here.
+        # For now, just return the parameters.
+        request.request_parameters.to_h
       end
 
       def extract_amount(payload)
-        raise NotImplementedError
+        BigDecimal(payload.fetch("amount").to_s)
       end
 
       def extract_reference(payload)
-        raise NotImplementedError
+        payload.fetch("provider_reference").to_s
       end
     end
   end

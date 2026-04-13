@@ -1,206 +1,125 @@
-# rubocop:disable Metrics/ClassLength
 class PaymentsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_payment, only: %i[show fake]
-  before_action :set_product_transaction, only: %i[create_transaction]
+  before_action :authenticate_user!, except: %i[webhook]
+  skip_forgery_protection only: %i[webhook]
 
   def index
-    @payments = current_user.payments.includes(escrow: :listing).order(created_at: :desc)
+    @payments = payment_scope.order(created_at: :desc)
   end
 
   def show
-    return if @payment.user_id == current_user.id
-
-    redirect_to payments_path, alert: t("payments.errors.unauthorized")
-  end
-
-  def new
-    return redirect_to(listings_path, alert: t("payments.errors.listing_not_found")) if set_listing.blank?
-    return redirect_to(listing_path(@listing), alert: t("payments.errors.own_listing")) if buying_own_listing?
-
-    build_deposit_context
-    create_deposit_intent
+    @payment = payment_scope.find(params[:id])
   end
 
   def create
-    return unless prepare_create_request
+    transaction = Transaction.includes(:product).find(params[:transaction_id])
+    return redirect_not_payable(transaction) unless payable_by_current_user?(transaction)
 
-    handle_payment_result(@payment_intent_id)
-  rescue Stripe::StripeError => e
-    redirect_to new_listing_payment_path(@listing), alert: e.message
-  rescue ActiveRecord::RecordNotFound
-    redirect_to listings_path, alert: t("payments.errors.escrow_not_found")
-  end
-
-  def create_transaction
-    provider = Payments::ProviderFactory.instance
-    @payment = build_transaction_payment(provider)
-    checkout = provider.create_checkout(payment: @payment)
-    update_transaction_checkout!(@payment, checkout)
-
-    redirect_to checkout[:redirect_url]
+    payment = find_or_create_pending_payment(transaction)
+    checkout = provider.create_checkout(payment: payment)
+    payment.update!(provider_reference: checkout[:provider_reference], callback_token: checkout[:callback_token])
+    redirect_to checkout[:redirect_url], allow_other_host: true
   end
 
   def fake
-    head :forbidden if params[:token].present? && params[:token] != @payment.callback_token
+    @payment = Payment.includes(product_transaction: :product).find(params[:id])
+    return head :forbidden unless @payment.provider == "fake"
+    return head :forbidden unless @payment.product_transaction.buyer_id == current_user.id
+
+    head :forbidden unless token_matches?(params[:token], @payment.callback_token)
   end
 
   def webhook
-    payload = Payments::ProviderFactory.instance.verify_webhook(request)
-    payment = find_payment_by_reference(payload)
-    return head :not_found if payment.blank?
+    payload = provider.verify_webhook(request)
+    payment = payment_from_payload(payload)
+    return head :forbidden unless webhook_authorized?(payment, payload)
+    return webhook_cancel(payment) if webhook_cancelled?(payload)
 
-    process_webhook_outcome(payment, payload)
-    head :ok
-  rescue KeyError
-    head :bad_request
+    settle_and_respond(payment, payload)
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
+  end
+
+  def resolve
+    payment = Payment.includes(product_transaction: :product).find(params[:id])
+    return head :forbidden unless resolvable_by_current_user?(payment)
+
+    payment.update!(resolved_at: Time.current, resolved_by_id: current_user.id)
+    redirect_to user_path(current_user), notice: t("payments.manual_intervention.resolved")
   end
 
   private
 
-  def set_payment
-    @payment = Payment.includes(escrow: :listing).find(params[:id])
+  def payment_scope
+    Payment.joins(:product_transaction)
+           .where("transactions.buyer_id = :id OR transactions.seller_id = :id", id: current_user.id)
   end
 
-  def set_product_transaction
-    @product_transaction = Transaction.includes(:product).find(params[:id])
+  def provider
+    @provider ||= Payments::ProviderFactory.instance
   end
 
-  def build_transaction_payment(provider)
-    callback_token = provider.name == "fake" ? SecureRandom.hex(16) : nil
+  def payable_by_current_user?(transaction)
+    transaction.in_progress? && transaction.product.pending? && transaction.buyer_id == current_user.id
+  end
 
-    Payment.create!(
-      user: current_user,
-      product_transaction: @product_transaction,
-      amount: @product_transaction.product.price,
+  def redirect_not_payable(transaction)
+    redirect_to product_path(transaction.product), alert: t("payments.errors.not_payable")
+  end
+
+  def find_or_create_pending_payment(transaction)
+    existing = transaction.payments.pending.where(provider: provider.name).order(created_at: :desc).first
+    return existing if existing.present?
+
+    transaction.payments.create!(
+      amount: transaction.product.price,
+      status: :pending,
       provider: provider.name,
-      callback_token: callback_token,
-      status: :pending
+      callback_token: SecureRandom.hex(16)
     )
   end
 
-  def update_transaction_checkout!(payment, checkout)
-    payment.update!(provider_reference: checkout[:provider_reference], callback_token: checkout[:callback_token])
+  def token_matches?(token, expected)
+    return false if token.blank? || expected.blank?
+
+    ActiveSupport::SecurityUtils.secure_compare(token.to_s, expected.to_s)
   end
 
-  def set_listing
-    @listing = find_listing
+  def settle_and_respond(payment, payload)
+    PaymentSettlement.call(payment, provider_amount: provider.extract_amount(payload))
+    return head :ok unless provider.name == "fake"
+
+    redirect_to product_path(payment.product_transaction.product),
+                notice: t("payments.success")
   end
 
-  def find_listing
-    listing_id = params[:listing_id] || params.dig(:payment, :listing_id)
-    return if listing_id.blank?
+  def webhook_cancel(payment)
+    payment.update!(status: :cancelled)
 
-    Listing.find_by(id: listing_id)
-  end
-
-  def buying_own_listing?
-    @listing.user_id == current_user.id
-  end
-
-  def build_deposit_context
-    @escrow = Escrow.find_or_create_for!(listing: @listing, buyer: current_user)
-    @payment = current_user.payments.new(
-      escrow: @escrow,
-      transaction_type: :deposit,
-      amount: @escrow.amount,
-      status: :pending
-    )
-  end
-
-  # rubocop:disable Metrics/MethodLength
-  def create_deposit_intent
-    result = Payments::StripePaymentService.new(current_user).create_deposit_payment(
-      amount: @escrow.amount,
-      escrow: @escrow
-    )
-
-    if result[:success]
-      @client_secret = result[:client_secret]
-      @payment_intent_id = result[:payment_intent_id]
-      @stripe_publishable_key = ENV.fetch("STRIPE_PUBLISHABLE_KEY", "")
+    if provider.name == "fake"
+      redirect_to product_path(payment.product_transaction.product),
+                  alert: t("payments.cancelled")
     else
-      redirect_to listing_path(@listing), alert: result[:error]
+      head :ok
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
-  def load_and_validate_escrow
-    @escrow = Escrow.find(params[:escrow_id])
-    @escrow if @escrow.buyer_id == current_user.id && @escrow.listing_id == @listing.id
+  def payment_from_payload(payload)
+    Payment.find_by!(provider: provider.name, provider_reference: provider.extract_reference(payload))
   end
 
-  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-  def prepare_create_request
-    return redirect_to(listings_path, alert: t("payments.errors.listing_not_found")) if set_listing.blank?
+  def webhook_authorized?(payment, payload)
+    return true unless provider.name == "fake"
 
-    if load_and_validate_escrow.blank?
-      return redirect_to(listing_path(@listing),
-                         alert: t("payments.errors.unauthorized"))
-    end
-
-    @payment_intent_id = params[:payment_intent_id].to_s
-    if @payment_intent_id.blank?
-      return redirect_to(new_listing_payment_path(@listing),
-                         alert: t("payments.errors.missing_payment_intent"))
-    end
-
-    true
-  end
-  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
-
-  def handle_payment_result(payment_intent_id)
-    payment_intent = Payments::StripePaymentService.new(current_user).retrieve_payment_intent(payment_intent_id)
-    return handle_successful_payment(payment_intent_id) if successful_status?(payment_intent.status)
-
-    handle_failed_payment(payment_intent_id)
+    token_matches?(payload["token"], payment.callback_token)
   end
 
-  def successful_status?(status)
-    %w[succeeded processing requires_capture].include?(status)
+  def webhook_cancelled?(payload)
+    payload.fetch("outcome", "succeeded").to_s == "cancelled"
   end
 
-  def find_payment_by_reference(payload)
-    Payment.find_by(provider_reference: payload.fetch("provider_reference"))
-  end
-
-  def process_webhook_outcome(payment, payload)
-    return settle_webhook_payment(payment, payload) if payload.fetch("outcome", "succeeded") == "succeeded"
-
-    payment.update!(status: :failed, error_details: "user_cancelled")
-  end
-
-  def settle_webhook_payment(payment, payload)
-    PaymentSettlement.call(payment, provider_amount: payload.fetch("amount"))
-  end
-
-  def handle_successful_payment(payment_intent_id)
-    persist_successful_payment!(payment_intent_id)
-    @escrow.confirm_deposit_paid!(payment_intent_id) unless @escrow.deposited? || @escrow.completed?
-
-    redirect_to payment_path(@payment), notice: t("payments.notices.deposit_frozen")
-  end
-
-  def persist_successful_payment!(payment_intent_id)
-    @payment = Payment.find_or_initialize_by(stripe_payment_intent_id: payment_intent_id)
-    @payment.assign_attributes(user: current_user, escrow: @escrow, provider: "escrow",
-                               transaction_type: :deposit, amount: @escrow.amount,
-                               status: :succeeded)
-    @payment.save!
-  end
-
-  def handle_failed_payment(payment_intent_id)
-    Payment.create!(
-      user: current_user,
-      escrow: @escrow,
-      provider: "escrow",
-      transaction_type: :deposit,
-      amount: @escrow.amount,
-      stripe_payment_intent_id: payment_intent_id,
-      status: :failed
-    )
-
-    redirect_to new_listing_payment_path(@listing), alert: t("payments.errors.not_completed")
+  def resolvable_by_current_user?(payment)
+    payment.manual_intervention_required? &&
+      payment.resolved_at.blank? &&
+      payment.product_transaction.seller_id == current_user.id
   end
 end
-# rubocop:enable Metrics/ClassLength
