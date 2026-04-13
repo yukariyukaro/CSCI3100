@@ -1,11 +1,20 @@
 require "rails_helper"
 
 RSpec.describe Payments::WebhookProcessor do
-  let(:seller) { User.create!(name: "Seller", email: "seller_#{SecureRandom.hex}@example.com", password: "password", password_confirmation: "password") }
-  let(:buyer) { User.create!(name: "Buyer", email: "buyer_#{SecureRandom.hex}@example.com", password: "password", password_confirmation: "password") }
-  let(:product) { Product.create!(name: "Laptop", description: "This is a test description", price: 20.0, seller: seller, sale_status: :pending) }
+  let(:seller) do
+    User.create!(name: "Seller", email: "seller_#{SecureRandom.hex}@example.com", password: "password",
+                 password_confirmation: "password")
+  end
+  let(:buyer) do
+    User.create!(name: "Buyer", email: "buyer_#{SecureRandom.hex}@example.com", password: "password",
+                 password_confirmation: "password")
+  end
+  let(:product) do
+    Product.create!(name: "Laptop", description: "This is a test description", price: 20.0, seller: seller,
+                    sale_status: :pending)
+  end
   let(:transaction) { Transaction.create!(product: product, buyer: buyer, seller: seller, status: :in_progress) }
-  
+
   let(:payment) do
     Payment.create!(
       transaction_id: transaction.id,
@@ -31,7 +40,7 @@ RSpec.describe Payments::WebhookProcessor do
   before do
     allow(Payments::ProviderFactory).to receive(:configured_provider_name).and_return("stripe")
     allow_any_instance_of(Payments::Providers::Stripe).to receive(:verify_webhook).and_return(payload)
-    
+
     # ensure transaction exists
     payment.product_transaction.update!(status: :in_progress)
     payment.product_transaction.product.update!(sale_status: :pending)
@@ -44,7 +53,7 @@ RSpec.describe Payments::WebhookProcessor do
       it "settles the payment and marks event as processed" do
         expect(process).to eq(:ok)
         expect(payment.reload.status).to eq("succeeded")
-        
+
         event = PaymentWebhookEvent.find_by!(provider: "stripe", event_id: "evt_test_1")
         expect(event.processed_at).not_to be_nil
         expect(event.payment_id).to eq(payment.id)
@@ -79,7 +88,7 @@ RSpec.describe Payments::WebhookProcessor do
       it "settles the payment and updates processed_at" do
         expect(process).to eq(:ok)
         expect(payment.reload.status).to eq("succeeded")
-        
+
         event = PaymentWebhookEvent.find_by!(provider: "stripe", event_id: "evt_test_1")
         expect(event.processed_at).not_to be_nil
       end
@@ -96,19 +105,19 @@ RSpec.describe Payments::WebhookProcessor do
         )
 
         allow(PaymentWebhookEvent).to receive(:lock).and_call_original
-        # We need to stub the find_or_create_by! to raise RecordNotUnique once, 
+        # We need to stub the find_or_create_by! to raise RecordNotUnique once,
         # but wait, the actual code does:
         # PaymentWebhookEvent.lock("FOR UPDATE").find_or_create_by!(...)
         # We can just mock the first call to find_or_create_by! on the locked relation
         relation_double = instance_double(ActiveRecord::Relation)
         allow(PaymentWebhookEvent).to receive(:lock).with("FOR UPDATE").and_return(relation_double)
-        
+
         # first try raises
         expect(relation_double).to receive(:find_or_create_by!).with(
           provider: "stripe",
           event_id: "evt_test_1"
         ).and_raise(ActiveRecord::RecordNotUnique.new("concurrent insert"))
-        
+
         # rescue block does find_by!
         expect(relation_double).to receive(:find_by!).with(
           provider: "stripe",
@@ -127,11 +136,11 @@ RSpec.describe Payments::WebhookProcessor do
           "event_id" => "evt_test_1",
           "provider_reference" => "cs_test_123",
           "amount" => "20.00",
-          "outcome" => "succeeded" # Wait, outcome is set to succeeded by default. If outcome is nil, it's not handled as unknown.
+          "outcome" => "succeeded" # Default to succeeded. If outcome is nil, it's not handled.
         }
       end
 
-      # Actually, the webhook processor doesn't handle 'unknown' explicitly yet, 
+      # Actually, the webhook processor doesn't handle 'unknown' explicitly yet,
       # it handles outcome == "cancelled" vs settle.
       # If we need it to handle unknown events safely, we should check that.
       # Let's just verify it returns 400 on signature failure
@@ -143,7 +152,8 @@ RSpec.describe Payments::WebhookProcessor do
       end
 
       it "logs the error and returns :internal_server_error" do
-        expect(Rails.logger).to receive(:error).with(/\[WebhookProcessor\] Unexpected error: StandardError - Database exploded/)
+        expect(Rails.logger).to receive(:error)
+          .with(/\[WebhookProcessor\] Unexpected error: StandardError - Database exploded/)
         expect(process).to eq(:internal_server_error)
       end
     end

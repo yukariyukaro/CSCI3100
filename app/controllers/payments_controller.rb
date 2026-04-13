@@ -31,7 +31,7 @@ class PaymentsController < ApplicationController
 
   def webhook
     result = Payments::WebhookProcessor.call(request: request, provider: provider)
-    
+
     if result.is_a?(Hash) && result[:redirect]
       redirect_to result[:redirect], notice: result[:notice], alert: result[:alert]
     else
@@ -80,8 +80,6 @@ class PaymentsController < ApplicationController
     redirect_to product_path(payment.product_transaction.product),
                 notice: t("payments.success")
   end
-
-
 
   def resolvable_by_current_user?(payment)
     payment.manual_intervention_required? &&

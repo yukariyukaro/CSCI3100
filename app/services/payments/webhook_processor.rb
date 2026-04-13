@@ -9,6 +9,7 @@ module Payments
       @provider = provider
     end
 
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def call
       payload = @provider.verify_webhook(@request)
       event_id = payload.fetch("event_id")
@@ -26,12 +27,12 @@ module Payments
         authorize!(payment, payload)
 
         response = if webhook_cancelled?(payload)
-          cancel!(payment)
-          respond_for_cancel(payment)
-        else
-          settle!(payment, payload)
-          respond_for_success(payment)
-        end
+                     cancel!(payment)
+                     respond_for_cancel(payment)
+                   else
+                     settle!(payment, payload)
+                     respond_for_success(payment)
+                   end
 
         event.update!(payment_id: payment.id, processed_at: Time.current)
         response
@@ -44,12 +45,14 @@ module Payments
       log_error(e, payload)
       :internal_server_error
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     private
 
     def respond_for_cancel(payment)
       if @provider.name == "fake"
-        { redirect: Rails.application.routes.url_helpers.product_path(payment.product_transaction.product), alert: I18n.t("payments.cancelled") }
+        { redirect: Rails.application.routes.url_helpers.product_path(payment.product_transaction.product),
+          alert: I18n.t("payments.cancelled") }
       else
         :ok
       end
@@ -57,7 +60,8 @@ module Payments
 
     def respond_for_success(payment)
       if @provider.name == "fake"
-        { redirect: Rails.application.routes.url_helpers.product_path(payment.product_transaction.product), notice: I18n.t("payments.success") }
+        { redirect: Rails.application.routes.url_helpers.product_path(payment.product_transaction.product),
+          notice: I18n.t("payments.success") }
       else
         :ok
       end

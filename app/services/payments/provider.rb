@@ -20,8 +20,10 @@ module Payments
       raise NotImplementedError
     end
 
-    def authorize_webhook!(payment, payload)
+    # rubocop:disable Naming/PredicateMethod
+    def authorize_webhook!(_payment, _payload)
       true # Default implementation for providers that verify via signature (e.g. Stripe)
     end
+    # rubocop:enable Naming/PredicateMethod
   end
 end
