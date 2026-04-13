@@ -1,7 +1,8 @@
 class PaymentsController < ApplicationController
+  include PaymentsControllerHelpers
+
   before_action :authenticate_user!, except: %i[webhook]
   skip_forgery_protection only: %i[webhook]
-
   def index
     @payments = payment_scope.order(created_at: :desc)
   end
@@ -29,14 +30,11 @@ class PaymentsController < ApplicationController
   end
 
   def webhook
-    payload = provider.verify_webhook(request)
-    payment = payment_from_payload(payload)
-    return head :forbidden unless webhook_authorized?(payment, payload)
-    return webhook_cancel(payment) if webhook_cancelled?(payload)
-
-    settle_and_respond(payment, payload)
+    process_webhook
   rescue ActiveRecord::RecordNotFound
     head :not_found
+  rescue KeyError, JSON::ParserError, Stripe::SignatureVerificationError
+    head :bad_request
   end
 
   def resolve
@@ -48,11 +46,6 @@ class PaymentsController < ApplicationController
   end
 
   private
-
-  def payment_scope
-    Payment.joins(:product_transaction)
-           .where("transactions.buyer_id = :id OR transactions.seller_id = :id", id: current_user.id)
-  end
 
   def provider
     @provider ||= Payments::ProviderFactory.instance
@@ -78,12 +71,6 @@ class PaymentsController < ApplicationController
     )
   end
 
-  def token_matches?(token, expected)
-    return false if token.blank? || expected.blank?
-
-    ActiveSupport::SecurityUtils.secure_compare(token.to_s, expected.to_s)
-  end
-
   def settle_and_respond(payment, payload)
     PaymentSettlement.call(payment, provider_amount: provider.extract_amount(payload))
     return head :ok unless provider.name == "fake"
@@ -93,6 +80,8 @@ class PaymentsController < ApplicationController
   end
 
   def webhook_cancel(payment)
+    return head :ok if payment.succeeded?
+
     payment.update!(status: :cancelled)
 
     if provider.name == "fake"
@@ -105,6 +94,17 @@ class PaymentsController < ApplicationController
 
   def payment_from_payload(payload)
     Payment.find_by!(provider: provider.name, provider_reference: provider.extract_reference(payload))
+  end
+
+  def process_webhook
+    payload = provider.verify_webhook(request)
+    return head :ok unless PaymentWebhookEvent.record(provider: provider.name, event_id: payload["event_id"])
+
+    payment = payment_from_payload(payload)
+    return head :forbidden unless webhook_authorized?(payment, payload)
+    return webhook_cancel(payment) if webhook_cancelled?(payload)
+
+    settle_and_respond(payment, payload)
   end
 
   def webhook_authorized?(payment, payload)

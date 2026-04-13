@@ -80,6 +80,7 @@ RSpec.describe "Payments", type: :request do
 
     allow(Payments::ProviderFactory).to receive(:configured_provider_name).and_return("stripe")
     allow_any_instance_of(Payments::Providers::Stripe).to receive(:verify_webhook).and_return(
+      "event_id" => "evt_test_1",
       "provider_reference" => "cs_test_123",
       "amount" => "2000.00"
     )
@@ -90,5 +91,41 @@ RSpec.describe "Payments", type: :request do
     expect(payment.reload.status).to eq("succeeded")
     expect(transaction.reload.status).to eq("completed")
     expect(product.reload.sale_status).to eq("sold")
+  end
+
+  it "treats repeated stripe webhook events as idempotent" do
+    payment = Payment.create!(
+      transaction_id: transaction.id,
+      amount: 2000,
+      provider: "stripe",
+      provider_reference: "cs_test_123",
+      status: :pending
+    )
+
+    allow(Payments::ProviderFactory).to receive(:configured_provider_name).and_return("stripe")
+    allow_any_instance_of(Payments::Providers::Stripe).to receive(:verify_webhook).and_return(
+      "event_id" => "evt_test_repeat",
+      "provider_reference" => "cs_test_123",
+      "amount" => "2000.00"
+    )
+
+    post webhook_payments_path, params: {}
+    expect(response).to have_http_status(:ok)
+    expect(payment.reload.status).to eq("succeeded")
+
+    post webhook_payments_path, params: {}
+    expect(response).to have_http_status(:ok)
+    expect(payment.reload.status).to eq("succeeded")
+  end
+
+  it "returns bad_request when stripe webhook signature verification fails" do
+    allow(Payments::ProviderFactory).to receive(:configured_provider_name).and_return("stripe")
+    allow_any_instance_of(Payments::Providers::Stripe).to receive(:verify_webhook).and_raise(Stripe::SignatureVerificationError.new(
+                                                                                               "bad", "sig"
+                                                                                             ))
+
+    post webhook_payments_path, params: {}
+
+    expect(response).to have_http_status(:bad_request)
   end
 end

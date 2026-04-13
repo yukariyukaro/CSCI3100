@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_11_121000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_13_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -63,6 +63,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_11_121000) do
     t.datetime "updated_at", null: false
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
+  end
+
+  create_table "payment_webhook_events", force: :cascade do |t|
+    t.string "provider", null: false
+    t.string "event_id", null: false
+    t.bigint "payment_id"
+    t.datetime "processed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payment_id"], name: "index_payment_webhook_events_on_payment_id"
+    t.index ["provider", "event_id"], name: "index_payment_webhook_events_on_provider_and_event_id", unique: true
   end
 
   create_table "payments", force: :cascade do |t|
@@ -130,6 +141,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_11_121000) do
   add_foreign_key "conversations", "users", column: "seller_id"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "payment_webhook_events", "payments"
   add_foreign_key "payments", "transactions"
   add_foreign_key "payments", "users", column: "resolved_by_id"
   add_foreign_key "products", "users", column: "seller_id"
