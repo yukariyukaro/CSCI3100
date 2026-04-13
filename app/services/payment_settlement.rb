@@ -1,18 +1,18 @@
 class PaymentSettlement
-  def self.call(payment, provider_amount:)
-    new(payment, provider_amount: provider_amount).call
+  def self.call(payment, provider_amount_cents:)
+    new(payment, provider_amount_cents: provider_amount_cents).call
   end
 
-  def initialize(payment, provider_amount:)
+  def initialize(payment, provider_amount_cents:)
     @payment = payment
-    @provider_amount = BigDecimal(provider_amount.to_s)
+    @provider_amount_cents = provider_amount_cents.to_i
   end
 
   def call
     return true if @payment.succeeded?
 
     unless amount_matches?
-      mark_manual_intervention!("amount_mismatch expected=#{@payment.amount} got=#{@provider_amount}")
+      mark_manual_intervention!("amount_mismatch expected=#{expected_cents} got=#{@provider_amount_cents}")
       return false
     end
 
@@ -25,8 +25,12 @@ class PaymentSettlement
 
   private
 
+  def expected_cents
+    (@payment.amount * 100).to_i
+  end
+
   def amount_matches?
-    @payment.amount == @provider_amount
+    expected_cents == @provider_amount_cents
   end
 
   def mark_manual_intervention!(details)

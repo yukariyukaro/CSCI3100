@@ -30,11 +30,13 @@ class PaymentsController < ApplicationController
   end
 
   def webhook
-    process_webhook
-  rescue ActiveRecord::RecordNotFound
-    head :not_found
-  rescue KeyError, JSON::ParserError, Stripe::SignatureVerificationError
-    head :bad_request
+    result = Payments::WebhookProcessor.call(request: request, provider: provider)
+    
+    if result.is_a?(Hash) && result[:redirect]
+      redirect_to result[:redirect], notice: result[:notice], alert: result[:alert]
+    else
+      head result
+    end
   end
 
   def resolve
@@ -79,43 +81,7 @@ class PaymentsController < ApplicationController
                 notice: t("payments.success")
   end
 
-  def webhook_cancel(payment)
-    return head :ok if payment.succeeded?
 
-    payment.update!(status: :cancelled)
-
-    if provider.name == "fake"
-      redirect_to product_path(payment.product_transaction.product),
-                  alert: t("payments.cancelled")
-    else
-      head :ok
-    end
-  end
-
-  def payment_from_payload(payload)
-    Payment.find_by!(provider: provider.name, provider_reference: provider.extract_reference(payload))
-  end
-
-  def process_webhook
-    payload = provider.verify_webhook(request)
-    return head :ok unless PaymentWebhookEvent.record(provider: provider.name, event_id: payload["event_id"])
-
-    payment = payment_from_payload(payload)
-    return head :forbidden unless webhook_authorized?(payment, payload)
-    return webhook_cancel(payment) if webhook_cancelled?(payload)
-
-    settle_and_respond(payment, payload)
-  end
-
-  def webhook_authorized?(payment, payload)
-    return true unless provider.name == "fake"
-
-    token_matches?(payload["token"], payment.callback_token)
-  end
-
-  def webhook_cancelled?(payload)
-    payload.fetch("outcome", "succeeded").to_s == "cancelled"
-  end
 
   def resolvable_by_current_user?(payment)
     payment.manual_intervention_required? &&
