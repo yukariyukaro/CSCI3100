@@ -17,7 +17,15 @@ module Payments
       end
 
       def verify_webhook(request)
-        request.request_parameters.to_h
+        params = request.request_parameters.to_h
+        reference = params["provider_reference"].to_s
+        outcome = params.fetch("outcome", "succeeded").to_s
+        params["event_id"] ||= if reference.present?
+                                 "fake_evt_#{reference}_#{outcome}"
+                               else
+                                 "fake_evt_#{SecureRandom.hex(10)}"
+                               end
+        params
       end
 
       def extract_amount(payload)
