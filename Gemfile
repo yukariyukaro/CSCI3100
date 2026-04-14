@@ -75,10 +75,8 @@ group :development do
 end
 
 gem "cucumber-rails", "~> 4.0", group: :test, require: false
-
 gem "database_cleaner-active_record", "~> 2.2", group: :test
 gem "selenium-webdriver", group: :test
-gem "simplecov", group: :test, require: false
 
 gem "pg_search", "~> 2.3"
 

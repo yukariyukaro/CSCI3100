@@ -85,6 +85,7 @@ class ProductsController < ApplicationController
 
   def redirect_with_ai_result
     flash_key = @ai_result[:status] == "ok" ? :notice : :alert
-    redirect_to community_product_path(community_slug: Current.community.slug, id: @product.id), flash: { flash_key => @ai_result[:message] }
+    redirect_to community_product_path(community_slug: Current.community.slug, id: @product.id),
+                flash: { flash_key => @ai_result[:message] }
   end
 end

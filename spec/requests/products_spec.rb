@@ -121,7 +121,7 @@ RSpec.describe "Products", type: :request do
       expect_any_instance_of(Ai::Summarizer).not_to receive(:call_sync)
       # Also mock call so it doesn't actually hit the API
       allow_any_instance_of(Ai::Summarizer).to receive(:call)
-      
+
       get community_product_path(community_slug: community.slug, id: product)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Ask AI about this")
@@ -159,7 +159,8 @@ RSpec.describe "Products", type: :request do
         }
       )
 
-      post ask_ai_about_this_community_product_path(community_slug: community.slug, id: product), params: { question: "Is this durable?" }
+      post ask_ai_about_this_community_product_path(community_slug: community.slug, id: product),
+           params: { question: "Is this durable?" }
       expect(response).to redirect_to(community_product_path(community_slug: community.slug, id: product))
     end
 

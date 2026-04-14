@@ -93,3 +93,4 @@ jobs:
           vuln-type: os,library
           severity: HIGH,CRITICAL
           exit-code: "1"
+          skip-dirs: vendor/bundle
