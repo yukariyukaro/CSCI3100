@@ -224,8 +224,7 @@ After the test suite completes, open `coverage/index.html` in a browser to view 
 
 **SimpleCov Report:**
 
-<!-- TODO: Replace with actual screenshot after test suite run -->
-> _Screenshot will be added once the coverage report is generated._
+![SimpleCov Coverage Report](docs/simplecov_report.png)
 
 ---
 
