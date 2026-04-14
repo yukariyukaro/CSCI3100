@@ -24,7 +24,7 @@ RSpec.describe "Multi-tenant isolation", type: :request do
     expect(response.body).not_to include("(#{b.abbreviation})</span>")
   end
 
-  it "isolates search results by community" do
+  it "supports cross-community search results" do
     a = create_community(name: "Community A", abbreviation: "CA", slug: "community-a-2")
     b = create_community(name: "Community B", abbreviation: "CB", slug: "community-b-2")
 
@@ -35,15 +35,17 @@ RSpec.describe "Multi-tenant isolation", type: :request do
     seller_b = User.create!(name: "SellerB", email: TestData.unique_email(prefix: "seller_b"), password: "password123",
                             password_confirmation: "password123", community: b)
 
-    Product.create!(name: "MacBook Pro", description: "MacBook laptop from A.", price: 100, seller: seller_a)
-    Product.create!(name: "MacBook Air", description: "MacBook laptop from B.", price: 90, seller: seller_b)
+    Product.create!(name: "MacBook Pro", description: "MacBook laptop from A.", price: 100, seller: seller_a,
+                    community: a)
+    Product.create!(name: "MacBook Air", description: "MacBook laptop from B.", price: 90, seller: seller_b,
+                    community: b)
 
     login_as(user)
     get community_products_path(community_slug: a.slug), params: { query: "MacBook" }
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("MacBook Pro")
-    expect(response.body).not_to include("MacBook Air")
+    expect(response.body).to include("MacBook Air")
   end
 
   it "blocks cross-community listing writes (GET new / POST create) and emits an audit event" do

@@ -35,8 +35,13 @@ module TenantScoped
   def current_community_scope(model)
     raise "Tenant not set for #{controller_name}##{action_name}" if Current.community.nil?
 
-    scope = model.where(community_id: Current.community.id)
-    scope = scope.preload(:seller) if model == Product
+    # Support cross-community trading by showing all products regardless of the current community
+    if model == Product
+      scope = model.all
+      scope = scope.preload(:seller)
+    else
+      scope = model.where(community_id: Current.community.id)
+    end
     scope
   end
 

@@ -73,6 +73,7 @@
               <h2 class="card-title text-base text-base-content line-clamp-1"><%= product.name %></h2>
               <div class="flex items-center gap-2 mt-1 mb-2">
                 <div class="badge <%= condition_badge_class(product.condition) %> badge-sm"><%= product.condition %></div>
+                <div class="badge badge-outline badge-sm"><%= product.community.abbreviation %></div>
               </div>
               <div class="mt-auto pt-2 flex items-center justify-between">
                 <span class="text-xl text-primary font-bold"><%= number_to_currency(product.price) %></span>
