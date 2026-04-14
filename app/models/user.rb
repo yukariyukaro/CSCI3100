@@ -47,7 +47,7 @@ class User < ApplicationRecord
   private
 
   def normalize_email
-    self.email = email.to_s.strip.downcase
+    self.email = email.to_s.strip.downcase if email.present?
   end
 
   def avatar_content_type_and_size

@@ -51,6 +51,7 @@ group :development, :test do
   gem "sqlite3", "~> 2.0"
 
   gem "rspec-rails"
+  gem "simplecov", require: false
 
   gem "bundler-audit", require: false
 

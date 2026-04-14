@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_13_180000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_14_083248) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
   enable_extension "plpgsql"
@@ -106,7 +106,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_13_180000) do
     t.datetime "ai_summary_requested_at"
     t.bigint "seller_id", null: false
     t.integer "sale_status", default: 0, null: false
-    t.string "ai_model"
     t.index ["seller_id"], name: "index_products_on_seller_id"
   end
 
@@ -132,7 +131,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_13_180000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "password_digest"
-    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index "lower((email)::text)", name: "index_users_on_LOWER_email", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
