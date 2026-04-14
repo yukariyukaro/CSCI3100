@@ -50,11 +50,14 @@ RSpec.describe "Users", type: :request do
       before do
         Product.create!(name: "Sold iPhone", description: "Great phone", seller: user, price: 100, sale_status: :active)
         Product.create!(name: "Old MacBook", description: "Good laptop", seller: user, price: 200, sale_status: :sold)
+        Product.create!(name: "Hidden Listing", description: "Removed from market visibility", seller: user, price: 50,
+                        sale_status: :unlisted)
       end
 
       it "displays the user's active products" do
         get user_path(user)
         expect(response.body).to include("Sold iPhone")
+        expect(response.body).not_to include("Hidden Listing")
       end
 
       it "shows the products tab section" do

@@ -106,6 +106,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_13_180000) do
     t.datetime "ai_summary_requested_at"
     t.bigint "seller_id", null: false
     t.integer "sale_status", default: 0, null: false
+    t.string "ai_model"
     t.index ["seller_id"], name: "index_products_on_seller_id"
   end
 

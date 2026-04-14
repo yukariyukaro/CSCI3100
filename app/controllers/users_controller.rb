@@ -9,7 +9,7 @@ class UsersController < ApplicationController
   def show
     @user = User.includes(:products, :bought_transactions, :sold_transactions)
                 .find(params[:id])
-    @products = @user.products.recent_first
+    @products = @user.products.visible.recent_first
 
     return unless current_user == @user
 
@@ -38,7 +38,7 @@ class UsersController < ApplicationController
     if @user.update(update_params)
       redirect_to user_path(@user), notice: t("users.profile.updated")
     else
-      @products     = @user.products.recent_first
+      @products     = @user.products.visible.recent_first
       @transactions = nil
       render :show, status: :unprocessable_content
     end

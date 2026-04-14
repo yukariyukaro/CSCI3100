@@ -19,6 +19,19 @@ class ListingsController < ApplicationController
     end
   end
 
+  def destroy
+    @product = Product.find(params[:id])
+    return head :forbidden unless @product.seller_id == current_user.id
+
+    if @product.active? && @product.update(sale_status: :unlisted)
+      redirect_to listings_path, notice: t(".success")
+    else
+      redirect_to listings_path, alert: t(".failed")
+    end
+  rescue ActiveRecord::RecordNotFound
+    render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
+  end
+
   private
 
   def listing_params

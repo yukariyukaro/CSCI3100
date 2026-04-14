@@ -3,18 +3,19 @@ module ProductSearch
 
   module ClassMethods
     def search(query)
-      return all if query.blank?
+      base_scope = visible
+      return base_scope if query.blank?
 
-      return advanced_search(query) if postgresql_search?
+      return base_scope.merge(advanced_search(query)) if postgresql_search?
 
-      basic_search(query)
+      basic_search(query, base_scope)
     end
 
     def suggest(query)
       return [] if query.blank?
 
       pattern = "%#{sanitize_sql_like(query)}%"
-      suggest_scope(pattern).select(:name).distinct.limit(8).pluck(:name)
+      suggest_scope(pattern).visible.select(:name).distinct.limit(8).pluck(:name)
     end
 
     private
@@ -23,14 +24,14 @@ module ProductSearch
       Arel::Nodes::NamedFunction.new("LOWER", [arel_attr])
     end
 
-    def basic_search(query)
+    def basic_search(query, scope)
       like = like_pattern(query)
       fuzzy = fuzzy_like_pattern(query)
 
       name_like = name_like_node(like)
       desc_like = desc_like_node(like)
 
-      where(combined_search_node(name_like, desc_like, fuzzy))
+      scope.where(combined_search_node(name_like, desc_like, fuzzy))
         .order(search_ordering(name_like, desc_like, fuzzy), arel_table[:id].asc)
     end
 

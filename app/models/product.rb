@@ -13,7 +13,7 @@ class Product < ApplicationRecord
           inverse_of: :product
   has_many :conversations, dependent: :destroy
 
-  enum :sale_status, { active: 0, pending: 1, sold: 2 }
+  enum :sale_status, { active: 0, pending: 1, sold: 2, unlisted: 3 }
 
   validates :name, presence: true
   validates :description, presence: true, length: { minimum: 10 }
@@ -23,6 +23,7 @@ class Product < ApplicationRecord
   scope :recent_first, -> { order(created_at: :desc) }
   scope :by_status,    ->(status) { where(sale_status: status) }
   scope :by_seller,    ->(user_id) { where(seller_id: user_id) }
+  scope :visible,      -> { where.not(sale_status: :unlisted) }
   scope :for_sale,     -> { where(sale_status: %i[active pending]) }
 
   # Reset AI summary if the description changes
