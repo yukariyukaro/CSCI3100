@@ -1,0 +1,52 @@
+<div class="my-2">
+  <% case product.ai_summary_status %>
+  <% when "completed" %>
+    <div class="card bg-base-200 border-l-4 border-primary shadow-sm animate-fade-in">
+      <div class="card-body p-4">
+        <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-2">
+          ✨ AI Key Selling Points
+        </h3>
+        <div class="leading-relaxed text-sm text-base-content/80">
+          <%= simple_format(product.ai_summary) %>
+        </div>
+        <span class="text-xs text-base-content/40 mt-2 block">Auto-generated · for reference only</span>
+      </div>
+    </div>
+  <% when "generating" %>
+    <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3">
+          <span class="animate-pulse">✨ AI is generating summary...</span>
+        </h3>
+        <div class="flex flex-col gap-2">
+          <div class="skeleton h-3 w-full"></div>
+          <div class="skeleton h-3 w-5/6"></div>
+          <div class="skeleton h-3 w-4/6"></div>
+        </div>
+      </div>
+    </div>
+  <% when "pending", nil, "failed", "skipped" %>
+    <div class="card bg-base-200 border-l-4 border-info shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="card-title text-info text-sm mb-2">Ask AI about this</h3>
+        <% if product.ai_summary_status == "failed" %>
+          <p class="text-sm text-base-content/70 mb-3">AI response failed. Ask again to retry.</p>
+        <% elsif product.ai_summary_status == "skipped" %>
+          <p class="text-sm text-base-content/70 mb-3">Provide a question to ask AI about this product.</p>
+        <% else %>
+          <p class="text-sm text-base-content/70 mb-3">Ask a question and get an AI answer based on this product.</p>
+        <% end %>
+
+        <%= form_with url: ask_ai_about_this_product_path(product), method: :post, class: "space-y-2" do %>
+          <%= text_field_tag :question,
+                nil,
+                placeholder: "e.g., Is this suitable for daily use?",
+                class: "input input-bordered w-full" %>
+          <button type="submit" class="btn btn-sm btn-outline">
+            Ask AI about this
+          </button>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
