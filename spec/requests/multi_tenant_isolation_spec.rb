@@ -35,8 +35,10 @@ RSpec.describe "Multi-tenant isolation", type: :request do
     seller_b = User.create!(name: "SellerB", email: TestData.unique_email(prefix: "seller_b"), password: "password123",
                             password_confirmation: "password123", community: b)
 
-    Product.create!(name: "MacBook Pro", description: "MacBook laptop from A.", price: 100, seller: seller_a, community: a)
-    Product.create!(name: "MacBook Air", description: "MacBook laptop from B.", price: 90, seller: seller_b, community: b)
+    Product.create!(name: "MacBook Pro", description: "MacBook laptop from A.", price: 100, seller: seller_a,
+                    community: a)
+    Product.create!(name: "MacBook Air", description: "MacBook laptop from B.", price: 90, seller: seller_b,
+                    community: b)
 
     login_as(user)
     get community_products_path(community_slug: a.slug), params: { query: "MacBook" }
