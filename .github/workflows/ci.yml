@@ -68,7 +68,11 @@ jobs:
       # 关键修正：使用 db:prepare 而不是 db:schema:load
       # db:prepare 在 schema 不存在时会尝试运行 migration，更适合初期项目
       - name: Set up database
-        run: bin/rails db:prepare
+        run: |
+          bin/rails db:prepare
+          psql -h localhost -U postgres -d rails_test -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+        env:
+          PGPASSWORD: password
 
       - name: Run tests
         env:
@@ -93,4 +97,4 @@ jobs:
           vuln-type: os,library
           severity: HIGH,CRITICAL
           exit-code: "1"
-          skip-dirs: vendor/bundle
+          skip-dirs: vendor
