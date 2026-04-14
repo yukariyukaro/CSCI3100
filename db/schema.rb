@@ -11,6 +11,10 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_trgm"
+  enable_extension "plpgsql"
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -40,8 +44,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   end
 
   create_table "audit_events", force: :cascade do |t|
-    t.integer "community_id", null: false
-    t.integer "user_id"
+    t.bigint "community_id", null: false
+    t.bigint "user_id"
     t.string "action", null: false
     t.string "auditable_type"
     t.bigint "auditable_id"
@@ -72,12 +76,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   end
 
   create_table "conversations", force: :cascade do |t|
-    t.integer "product_id", null: false
-    t.integer "buyer_id", null: false
-    t.integer "seller_id", null: false
+    t.bigint "product_id", null: false
+    t.bigint "buyer_id", null: false
+    t.bigint "seller_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "community_id", null: false
+    t.bigint "community_id", null: false
     t.index ["buyer_id"], name: "index_conversations_on_buyer_id"
     t.index ["community_id"], name: "index_conversations_on_community_id"
     t.index ["product_id", "buyer_id"], name: "index_conversations_on_product_id_and_buyer_id", unique: true
@@ -86,8 +90,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   end
 
   create_table "messages", force: :cascade do |t|
-    t.integer "conversation_id", null: false
-    t.integer "sender_id", null: false
+    t.bigint "conversation_id", null: false
+    t.bigint "sender_id", null: false
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -98,7 +102,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   create_table "payment_webhook_events", force: :cascade do |t|
     t.string "provider", null: false
     t.string "event_id", null: false
-    t.integer "payment_id"
+    t.bigint "payment_id"
     t.datetime "processed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -107,7 +111,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   end
 
   create_table "payments", force: :cascade do |t|
-    t.integer "transaction_id", null: false
+    t.bigint "transaction_id", null: false
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.integer "status", default: 0, null: false
     t.string "provider", null: false
@@ -118,7 +122,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
     t.bigint "resolved_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["provider", "provider_reference"], name: "index_payments_on_provider_and_provider_reference", unique: true, where: "provider_reference IS NOT NULL"
+    t.index ["provider", "provider_reference"], name: "index_payments_on_provider_and_provider_reference", unique: true, where: "(provider_reference IS NOT NULL)"
     t.index ["resolved_by_id"], name: "index_payments_on_resolved_by_id"
     t.index ["status"], name: "index_payments_on_status"
     t.index ["transaction_id"], name: "index_payments_on_transaction_id"
@@ -127,17 +131,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   create_table "products", force: :cascade do |t|
     t.string "name", null: false
     t.text "description", null: false
-    t.decimal "price", default: "0.0", null: false
+    t.decimal "price", precision: 10, scale: 2, default: "0.0", null: false
     t.string "condition"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "ai_summary"
     t.string "ai_summary_status", default: "pending"
     t.datetime "ai_summary_requested_at"
-    t.integer "seller_id", null: false
+    t.bigint "seller_id", null: false
     t.integer "sale_status", default: 0, null: false
+    t.bigint "community_id", null: false
     t.string "ai_model"
-    t.integer "community_id", null: false
     t.text "ai_last_question"
     t.index ["community_id", "sale_status", "created_at"], name: "index_products_on_community_status_created"
     t.index ["community_id"], name: "index_products_on_community_id"
@@ -146,18 +150,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.integer "product_id", null: false
-    t.integer "buyer_id", null: false
-    t.integer "seller_id", null: false
+    t.bigint "product_id", null: false
+    t.bigint "buyer_id", null: false
+    t.bigint "seller_id", null: false
     t.integer "status", default: 0, null: false
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "community_id", null: false
+    t.bigint "community_id", null: false
     t.index ["buyer_id", "created_at"], name: "index_transactions_on_buyer_id_and_created_at"
     t.index ["buyer_id"], name: "index_transactions_on_buyer_id"
     t.index ["community_id"], name: "index_transactions_on_community_id"
-    t.index ["product_id"], name: "idx_only_one_active_transaction_per_product", unique: true, where: "status = 1"
+    t.index ["product_id"], name: "idx_only_one_active_transaction_per_product", unique: true, where: "(status = 1)"
     t.index ["product_id"], name: "index_transactions_on_product_id"
     t.index ["seller_id", "created_at"], name: "index_transactions_on_seller_id_and_created_at"
     t.index ["seller_id"], name: "index_transactions_on_seller_id"
@@ -169,7 +173,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "password_digest"
-    t.integer "community_id", null: false
+    t.bigint "community_id", null: false
     t.index ["community_id"], name: "index_users_on_community_id"
     t.index ["email"], name: "index_users_on_email", unique: true
   end

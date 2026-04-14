@@ -77,10 +77,7 @@
       </span>
     </button>
 
-    <div class="flex items-center gap-1">
-      <%= link_to "EN", root_path(locale: "en"), class: "btn btn-ghost btn-xs #{I18n.locale.to_s == 'en' ? 'btn-active' : ''}" %>
-      <%= link_to "中文", root_path(locale: "zh"), class: "btn btn-ghost btn-xs #{I18n.locale.to_s == 'zh' ? 'btn-active' : ''}" %>
-    </div>
+
     <% if logged_in? %>
       <details class="dropdown dropdown-end relative">
         <summary class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-base-200 transition-colors border border-transparent hover:border-base-300 list-none">
