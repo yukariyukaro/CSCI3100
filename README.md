@@ -40,7 +40,7 @@ A cloud-native SaaS web application for peer-to-peer second-hand trading within 
 - **Ruby:** 3.3.8 (via `rbenv` or `rvm`)
 - **Node.js:** v18+ (for asset compilation)
 - **PostgreSQL:** 14+
-- **Redis:** 6+ (for Sidekiq and ActionCable)
+- **Redis:** 6+ (required for Sidekiq background jobs; ActionCable uses async adapter in development)
 
 ---
 
@@ -83,7 +83,6 @@ Create a `.env` file in the project root (never commit this file):
 ```bash
 # Required for Stripe payment integration
 STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Required for AI summarization
@@ -175,7 +174,7 @@ bundle exec rubocop && bundle exec rspec && bundle exec cucumber
 | 2 | **Real-Time Chat (ActionCable)**     | WebSocket-based live messaging between buyer and seller per product. Conversations are scoped to authorized participants only. Messages are broadcast in real time via ActionCable. |
 | 3 | **Fuzzy Search & Autocomplete**      | Full-text search powered by PostgreSQL `pg_search` with `tsvector` and `pg_trgm` (trigram) for typo-tolerant matching. Autocomplete endpoint with server-side caching (5-minute TTL). |
 | 4 | **AI Smart Summarization (OpenAI)**  | Automatic product description summarization using OpenAI GPT-3.5-turbo. Triggered on product view, processed asynchronously via `AiSummarizationJob`. Summaries reset when description is edited. |
-| 5 | **Automated Background Processing (Sidekiq)** | Sidekiq + Redis infrastructure for async job execution. Includes `AiSummarizationJob` for AI processing and `ListingMaintenanceJob` for auto-archiving listings inactive for 30+ days. |
+| 5 | **Automated Background Processing (Sidekiq)** | Sidekiq + Redis infrastructure for async job execution. Includes `AiSummarizationJob` for AI processing and `ListingMaintenanceJob` for auto-archiving listings older than 30 days. |
 
 ### Additional Capabilities
 
