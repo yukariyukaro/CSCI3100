@@ -289,4 +289,52 @@ RSpec.describe "Listings", type: :request do
       end
     end
   end
+
+  describe "DELETE /listings/:id" do
+    let!(:product) do
+      Product.create!(
+        name: "Mechanical Keyboard",
+        description: "Hot-swappable keyboard with linear switches.",
+        price: 350,
+        seller: seller,
+        sale_status: :active
+      )
+    end
+
+    let(:other_user) do
+      User.create!(
+        name: "Other User",
+        email: TestData.unique_email(prefix: "other"),
+        password: "password123",
+        password_confirmation: "password123"
+      )
+    end
+
+    context "when visitor is not logged in" do
+      it "redirects to the login page" do
+        delete listing_path(product)
+        expect(response).to redirect_to(new_session_path)
+      end
+    end
+
+    context "when logged in as the seller" do
+      before { log_in_as(seller) }
+
+      it "marks the product as unlisted" do
+        delete listing_path(product)
+        expect(response).to redirect_to(listings_path)
+        expect(product.reload.sale_status).to eq("unlisted")
+      end
+    end
+
+    context "when logged in as another user" do
+      before { log_in_as(other_user) }
+
+      it "does not allow unlisting another user's product" do
+        delete listing_path(product)
+        expect(response).to have_http_status(:forbidden)
+        expect(product.reload.sale_status).to eq("active")
+      end
+    end
+  end
 end

@@ -63,6 +63,9 @@ en:
   listings:
     create:
       success: "Product published successfully!"
+    destroy:
+      success: "Product has been unlisted."
+      failed: "Unable to unlist this product."
     errors:
       image_too_large: "Image must be smaller than 5MB"
       image_invalid_type: "Image must be a JPEG or PNG file"

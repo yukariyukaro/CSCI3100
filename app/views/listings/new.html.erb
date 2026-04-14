@@ -37,7 +37,7 @@
       <%= f.text_field :name,
             placeholder: "e.g., MacBook Pro 14",
             required: true,
-            class: "input input-bordered w-full mt-1 #{'input-error' if @product.errors[:name].any?}",
+            class: "input input-bordered w-full text-base-content mt-1 #{'input-error' if @product.errors[:name].any?}",
             data: { testid: "product-name" } %>
       <% if @product.errors[:name].any? %>
         <p class="text-error text-sm mt-1"><%= @product.errors[:name].first %></p>
@@ -52,7 +52,7 @@
             placeholder: "Describe the product condition, features, and any extras included...",
             required: true,
             rows: 5,
-            class: "textarea textarea-bordered w-full mt-1 #{'textarea-error' if @product.errors[:description].any?}",
+            class: "textarea textarea-bordered text-base-content w-full mt-1 #{'textarea-error' if @product.errors[:description].any?}",
             data: { testid: "product-description" } %>
       <p class="text-base-content/50 text-xs mt-1">Minimum 10 characters.</p>
       <% if @product.errors[:description].any? %>
@@ -71,7 +71,7 @@
               min: 0,
               step: "0.01",
               required: true,
-              class: "grow",
+              class: "w-full text-base-content",
               data: { testid: "product-price" } %>
       </label>
       <% if @product.errors[:price].any? %>
@@ -89,7 +89,7 @@
               @product.condition
             ),
             {},
-            class: "select select-bordered w-full mt-1",
+            class: "select select-bordered text-base-content w-full text mt-1",
             data: { testid: "product-condition" } %>
     </div>
 
@@ -97,13 +97,13 @@
     <div class="form-control">
       <%= f.label :image, "Product Image", class: "label font-semibold text-base-content" %>
       <span class="text-base-content/50 text-sm ml-1">(optional, JPEG/PNG, max 5MB)</span>
-      <div class="mt-2 flex flex-col gap-3">
+      <div class="mt-2 flex flex-col gap-3 text-base-content">
         <%# Image preview area %>
         <div id="image-preview-container" class="hidden">
           <img id="image-preview" src="" alt="Image preview"
                class="w-48 h-48 object-cover rounded-lg border border-base-200 shadow-sm" />
         </div>
-        <label class="flex items-center gap-3 cursor-pointer w-fit">
+        <label class="flex items-center gap-3 cursor-pointer w-fit text-base-content">
           <div class="btn btn-outline btn-sm gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -126,11 +126,11 @@
     <div class="divider"></div>
 
     <%# Submit + Cancel %>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4 text-base-content">
       <%= f.submit "Publish Product",
             class: "btn btn-primary px-8",
             data: { testid: "submit-listing", disable_with: "Publishing..." } %>
-      <%= link_to "Cancel", products_path, class: "btn btn-ghost" %>
+      <%= link_to "Cancel", products_path, class: "btn btn-ghost text-base-content" %>
     </div>
 
   <% end %>

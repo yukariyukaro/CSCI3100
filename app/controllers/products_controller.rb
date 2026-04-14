@@ -46,7 +46,7 @@ class ProductsController < ApplicationController
         Product.search(@query)
       end
     else
-      Product.all
+      Product.visible
     end
   end
 

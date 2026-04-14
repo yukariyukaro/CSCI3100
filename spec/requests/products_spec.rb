@@ -18,6 +18,8 @@ RSpec.describe "Products", type: :request do
                       created_at: 1.day.ago)
       Product.create!(name: "二手iPhone 13", description: "9成新，无划痕，电池健康度良好", price: 500, seller: seller,
                       created_at: 3.days.ago)
+      Product.create!(name: "Hidden Product", description: "Should not appear in listings", price: 100, seller: seller,
+                      sale_status: :unlisted)
     end
 
     it "returns all products when no query is provided" do
@@ -25,6 +27,7 @@ RSpec.describe "Products", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("MacBook Pro")
       expect(response.body).to include("iPhone 15")
+      expect(response.body).not_to include("Hidden Product")
     end
 
     it "returns matching products when a query is provided (>= 2 chars)" do
