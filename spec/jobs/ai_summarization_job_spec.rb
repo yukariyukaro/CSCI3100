@@ -16,46 +16,96 @@ RSpec.describe AiSummarizationJob, type: :job do
   let(:product) { Product.create!(name: "Test Phone", description: long_description, price: 500, seller: seller) }
 
   describe "#perform" do
-    context "when OpenAI calls successfully" do
+    context "when ModelScope API key is present and call succeeds" do
       let(:mock_client) { instance_double(OpenAI::Client) }
+      # Generic content — tests verify structure, not AI-generated wording
       let(:mock_response) do
         {
           "choices" => [
-            {
-              "message" => {
-                "content" => "✅ 95% Battery\n✅ Original Box"
-              }
-            }
+            { "message" => { "content" => "Selling point A\nSelling point B" } }
           ]
         }
       end
 
       before do
+        stub_const("MODELSCOPE_API_KEY", "ms-test-key")
+        stub_const("MODELSCOPE_MODEL_ID", "Qwen/Qwen3.5-35B-A3B")
         allow(OpenAI::Client).to receive(:new).and_return(mock_client)
         allow(mock_client).to receive(:chat).and_return(mock_response)
       end
 
-      it "updates the product with the summary and completed status" do
+      it "updates the product with a non-blank summary, ai_model, and completed status" do
         described_class.new.perform(product.id)
         product.reload
         expect(product.ai_summary_status).to eq("completed")
-        expect(product.ai_summary).to eq("✅ 95% Battery\n✅ Original Box")
+        expect(product.ai_summary).to be_present
+        expect(product.ai_model).to eq("Qwen/Qwen3.5-35B-A3B")
         expect(product.ai_summary_requested_at).not_to be_nil
+      end
+
+      it "is idempotent — does not re-generate for a completed product" do
+        product.update!(ai_summary_status: "completed", ai_summary: "✅ Already done")
+        expect(OpenAI::Client).not_to receive(:new)
+        described_class.new.perform(product.id)
+        expect(product.reload.ai_summary).to eq("✅ Already done")
       end
     end
 
-    context "when OpenAI raises an error" do
+    context "when MODELSCOPE_API_KEY is blank (no-AI mode)" do
+      before { stub_const("MODELSCOPE_API_KEY", "") }
+
+      it "skips summary generation and sets status to skipped" do
+        expect(OpenAI::Client).not_to receive(:new)
+        described_class.new.perform(product.id)
+        expect(product.reload.ai_summary_status).to eq("skipped")
+      end
+    end
+
+    context "when ModelScope API raises an error" do
       let(:mock_client) { instance_double(OpenAI::Client) }
 
       before do
+        stub_const("MODELSCOPE_API_KEY", "ms-test-key")
+        stub_const("MODELSCOPE_MODEL_ID", "Qwen/Qwen3.5-35B-A3B")
         allow(OpenAI::Client).to receive(:new).and_return(mock_client)
         allow(mock_client).to receive(:chat).and_raise(StandardError.new("API Timeout"))
       end
 
-      it "gracefully marks status as failed and logs the error" do
-        expect(Rails.logger).to receive(:error).with(/AiSummarizationJob failed for Product #{product.id}: API Timeout/)
+      it "marks status as failed and logs the error without exposing the key" do
+        expect(Rails.logger).to receive(:error).with(
+          /\[AI\] fetch_summary_from_modelscope failed: StandardError - API Timeout/
+        )
         described_class.new.perform(product.id)
         expect(product.reload.ai_summary_status).to eq("failed")
+      end
+    end
+
+    context "when transient timeout occurs" do
+      before do
+        stub_const("MODELSCOPE_API_KEY", "ms-test-key")
+        allow_any_instance_of(Ai::Summarizer).to receive(:fetch_summary_from_modelscope).and_raise(Net::ReadTimeout)
+      end
+
+      it "keeps product status pending for retry" do
+        expect do
+          described_class.new.perform(product.id)
+        end.to raise_error(Net::ReadTimeout)
+
+        expect(product.reload.ai_summary_status).to eq("pending")
+      end
+    end
+
+    context "when product description is too short" do
+      let(:product) do
+        # Description is >= 10 chars (passes model validation) but < MIN_LENGTH (20)
+        Product.create!(name: "Short", description: "Good item.", price: 10, seller: seller)
+      end
+
+      it "marks status as skipped without calling the API" do
+        stub_const("MODELSCOPE_API_KEY", "ms-test-key")
+        expect(OpenAI::Client).not_to receive(:new)
+        described_class.new.perform(product.id)
+        expect(product.reload.ai_summary_status).to eq("skipped")
       end
     end
   end

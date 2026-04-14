@@ -105,16 +105,132 @@ RSpec.describe "Products", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("MacBook Pro")
       expect(response.body).to include("Apple laptop")
-      expect(response.body).to include("hidden")
+      expect(response.body).to include("Ask AI about this")
+    end
+
+    it "does not auto-trigger summary generation on page load" do
+      product = Product.create!(
+        name: "Manual Trigger Product",
+        description: "Long enough description for manual AI summary trigger check.",
+        price: 500,
+        seller: seller,
+        ai_summary_status: "pending"
+      )
+
+      expect_any_instance_of(Ai::Summarizer).not_to receive(:call_sync)
+      get product_path(product)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Ask AI about this")
     end
 
     it "renders the AI summary card if the product has a summary" do
       product = Product.create!(name: "Used iPhone", description: "Long long desc", price: 500,
-                                seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed")
+                                seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed",
+                                ai_last_question: "Is this worth the price?")
       get product_path(product)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("AI 智能卖点总结")
+      expect(response.body).to include("AI Answer")
       expect(response.body).to include("Good condition")
+      expect(response.body).to include("Your last question")
+      expect(response.body).to include("Is this worth the price?")
+    end
+  end
+
+  describe "POST /products/:id/ask_ai_about_this" do
+    it "retries summary generation and redirects back to product" do
+      product = Product.create!(
+        name: "Retry Product",
+        description: "Long enough description to trigger retry summary generation.",
+        price: 88,
+        seller: seller,
+        ai_summary_status: "failed"
+      )
+
+      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(
+        {
+          status: "ok",
+          ai_summary: "Great choice",
+          message: "AI answered your question.",
+          question: "Is this durable?"
+        }
+      )
+
+      post ask_ai_about_this_product_path(product), params: { question: "Is this durable?" }
+      expect(response).to redirect_to(product_path(product))
+    end
+
+    it "returns turbo stream response for turbo requests" do
+      product = Product.create!(
+        name: "Turbo Product",
+        description: "Long enough description to trigger summary generation for turbo stream response.",
+        price: 120,
+        seller: seller,
+        ai_summary_status: "pending"
+      )
+
+      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(
+        {
+          status: "failed",
+          ai_summary: nil,
+          message: "AI took too long to respond. Please try again.",
+          question: "What is good here?"
+        }
+      )
+
+      post ask_ai_about_this_product_path(product),
+           params: { question: "What is good here?" },
+           headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      expect(response.body).to include("turbo-stream")
+      expect(response.body).to include("AI took too long to respond")
+    end
+
+    it "keeps the user question in the turbo response after failure" do
+      product = Product.create!(
+        name: "Question Preserve Product",
+        description: "Long enough description to test question preservation in turbo response.",
+        price: 120,
+        seller: seller,
+        ai_summary_status: "pending"
+      )
+
+      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(
+        {
+          status: "failed",
+          ai_summary: nil,
+          message: "AI is temporarily unavailable. Please try again.",
+          question: "Does it include charger?"
+        }
+      )
+
+      post ask_ai_about_this_product_path(product),
+           params: { question: "Does it include charger?" },
+           headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+      expect(response.body).to include("Does it include charger?")
+    end
+  end
+
+  describe "GET /api/products/:id/ai_summary" do
+    it "returns summary status with metadata fields" do
+      product = Product.create!(
+        name: "API Test Product",
+        description: "Long enough description for summary metadata endpoint.",
+        price: 100,
+        seller: seller,
+        ai_summary_status: "pending",
+        ai_summary_requested_at: Time.current
+      )
+
+      get ai_summary_api_product_path(product)
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body["ai_summary_status"]).to eq("pending")
+      expect(body).to have_key("ai_summary_requested_at")
+      expect(body).to have_key("ai_last_question")
+      expect(body).to have_key("updated_at")
     end
   end
 

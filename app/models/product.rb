@@ -107,6 +107,7 @@ class Product < ApplicationRecord
 
   def reset_ai_summary
     self.ai_summary = nil
+    self.ai_last_question = nil
     self.ai_summary_status = "pending"
     self.ai_summary_requested_at = nil
   end
