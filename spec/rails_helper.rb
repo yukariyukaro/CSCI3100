@@ -1,10 +1,13 @@
+require "simplecov"
+SimpleCov.start "rails" do
+  add_filter "/bin/"
+  add_filter "/db/"
+  add_filter "/spec/"
+end
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require "spec_helper"
 ENV["RAILS_ENV"] ||= "test"
-require_relative "support/db_guard"
-require_relative "support/test_data"
-require_relative "support/test_db_cleaner"
-DbGuard.prepare_env!
 require_relative "../config/environment"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
@@ -12,11 +15,6 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
 require "rspec/rails"
-require "webmock/rspec"
-
-# Disable all real network connections in tests
-WebMock.disable_net_connect!(allow_localhost: true)
-
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -32,9 +30,15 @@ WebMock.disable_net_connect!(allow_localhost: true)
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-# Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+Rails.root.glob("spec/support/**/*.rb").sort_by(&:to_s).each { |f| require f }
 
-DbGuard.check_pending!
+# Checks for pending migrations and applies them before tests are run.
+# If you are not using ActiveRecord, you can remove these lines.
+begin
+  ActiveRecord::Migration.maintain_test_schema!
+rescue ActiveRecord::PendingMigrationError => e
+  abort e.to_s.strip
+end
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -45,10 +49,6 @@ RSpec.configure do |config|
   # examples within a transaction, remove the following line or assign false
   # instead of true.
   config.use_transactional_fixtures = true
-
-  config.before(:suite) do
-    TestDbCleaner.clean!
-  end
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
@@ -69,6 +69,9 @@ RSpec.configure do |config|
   #
   # To enable this behaviour uncomment the line below.
   # config.infer_spec_type_from_file_location!
+
+  # Add this line to fix ActiveJob matchers (have_enqueued_job)
+  config.include ActiveJob::TestHelper
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
