@@ -3,19 +3,14 @@ class SessionsController < ApplicationController
   end
 
   def create
-    if authenticated_user
-      session[:user_id] = user.id
-      redirect_to root_path, notice: t("auth.logged_in")
-    else
-      flash.now[:alert] = t("auth.invalid_credentials")
-      @user = User.new
-      render :new, status: :unprocessable_content
-    end
+    return login_success if authenticated_user
+
+    login_failure
   end
 
   def destroy
     reset_session
-    redirect_to root_path, notice: t("auth.logged_out")
+    redirect_to communities_path, notice: t("auth.logged_out")
   end
 
   private
@@ -28,5 +23,16 @@ class SessionsController < ApplicationController
 
   def authenticated_user
     user&.authenticate(params[:password])
+  end
+
+  def login_success
+    session[:user_id] = user.id
+    redirect_to community_products_path(community_slug: user.community.slug), notice: t("auth.logged_in")
+  end
+
+  def login_failure
+    flash.now[:alert] = t("auth.invalid_credentials")
+    @user = User.new
+    render :new, status: :unprocessable_content
   end
 end

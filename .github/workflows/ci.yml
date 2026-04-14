@@ -24,6 +24,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - "6379:6379"
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     env:
       RAILS_ENV: test
@@ -50,6 +59,9 @@ jobs:
       - name: Security audit
         run: bundle exec bundle-audit --update
 
+      - name: Static security scan (Brakeman)
+        run: bundle exec brakeman -q
+
       - name: Lint code for consistent style
         run: bundle exec rubocop
 
@@ -59,6 +71,25 @@ jobs:
         run: bin/rails db:prepare
 
       - name: Run tests
+        env:
+          ENFORCE_COVERAGE: "1"
         run: |
           bundle exec rspec
           bundle exec cucumber
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Dependency + config vulnerability scan (Trivy FS)
+        if: always()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          ignore-unfixed: false
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: "1"

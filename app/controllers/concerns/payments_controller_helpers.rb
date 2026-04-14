@@ -3,6 +3,7 @@ module PaymentsControllerHelpers
 
   def payment_scope
     Payment.joins(:product_transaction)
+           .where(transactions: { community_id: Current.community.id })
            .where("transactions.buyer_id = :id OR transactions.seller_id = :id", id: current_user.id)
   end
 

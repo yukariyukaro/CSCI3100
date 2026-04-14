@@ -94,7 +94,7 @@ export default class extends Controller {
 
   syncMissingMessages() {
     const last = this.lastMessageId()
-    const url = `/conversations/${this.conversationIdValue}/messages.json?after_id=${encodeURIComponent(last)}`
+    const url = `${this.formTarget.action}.json?after_id=${encodeURIComponent(last)}`
 
     fetch(url, { headers: { "Accept": "application/json" } })
       .then((resp) => {

@@ -4,31 +4,37 @@ class TransactionsController < ApplicationController
 
   def create
     if @product.reserve_by(current_user)
-      redirect_to @product, notice: t("transactions.reserve_success")
+      redirect_to community_product_path(community_slug: @product.community.slug, id: @product),
+                  notice: t("transactions.reserve_success")
     else
-      redirect_to @product, alert: t("transactions.reserve_failed")
+      redirect_to community_product_path(community_slug: @product.community.slug, id: @product),
+                  alert: t("transactions.reserve_failed")
     end
   end
 
   def destroy
     if @product.cancel_reservation_by(current_user)
-      redirect_to @product, notice: t("transactions.cancel_success")
+      redirect_to community_product_path(community_slug: @product.community.slug, id: @product),
+                  notice: t("transactions.cancel_success")
     else
-      redirect_to @product, alert: t("transactions.cancel_failed")
+      redirect_to community_product_path(community_slug: @product.community.slug, id: @product),
+                  alert: t("transactions.cancel_failed")
     end
   end
 
   def complete
     if @product.mark_sold_by(current_user)
-      redirect_to @product, notice: t("transactions.sold_success")
+      redirect_to community_product_path(community_slug: @product.community.slug, id: @product),
+                  notice: t("transactions.sold_success")
     else
-      redirect_to @product, alert: t("transactions.sold_failed")
+      redirect_to community_product_path(community_slug: @product.community.slug, id: @product),
+                  alert: t("transactions.sold_failed")
     end
   end
 
   private
 
   def set_product
-    @product = Product.find(params[:id])
+    @product = current_community_scope(Product).find(params[:id])
   end
 end

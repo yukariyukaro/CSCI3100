@@ -5,6 +5,7 @@ end
 When("I sign up with valid information") do
   fill_in "Name", with: "Cucumber User"
   fill_in "Email", with: "cucumber_user@example.com"
+  select default_community.name, from: "Community"
   fill_in "Password", with: "password123"
   fill_in "Password confirmation", with: "password123"
   click_button "Create Account"

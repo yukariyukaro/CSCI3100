@@ -5,6 +5,7 @@
 Given("a user {string} exists with email {string} and password {string}") do |name, email, password|
   User.find_or_create_by!(email: email) do |u|
     u.name                  = name
+    u.community             = default_community
     u.password              = password
     u.password_confirmation = password
   end

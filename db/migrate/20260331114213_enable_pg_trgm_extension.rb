@@ -1,9 +1,9 @@
 class EnablePgTrgmExtension < ActiveRecord::Migration[7.2]
   def up
-    enable_extension 'pg_trgm' rescue nil
+    enable_extension 'pg_trgm'
   end
 
   def down
-    disable_extension 'pg_trgm' rescue nil
+    disable_extension 'pg_trgm'
   end
 end

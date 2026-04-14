@@ -10,7 +10,7 @@ module Payments
         callback_token = payment.callback_token.presence || SecureRandom.hex(16)
 
         {
-          redirect_url: Rails.application.routes.url_helpers.fake_payment_path(payment, token: callback_token),
+          redirect_url: fake_redirect_url(payment, callback_token),
           provider_reference: provider_reference,
           callback_token: callback_token
         }
@@ -36,15 +36,14 @@ module Payments
         payload.fetch("provider_reference").to_s
       end
 
-      # rubocop:disable Naming/PredicateMethod
-      def authorize_webhook!(payment, payload)
-        token = payload["token"].to_s
-        expected = payment.callback_token.to_s
-        raise ActiveRecord::RecordNotFound unless ActiveSupport::SecurityUtils.secure_compare(token, expected)
-
-        true
+      def fake_redirect_url(payment, callback_token)
+        community_slug = payment.product_transaction.community.slug
+        Rails.application.routes.url_helpers.fake_community_payment_path(
+          community_slug:,
+          id: payment.id,
+          token: callback_token
+        )
       end
-      # rubocop:enable Naming/PredicateMethod
     end
   end
 end

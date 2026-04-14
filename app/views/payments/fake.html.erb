@@ -1,7 +1,9 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Fake Checkout</h1>
-    <%= link_to "Back", product_path(@payment.product_transaction.product), class: "btn btn-sm btn-outline" %>
+    <%= link_to "Back",
+          community_product_path(community_slug: @payment.product_transaction.product.community.slug, id: @payment.product_transaction.product),
+          class: "btn btn-sm btn-outline" %>
   </div>
 
   <div class="card bg-white border border-base-200 rounded-xl">

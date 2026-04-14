@@ -5,7 +5,6 @@ plugins:
 
 AllCops:
   NewCops: enable
-  SuggestExtensions: false
   Exclude:
     - "bin/**/*"
     - "db/schema.rb"
@@ -45,6 +44,14 @@ Metrics/BlockLength:
     - "config/routes.rb"
     - "spec/**/*"
 
+Metrics/AbcSize:
+  Exclude:
+    - "spec/**/*"
+
+Metrics/MethodLength:
+  Exclude:
+    - "spec/**/*"
+
 # 6. 禁用空方法体告警 (Rails 经常有空的 controller action)
 Style/EmptyMethod:
   Enabled: false
@@ -56,3 +63,8 @@ Bundler/GemComment:
 Rails/HasManyOrHasOneDependent:
   Exclude:
     - "app/models/product.rb"
+
+Rails/SkipsModelValidations:
+  Exclude:
+    - "app/models/user.rb"
+    - "spec/**/*"

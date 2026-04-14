@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <%= form_with url: ask_ai_about_this_product_path(product), method: :post, class: "space-y-2", data: { action: "submit->ai-summary#onSubmit input->ai-summary#clearError", "ai-summary-target": "form" } do %>
+      <%= form_with url: ask_ai_about_this_community_product_path(community_slug: Current.community.slug, id: product.id), method: :post, class: "space-y-2", data: { action: "submit->ai-summary#onSubmit input->ai-summary#clearError", "ai-summary-target": "form" } do %>
         <%= text_field_tag :question,
               question_value,
               placeholder: "e.g., Is this suitable for daily use?",

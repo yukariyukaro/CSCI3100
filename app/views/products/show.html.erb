@@ -33,10 +33,12 @@
             <span class="badge badge-warning">Reserved</span>
           <% when "sold" %>
             <span class="badge badge-error">Sold</span>
+          <% when "offlined" %>
+            <span class="badge badge-neutral">Offlined</span>
           <% end %>
           <span class="text-sm text-gray-500">ID: <%= @product.id %></span>
         </div>
-        <h1 class="text-3xl font-bold mb-4 text-base-content"><%= @product.name %></h1>
+        <h1 class="text-3xl font-bold mb-4 text-gray-900"><%= @product.name %></h1>
         <p class="text-3xl text-primary font-bold"><%= number_to_currency(@product.price) %></p>
       </div>
 
@@ -47,7 +49,7 @@
 
       <!-- Description -->
       <div class="mt-2">
-        <h2 class="text-lg font-semibold mb-3 text-base-content">商品描述</h2>
+        <h2 class="text-lg font-semibold mb-3 text-gray-900">商品描述</h2>
         <div class="leading-relaxed text-gray-700 whitespace-pre-wrap text-sm"><%= @product.description %></div>
       </div>
 
@@ -65,7 +67,7 @@
             </div>
           <% else %>
             <div data-testid="reserve-button">
-              <%= button_to "预定 / Reserve", reserve_product_path(@product), method: :post, class: "btn btn-primary w-full btn-lg text-lg" %>
+              <%= button_to "预定 / Reserve", reserve_community_product_path(community_slug: @product.community.slug, id: @product), method: :post, class: "btn btn-primary w-full btn-lg text-lg" %>
             </div>
           <% end %>
         <% elsif @product.pending? %>
@@ -75,35 +77,39 @@
 
           <% if logged_in? && @product.seller_id.present? && @product.seller_id == current_user.id %>
             <div class="flex gap-2">
-              <%= button_to "标记已售出 / Mark Sold", mark_sold_product_path(@product), method: :patch, class: "btn btn-success flex-1 btn-lg" %>
-              <%= button_to "取消预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-outline btn-error flex-1 btn-lg" %>
+              <%= button_to "标记已售出 / Mark Sold", mark_sold_community_product_path(community_slug: @product.community.slug, id: @product), method: :patch, class: "btn btn-success flex-1 btn-lg" %>
+              <%= button_to "取消预定 / Cancel", cancel_reservation_community_product_path(community_slug: @product.community.slug, id: @product), method: :delete, class: "btn btn-outline btn-error flex-1 btn-lg" %>
             </div>
           <% elsif logged_in? && active_tx.present? && active_tx.buyer_id == current_user.id %>
             <div class="flex flex-col gap-2">
               <div data-testid="pay-now-button">
-                <%= button_to "支付 / Pay now", transaction_payments_path(active_tx), method: :post, class: "btn btn-primary w-full btn-lg" %>
+                <%= button_to "支付 / Pay now", community_transaction_payments_path(community_slug: @product.community.slug, transaction_id: active_tx.id), method: :post, class: "btn btn-primary w-full btn-lg" %>
               </div>
-              <%= button_to "取消我的预定 / Cancel", cancel_reservation_product_path(@product), method: :delete, class: "btn btn-outline btn-error w-full btn-lg" %>
+              <%= button_to "取消我的预定 / Cancel", cancel_reservation_community_product_path(community_slug: @product.community.slug, id: @product), method: :delete, class: "btn btn-outline btn-error w-full btn-lg" %>
             </div>
           <% else %>
             <div class="text-sm text-gray-500 text-center">该商品已被预定。</div>
           <% end %>
         <% elsif @product.sold? %>
           <button class="btn btn-disabled w-full btn-lg text-lg" disabled>已售出 / Sold Out</button>
+        <% elsif @product.offlined? %>
+          <div class="alert alert-warning">
+            <span>该商品已下架（卖家更换所属社区导致自动下架），但历史对话与交易不受影响。</span>
+          </div>
         <% end %>
       </div>
 
       <% if logged_in? && @product.seller.present? && current_user != @product.seller %>
         <div class="mt-3">
           <% if @conversation %>
-            <%= link_to conversation_path(@conversation),
+            <%= link_to community_conversation_path(community_slug: @conversation.community.slug, id: @conversation),
                   class: "btn btn-outline w-full btn-lg text-base-content",
                   data: { testid: "contact-seller" } do %>
               💬 联系卖家 / Contact Seller
             <% end %>
           <% else %>
             <div data-testid="contact-seller">
-              <%= button_to conversations_path,
+              <%= button_to community_conversations_path(community_slug: @product.community.slug),
                     params: { conversation: { product_id: @product.id } },
                     class: "btn btn-outline w-full btn-lg text-base-content",
                     form: { data: { turbo: false } } do %>
@@ -121,7 +127,7 @@
       <% end %>
 
       <div class="mt-2 text-center lg:text-left">
-        <%= link_to "← 返回商品列表", products_path, class: "link link-hover text-sm text-gray-500" %>
+        <%= link_to "← 返回商品列表", community_products_path(community_slug: @product.community.slug), class: "link link-hover text-sm text-gray-500" %>
       </div>
     </div>
   </div>

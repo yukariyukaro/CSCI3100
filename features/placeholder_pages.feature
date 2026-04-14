@@ -5,9 +5,9 @@ Feature: Placeholder pages
 
     Examples:
       | path          | text                         |
-      | /products     | 全部商品                     |
-      | /chats        | Login                        |
-      | /payments     | Login                        |
-      | /listings     | Login                        |
+      | /test-default/products     | 全部商品             |
+      | /test-default/conversations | Login               |
+      | /test-default/payments     | Login                |
+      | /test-default/listings     | Login                |
       | /sessions/new | Login                        |
       | /users/new    | Sign Up                      |

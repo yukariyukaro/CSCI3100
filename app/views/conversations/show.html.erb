@@ -6,7 +6,7 @@
 
   <%# Header %>
   <div class="flex items-center gap-3 mb-4">
-    <%= link_to conversations_path, class: "btn btn-ghost btn-sm" do %>
+    <%= link_to community_conversations_path(community_slug: @conversation.community.slug), class: "btn btn-ghost btn-sm" do %>
       ← Back
     <% end %>
     <% other = @conversation.buyer == current_user ? @conversation.seller : @conversation.buyer %>
@@ -14,8 +14,8 @@
       <%= other.name.first.upcase %>
     </div>
     <div>
-      <p class="font-semibold text-base-content leading-tight"><%= other.name %></p>
-      <p class="text-xs text-base-content/50">Re: <%= link_to @conversation.product.name, product_path(@conversation.product), class: "link link-hover" %></p>
+      <p class="font-semibold text-base-content leading-tight"><%= other.name %> (<%= other.community.abbreviation %>)</p>
+      <p class="text-xs text-base-content/50">Re: <%= link_to @conversation.product.name, community_product_path(community_slug: @conversation.product.community.slug, id: @conversation.product), class: "link link-hover" %></p>
     </div>
   </div>
 
@@ -29,7 +29,7 @@
       <% is_self = msg.sender_id == current_user.id %>
       <div class="chat <%= is_self ? 'chat-end' : 'chat-start' %>" data-message-id="<%= msg.id %>">
         <div class="chat-header text-xs opacity-60 mb-1">
-          <%= is_self ? "You" : msg.sender.name %>
+          <%= is_self ? "You" : "#{msg.sender.name} (#{msg.sender.community.abbreviation})" %>
           <time class="ml-1"><%= msg.created_at.strftime("%H:%M") %></time>
         </div>
         <div class="chat-bubble <%= is_self ? 'chat-bubble-primary' : '' %>">
@@ -40,7 +40,7 @@
   </div>
 
   <%# Send form %>
-  <%= form_with url: conversation_messages_path(@conversation),
+  <%= form_with url: community_conversation_messages_path(community_slug: @conversation.community.slug, conversation_id: @conversation.id),
         scope: :message,
         data: { chat_target: "form", action: "submit->chat#send" },
         class: "flex gap-2" do |f| %>

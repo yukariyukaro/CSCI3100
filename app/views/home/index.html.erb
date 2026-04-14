@@ -8,28 +8,8 @@
         Welcome to the second-hand trading platform. Discover great deals from your campus!
       </p>
 
-      <div class="relative w-full max-w-2xl mx-auto" data-controller="autocomplete" data-autocomplete-url-value="/products/autocomplete">
-        <%= form_with url: products_path, method: :get, local: true, class: "join w-full flex shadow-lg" do |form| %>
-          <div class="relative flex-1 flex">
-            <%= form.text_field :query, 
-                  placeholder: "Search for items...", 
-                  value: params[:query],
-                  autocomplete: "off",
-                  class: "input input-bordered input-lg join-item w-full flex-1 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary",
-                  data: { 
-                    autocomplete_target: "input", 
-                    action: "input->autocomplete#onInput keydown->autocomplete#onKeydown" 
-                  },
-                  role: "combobox",
-                  "aria-autocomplete": "list"
-            %>
-            <span data-autocomplete-target="loading" class="hidden absolute right-4 top-1/2 -translate-y-1/2 loading loading-spinner loading-md text-primary"></span>
-          </div>
-          <%= form.submit "Search", class: "btn btn-primary btn-lg join-item border-none" %>
-        <% end %>
-        
-        <!-- Autocomplete results: very high z-index and glassmorphism -->
-        <ul data-autocomplete-target="results" class="autocomplete-results hidden absolute top-full left-0 right-0 z-[100] mt-2 bg-white/70 backdrop-blur-md shadow-xl rounded-box max-h-64 overflow-y-auto text-left text-gray-900 border border-base-200/50 p-2"></ul>
+      <div class="mt-4">
+        <%= link_to "Browse Communities", communities_path, class: "btn btn-primary btn-lg" %>
       </div>
     </div>
   </div>

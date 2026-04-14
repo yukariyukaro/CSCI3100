@@ -3,11 +3,11 @@ require "rails_helper"
 RSpec.describe PaymentSettlement, type: :model do
   let(:seller) do
     User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"),
-                 password: "password123", password_confirmation: "password123")
+                 password: "password123", password_confirmation: "password123", community: default_community)
   end
   let(:buyer) do
     User.create!(name: "Buyer", email: TestData.unique_email(prefix: "buyer"),
-                 password: "password123", password_confirmation: "password123")
+                 password: "password123", password_confirmation: "password123", community: create_community)
   end
   let(:product) do
     Product.create!(name: "Laptop", description: "Good condition, barely used.", price: 10.00, seller: seller,
@@ -28,7 +28,7 @@ RSpec.describe PaymentSettlement, type: :model do
   end
 
   it "settles successfully when amount matches and states are valid" do
-    result = described_class.call(payment, provider_amount_cents: 1000)
+    result = described_class.call(payment, provider_amount: "10.00")
     expect(result).to eq(true)
     expect(payment.reload).to be_succeeded
     expect(tx.reload).to be_completed
@@ -36,7 +36,7 @@ RSpec.describe PaymentSettlement, type: :model do
   end
 
   it "marks manual_intervention_required when amount mismatches" do
-    result = described_class.call(payment, provider_amount_cents: 1100)
+    result = described_class.call(payment, provider_amount: "11.00")
     expect(result).to eq(false)
     expect(payment.reload).to be_manual_intervention_required
     expect(tx.reload).to be_in_progress
@@ -45,7 +45,7 @@ RSpec.describe PaymentSettlement, type: :model do
 
   it "marks manual_intervention_required when transaction is not in_progress" do
     tx.update!(status: :cancelled)
-    result = described_class.call(payment, provider_amount_cents: 1000)
+    result = described_class.call(payment, provider_amount: "10.00")
     expect(result).to eq(false)
     expect(payment.reload).to be_manual_intervention_required
     expect(product.reload).to be_pending

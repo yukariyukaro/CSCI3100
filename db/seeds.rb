@@ -1,5 +1,33 @@
+communities = [
+  { name: "Chung Chi", abbreviation: "CC", slug: "chung-chi", description: "Chung Chi College" },
+  { name: "New Asia", abbreviation: "NA", slug: "new-asia", description: "New Asia College" },
+  { name: "United", abbreviation: "UC", slug: "united", description: "United College" },
+  { name: "Shaw", abbreviation: "SC", slug: "shaw", description: "Shaw College" },
+  { name: "Morningside", abbreviation: "MC", slug: "morningside", description: "Morningside College" },
+  { name: "S.H. Ho", abbreviation: "SHHO", slug: "sh-ho", description: "S.H. Ho College" },
+  { name: "C.W. Chu", abbreviation: "CWC", slug: "cw-chu", description: "C.W. Chu College" },
+  { name: "Wu Yee Sun", abbreviation: "WYS", slug: "wu-yee-sun", description: "Wu Yee Sun College" },
+  { name: "Lee Woo Sing", abbreviation: "LWS", slug: "lee-woo-sing", description: "Lee Woo Sing College" }
+]
+
+communities.each do |attrs|
+  Community.find_or_create_by!(slug: attrs[:slug]) do |c|
+    c.name = attrs[:name]
+    c.abbreviation = attrs[:abbreviation]
+    c.description = attrs[:description]
+  end
+end
+
+Community.find_or_create_by!(slug: "cuhk") do |c|
+  c.name = "CUHK Main Campus"
+  c.abbreviation = "CUHK"
+  c.description = "Default community for backfill"
+end
+
+demo_community = Community.find_by!(slug: "chung-chi")
 demo_user = User.find_or_create_by!(email: "demo_user@example.com") do |user|
   user.name = "Demo User"
+  user.community = demo_community
   user.password = "password123"
   user.password_confirmation = "password123"
 end

@@ -5,6 +5,7 @@ RSpec.describe User, type: :model do
     user = described_class.new(
       name: "Alice",
       email: TestData.unique_email(prefix: "alice"),
+      community: default_community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -37,12 +38,14 @@ RSpec.describe User, type: :model do
     described_class.create!(
       name: "Alice",
       email: email,
+      community: default_community,
       password: "password123",
       password_confirmation: "password123"
     )
     duplicate_user = described_class.new(
       name: "Bob",
       email: email,
+      community: default_community,
       password: "password123",
       password_confirmation: "password123"
     )

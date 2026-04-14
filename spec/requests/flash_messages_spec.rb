@@ -16,11 +16,13 @@ require "rails_helper"
 
 RSpec.describe "Flash Messages", type: :request do
   # ── Shared fixtures ──────────────────────────────────────────────────────
+  let(:community) { default_community }
 
   let!(:user) do
     User.create!(
       name: "Flash Tester",
       email: "flash@link.cuhk.edu.hk",
+      community: community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -30,6 +32,7 @@ RSpec.describe "Flash Messages", type: :request do
     User.create!(
       name: "Seller User",
       email: "seller_flash@link.cuhk.edu.hk",
+      community: community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -54,7 +57,7 @@ RSpec.describe "Flash Messages", type: :request do
     context "successful login" do
       it "redirects to root after login" do
         post sessions_path, params: { email: user.email, password: "password123" }
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(community_products_path(community_slug: community.slug))
       end
 
       it "sets a notice flash with the logged-in message" do
@@ -111,7 +114,7 @@ RSpec.describe "Flash Messages", type: :request do
       end
 
       it "redirects to root after logout" do
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(communities_path)
       end
 
       it "sets a notice flash with the logged-out message" do
@@ -136,7 +139,7 @@ RSpec.describe "Flash Messages", type: :request do
     # Any action protected by before_action :authenticate_user!
     # We use /conversations (ConversationsController) as a representative target.
     context "unauthenticated user accesses a protected page" do
-      before { get conversations_path }
+      before { get community_conversations_path(community_slug: community.slug) }
 
       it "redirects to the login page" do
         expect(response).to redirect_to(new_session_path)
@@ -159,7 +162,7 @@ RSpec.describe "Flash Messages", type: :request do
 
     # /conversations is also protected — /listings/new has no auth gate
     it "shows login-required flash when accessing /conversations unauthenticated" do
-      get conversations_path
+      get community_conversations_path(community_slug: community.slug)
       follow_redirect!
       expect(response.body).to include(I18n.t("auth.login_required"))
     end
@@ -174,6 +177,7 @@ RSpec.describe "Flash Messages", type: :request do
           user: {
             name: "New Tester",
             email: "newtester@link.cuhk.edu.hk",
+            community_id: community.id,
             password: "password123",
             password_confirmation: "password123"
           }
@@ -182,7 +186,7 @@ RSpec.describe "Flash Messages", type: :request do
 
       it "redirects to root after registration" do
         post users_path, params: new_user_params
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(community_products_path(community_slug: community.slug))
       end
 
       it "sets a notice flash with the logged-in message (auto-login after sign-up)" do
@@ -209,6 +213,7 @@ RSpec.describe "Flash Messages", type: :request do
           user: {
             name: "Duplicate",
             email: user.email, # already taken
+            community_id: community.id,
             password: "password123",
             password_confirmation: "password123"
           }
@@ -255,18 +260,18 @@ RSpec.describe "Flash Messages", type: :request do
 
     context "successful reservation" do
       it "sets a notice flash after reserving a product" do
-        post reserve_product_path(product)
+        post reserve_community_product_path(community_slug: product.community.slug, id: product)
         expect(flash[:notice]).to eq(I18n.t("transactions.reserve_success"))
       end
 
       it "renders the reserve-success message on the product page" do
-        post reserve_product_path(product)
+        post reserve_community_product_path(community_slug: product.community.slug, id: product)
         follow_redirect!
         expect(response.body).to include(I18n.t("transactions.reserve_success"))
       end
 
       it "renders the flash inside a success-styled alert element" do
-        post reserve_product_path(product)
+        post reserve_community_product_path(community_slug: product.community.slug, id: product)
         follow_redirect!
         expect(response.body).to include("alert-success")
       end
@@ -278,6 +283,7 @@ RSpec.describe "Flash Messages", type: :request do
         other_buyer = User.create!(
           name: "Other Buyer",
           email: "other_buyer_flash@example.com",
+          community: create_community,
           password: "password123",
           password_confirmation: "password123"
         )
@@ -285,18 +291,18 @@ RSpec.describe "Flash Messages", type: :request do
       end
 
       it "sets an alert flash when reservation fails" do
-        post reserve_product_path(product)
+        post reserve_community_product_path(community_slug: product.community.slug, id: product)
         expect(flash[:alert]).to eq(I18n.t("transactions.reserve_failed"))
       end
 
       it "renders the reserve-failed message on the product page" do
-        post reserve_product_path(product)
+        post reserve_community_product_path(community_slug: product.community.slug, id: product)
         follow_redirect!
         expect(response.body).to include(I18n.t("transactions.reserve_failed"))
       end
 
       it "renders the flash inside an error-styled alert element" do
-        post reserve_product_path(product)
+        post reserve_community_product_path(community_slug: product.community.slug, id: product)
         follow_redirect!
         expect(response.body).to include("alert-error")
       end
@@ -306,12 +312,12 @@ RSpec.describe "Flash Messages", type: :request do
       before { product.reserve_by(user) }
 
       it "sets a notice flash after cancelling a reservation" do
-        delete cancel_reservation_product_path(product)
+        delete cancel_reservation_community_product_path(community_slug: product.community.slug, id: product)
         expect(flash[:notice]).to eq(I18n.t("transactions.cancel_success"))
       end
 
       it "renders the cancel-success message on the product page" do
-        delete cancel_reservation_product_path(product)
+        delete cancel_reservation_community_product_path(community_slug: product.community.slug, id: product)
         follow_redirect!
         expect(response.body).to include(I18n.t("transactions.cancel_success"))
       end
@@ -325,12 +331,12 @@ RSpec.describe "Flash Messages", type: :request do
       end
 
       it "sets a notice flash after marking as sold" do
-        patch mark_sold_product_path(product)
+        patch mark_sold_community_product_path(community_slug: product.community.slug, id: product)
         expect(flash[:notice]).to eq(I18n.t("transactions.sold_success"))
       end
 
       it "renders the sold-success message on the product page" do
-        patch mark_sold_product_path(product)
+        patch mark_sold_community_product_path(community_slug: product.community.slug, id: product)
         follow_redirect!
         expect(response.body).to include(I18n.t("transactions.sold_success"))
       end
@@ -343,23 +349,23 @@ RSpec.describe "Flash Messages", type: :request do
     before { log_in_as(user) }
 
     it "sets an alert flash when product_id is invalid" do
-      post conversations_path, params: { conversation: { product_id: 0 } }
+      post community_conversations_path(community_slug: community.slug), params: { conversation: { product_id: 0 } }
       expect(flash[:alert]).to eq(I18n.t("conversations.product_not_found"))
     end
 
     it "redirects to products_path when product not found" do
-      post conversations_path, params: { conversation: { product_id: 0 } }
-      expect(response).to redirect_to(products_path)
+      post community_conversations_path(community_slug: community.slug), params: { conversation: { product_id: 0 } }
+      expect(response).to redirect_to(community_products_path(community_slug: community.slug))
     end
 
     it "renders the product-not-found message after redirect" do
-      post conversations_path, params: { conversation: { product_id: 0 } }
+      post community_conversations_path(community_slug: community.slug), params: { conversation: { product_id: 0 } }
       follow_redirect!
       expect(response.body).to include(I18n.t("conversations.product_not_found"))
     end
 
     it "renders the flash inside an error-styled alert element" do
-      post conversations_path, params: { conversation: { product_id: 0 } }
+      post community_conversations_path(community_slug: community.slug), params: { conversation: { product_id: 0 } }
       follow_redirect!
       expect(response.body).to include("alert-error")
     end
@@ -390,7 +396,7 @@ RSpec.describe "Flash Messages", type: :request do
     context "when an alert flash is present" do
       before do
         # Trigger login_required redirect, then follow to login page
-        get conversations_path
+        get community_conversations_path(community_slug: community.slug)
         follow_redirect!
       end
 

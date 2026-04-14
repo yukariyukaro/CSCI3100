@@ -14,10 +14,12 @@ require "rails_helper"
 # ─────────────────────────────────────────────────────────────────────────────
 
 RSpec.describe "Turbo Flash Messages Integration", type: :request do
+  let(:community) { default_community }
   let!(:user) do
     User.create!(
       name: "Turbo Tester",
       email: "turbo@link.cuhk.edu.hk",
+      community: community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -37,7 +39,7 @@ RSpec.describe "Turbo Flash Messages Integration", type: :request do
     end
 
     it "redirects to root_path" do
-      expect(response.location).to include(root_path)
+      expect(response.location).to include(community_products_path(community_slug: community.slug))
     end
 
     it "sets a notice flash message in the session" do
@@ -145,7 +147,7 @@ RSpec.describe "Turbo Flash Messages Integration", type: :request do
 
   describe "Unauthenticated redirect to login (Turbo intercept)" do
     before do
-      get conversations_path,
+      get community_conversations_path(community_slug: community.slug),
           headers: { "Accept" => "text/vnd.turbo-stream.html, text/html" }
     end
 

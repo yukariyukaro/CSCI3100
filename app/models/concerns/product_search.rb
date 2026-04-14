@@ -2,20 +2,20 @@ module ProductSearch
   extend ActiveSupport::Concern
 
   module ClassMethods
-    def search(query)
-      base_scope = visible
-      return base_scope if query.blank?
+    def search(query, scope: all)
+      return scope if query.blank?
 
-      return base_scope.merge(advanced_search(query)) if postgresql_search?
+      # Ensure advanced_search doesn't call back to search creating infinite loop
+      return scope.advanced_search(query) if postgresql_search?
 
-      basic_search(query, base_scope)
+      basic_search(query, scope)
     end
 
-    def suggest(query)
+    def suggest(query, scope: all)
       return [] if query.blank?
 
       pattern = "%#{sanitize_sql_like(query)}%"
-      suggest_scope(pattern).visible.select(:name).distinct.limit(8).pluck(:name)
+      suggest_scope(scope, pattern).select(:name).distinct.limit(8).pluck(:name)
     end
 
     private
@@ -74,16 +74,16 @@ module ProductSearch
       "%#{sanitize_sql_like(str.downcase).chars.join('%')}%"
     end
 
-    def suggest_scope(pattern)
+    def suggest_scope(scope, pattern)
       if postgresql_search?
-        where("name ILIKE ?", pattern)
+        scope.where("name ILIKE ?", pattern)
       else
-        where("LOWER(name) LIKE LOWER(?)", pattern)
+        scope.where("LOWER(name) LIKE LOWER(?)", pattern)
       end
     end
 
     def postgresql_search?
-      connection.adapter_name.casecmp("PostgreSQL").zero?
+      connection.adapter_name.casecmp?("PostgreSQL")
     rescue StandardError
       false
     end

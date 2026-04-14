@@ -15,6 +15,7 @@ RSpec.describe "shared/_navigation_bar theme-toggle visibility", type: :view do
   before do
     view.singleton_class.send(:define_method, :logged_in?) { false }
     view.singleton_class.send(:define_method, :current_page?) { |_| false }
+    view.singleton_class.send(:define_method, :current_community_or_default) { nil }
     render partial: "shared/navigation_bar"
   end
 

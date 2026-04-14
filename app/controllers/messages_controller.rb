@@ -24,20 +24,24 @@ class MessagesController < ApplicationController
 
   def reply_success
     respond_to do |format|
-      format.html { redirect_to conversation_path(@conversation) }
+      format.html do
+        redirect_to community_conversation_path(community_slug: @conversation.community.slug, id: @conversation)
+      end
       format.json { head :ok }
     end
   end
 
   def reply_error
     respond_to do |format|
-      format.html { redirect_to conversation_path(@conversation) }
+      format.html do
+        redirect_to community_conversation_path(community_slug: @conversation.community.slug, id: @conversation)
+      end
       format.json { head :unprocessable_content }
     end
   end
 
   def find_authorized_conversation
-    conversation = Conversation.find(params[:conversation_id])
+    conversation = current_community_scope(Conversation).find(params[:conversation_id])
     return conversation if conversation.buyer_id == current_user.id || conversation.seller_id == current_user.id
 
     head :forbidden
@@ -50,7 +54,7 @@ class MessagesController < ApplicationController
       content: message.content,
       created_at: message.created_at.strftime("%H:%M"),
       sender_id: message.sender_id,
-      sender_name: message.sender.name
+      sender_name: "#{message.sender.name} (#{message.sender.community.abbreviation})"
     }
   end
 end

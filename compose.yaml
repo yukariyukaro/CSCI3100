@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cuhk_marketplace_production
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    environment:
+      RAILS_ENV: production
+      DATABASE_URL: postgres://postgres:password@db:5432/cuhk_marketplace_production
+      REDIS_URL: redis://redis:6379/1
+      APP_HOST: http://localhost:3000
+      RAILS_LOG_TO_STDOUT: "1"
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+
+  worker:
+    build: .
+    command: bundle exec sidekiq
+    environment:
+      RAILS_ENV: production
+      DATABASE_URL: postgres://postgres:password@db:5432/cuhk_marketplace_production
+      REDIS_URL: redis://redis:6379/1
+      APP_HOST: http://localhost:3000
+      RAILS_LOG_TO_STDOUT: "1"
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
+

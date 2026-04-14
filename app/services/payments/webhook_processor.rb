@@ -94,12 +94,12 @@ module Payments
     end
 
     def settle!(payment, payload)
-      provider_amount_cents = extract_amount_cents(payload)
-      PaymentSettlement.call(payment, provider_amount_cents: provider_amount_cents)
+      provider_amount = extract_amount(payload)
+      PaymentSettlement.call(payment, provider_amount: provider_amount)
     end
 
-    def extract_amount_cents(payload)
-      (@provider.extract_amount(payload) * 100).to_i
+    def extract_amount(payload)
+      @provider.extract_amount(payload)
     end
 
     def log_error(error, payload)
@@ -111,6 +111,7 @@ module Payments
         "[WebhookProcessor] Unexpected error: #{error.class} - #{error.message} " \
         "| provider=#{@provider.name} event_id=#{event_id} type=#{event_type} reference=#{reference}"
       )
+      Rails.logger.error(error.backtrace.join("\n")) if error.backtrace
     end
   end
 end

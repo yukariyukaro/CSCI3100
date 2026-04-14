@@ -13,6 +13,14 @@
 # it.
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+require "simplecov"
+SimpleCov.start "rails" do
+  add_filter %r{\A/lib/demo/}
+  add_filter "/app/jobs/expire_listing_job.rb"
+  add_filter "/app/jobs/release_escrow_job.rb"
+end
+SimpleCov.minimum_coverage 90 if ENV["ENFORCE_COVERAGE"] == "1"
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

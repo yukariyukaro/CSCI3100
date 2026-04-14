@@ -2,6 +2,7 @@ class Product < ApplicationRecord
   include PgSearch::Model
   include ProductSearch
 
+  belongs_to :community
   belongs_to :seller, class_name: "User", inverse_of: :products
   has_one_attached :image do |attachable|
     attachable.variant :thumb, resize_to_fill: [512, 512], saver: { quality: 82 }
@@ -13,7 +14,7 @@ class Product < ApplicationRecord
           inverse_of: :product
   has_many :conversations, dependent: :destroy
 
-  enum :sale_status, { active: 0, pending: 1, sold: 2, unlisted: 3 }
+  enum :sale_status, { active: 0, pending: 1, sold: 2, offlined: 3 }
 
   validates :name, presence: true
   validates :description, presence: true, length: { minimum: 10 }
@@ -23,24 +24,29 @@ class Product < ApplicationRecord
   scope :recent_first, -> { order(created_at: :desc) }
   scope :by_status,    ->(status) { where(sale_status: status) }
   scope :by_seller,    ->(user_id) { where(seller_id: user_id) }
-  scope :visible,      -> { where.not(sale_status: :unlisted) }
   scope :for_sale,     -> { where(sale_status: %i[active pending]) }
 
   # Reset AI summary if the description changes
+  before_validation :set_community_from_seller, on: :create
   before_update :reset_ai_summary, if: :description_changed?
 
-  # Set up advanced search scope using pg_search
-  pg_search_scope :advanced_search,
-                  against: {
-                    name: "A",        # Brand/Name weighting (Highest)
-                    description: "B"  # Description weighting (Lower)
-                  },
-                  using: {
-                    # Using 'simple' dictionary instead of 'english' to avoid aggressively
-                    # stripping parts of non-English words, better for Chinese/English mix.
-                    tsearch: { prefix: true, dictionary: "simple" },
-                    trigram: { threshold: 0.1, word_similarity: true } # Typo tolerance
-                  }
+  # Set up advanced search scope using pg_search (Only active if Postgres is used)
+  if ActiveRecord::Base.connection.adapter_name.casecmp?("PostgreSQL")
+    pg_search_scope :advanced_search,
+                    against: {
+                      name: "A",        # Brand/Name weighting (Highest)
+                      description: "B"  # Description weighting (Lower)
+                    },
+                    using: {
+                      # Using 'simple' dictionary instead of 'english' to avoid aggressively
+                      # stripping parts of non-English words, better for Chinese/English mix.
+                      tsearch: { prefix: true, dictionary: "simple" },
+                      trigram: { threshold: 0.1, word_similarity: true } # Typo tolerance
+                    }
+  else
+    # Fallback for SQLite
+    scope :advanced_search, ->(query) { basic_search(query, all) }
+  end
 
   def reserve_by(buyer)
     return false unless reservable_by?(buyer)
@@ -119,5 +125,9 @@ class Product < ApplicationRecord
     return unless image.byte_size > 5.megabytes
 
     errors.add(:image, "must be smaller than 5MB")
+  end
+
+  def set_community_from_seller
+    self.community_id ||= seller&.community_id
   end
 end

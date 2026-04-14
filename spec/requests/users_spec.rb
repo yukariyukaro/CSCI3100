@@ -4,11 +4,13 @@ require "rails_helper"
 RSpec.describe "Users", type: :request do
   let(:user_email) { TestData.unique_email(prefix: "alice") }
   let(:other_user_email) { TestData.unique_email(prefix: "bob") }
+  let(:community) { default_community }
 
   let(:user) do
     User.create!(
       name: "Alice",
       email: user_email,
+      community: community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -18,6 +20,7 @@ RSpec.describe "Users", type: :request do
     User.create!(
       name: "Bob",
       email: other_user_email,
+      community: create_community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -50,14 +53,11 @@ RSpec.describe "Users", type: :request do
       before do
         Product.create!(name: "Sold iPhone", description: "Great phone", seller: user, price: 100, sale_status: :active)
         Product.create!(name: "Old MacBook", description: "Good laptop", seller: user, price: 200, sale_status: :sold)
-        Product.create!(name: "Hidden Listing", description: "Removed from market visibility", seller: user, price: 50,
-                        sale_status: :unlisted)
       end
 
       it "displays the user's active products" do
         get user_path(user)
         expect(response.body).to include("Sold iPhone")
-        expect(response.body).not_to include("Hidden Listing")
       end
 
       it "shows the products tab section" do
@@ -143,6 +143,32 @@ RSpec.describe "Users", type: :request do
         patch user_path(user), params: { user: { avatar: bad_file } }
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("avatar").or include("Avatar")
+      end
+
+      it "requires current password to change community" do
+        new_community = create_community
+        patch user_path(user), params: { user: { community_id: new_community.id } }
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(I18n.t("users.profile.current_password_invalid"))
+        expect(user.reload.community_id).not_to eq(new_community.id)
+      end
+
+      it "allows community change with valid current password and audits the change" do
+        old_community_id = user.community_id
+        new_community = create_community
+
+        expect do
+          patch user_path(user),
+                params: { user: { community_id: new_community.id }, current_password: "password123" }
+        end.to change(AuditEvent, :count).by(1)
+
+        expect(response).to redirect_to(user_path(user))
+        expect(user.reload.community_id).to eq(new_community.id)
+
+        event = AuditEvent.order(created_at: :desc).first
+        expect(event.action).to eq("tenant.community_changed")
+        expect(event.metadata["from_community_id"]).to eq(old_community_id)
+        expect(event.metadata["to_community_id"]).to eq(new_community.id)
       end
     end
   end

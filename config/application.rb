@@ -31,6 +31,9 @@ module CuhkMarketplace
     # Set Sidekiq as the backend adapter for Active Job
     config.active_job.queue_adapter = :sidekiq
 
+    config.i18n.available_locales = %i[en zh]
+    config.i18n.default_locale = :en
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

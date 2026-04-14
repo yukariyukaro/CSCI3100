@@ -20,6 +20,7 @@ RSpec.describe "shared/_navigation_bar", type: :view do
     without_partial_double_verification do
       allow(view).to receive(:logged_in?).and_return(false)
       allow(view).to receive(:current_page?).and_return(false)
+      allow(view).to receive(:current_community_or_default).and_return(nil)
     end
   end
 
@@ -64,6 +65,7 @@ RSpec.describe "shared/_navigation_bar", type: :view do
       user = User.create!(
         name: "Alice",
         email: TestData.unique_email(prefix: "nav"),
+        community: default_community,
         password: "password123",
         password_confirmation: "password123"
       )
@@ -71,6 +73,7 @@ RSpec.describe "shared/_navigation_bar", type: :view do
         allow(view).to receive(:logged_in?).and_return(true)
         allow(view).to receive(:current_user).and_return(user)
         allow(view).to receive(:current_page?).and_return(false)
+        allow(view).to receive(:current_community_or_default).and_return(default_community)
       end
       render partial: "shared/navigation_bar"
     end

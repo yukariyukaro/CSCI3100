@@ -13,19 +13,18 @@ class ProductsController < ApplicationController
       return
     end
 
-    cache_key = "autocomplete_#{query.downcase}"
+    cache_key = "autocomplete_#{Current.community&.slug}_#{query.downcase}"
     suggestions = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-      Product.suggest(query)
+      Product.suggest(query, scope: current_community_scope(Product))
     end
 
     render json: suggestions
   end
 
   def show
-    @product = Product.find(params[:id])
+    @product = current_community_scope(Product).find(params[:id])
+    Ai::Summarizer.new(@product).call
     @conversation = find_chat_conversation
-  rescue ActiveRecord::RecordNotFound
-    render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
   end
 
   def ask_ai_about_this
@@ -45,16 +44,15 @@ class ProductsController < ApplicationController
   end
 
   def load_products
-    if @query.present?
-      if @query.length < 2
-        flash.now[:alert] = t("products.search.too_short")
-        Product.none
-      else
-        Product.search(@query)
-      end
-    else
-      Product.visible
+    base = current_community_scope(Product)
+    return base if @query.blank?
+
+    if @query.length < 2
+      flash.now[:alert] = t("products.search.too_short")
+      return base.none
     end
+
+    Product.search(@query, scope: base)
   end
 
   def apply_sorting
@@ -87,6 +85,6 @@ class ProductsController < ApplicationController
 
   def redirect_with_ai_result
     flash_key = @ai_result[:status] == "ok" ? :notice : :alert
-    redirect_to product_path(@product), flash: { flash_key => @ai_result[:message] }
+    redirect_to community_product_path(community_slug: Current.community.slug, id: @product.id), flash: { flash_key => @ai_result[:message] }
   end
 end

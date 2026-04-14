@@ -24,19 +24,19 @@ end
 
 When("I visit the product page for {string}") do |product_name|
   product = Product.find_by!(name: product_name)
-  visit product_path(product)
+  visit community_product_path(community_slug: product.community.slug, id: product)
 end
 
 When("I visit that conversation") do
-  visit conversation_path(@conversation)
+  visit community_conversation_path(community_slug: @conversation.community.slug, id: @conversation)
 end
 
 When("I try to access that conversation directly") do
-  visit conversation_path(@conversation)
+  visit community_conversation_path(community_slug: @conversation.community.slug, id: @conversation)
 end
 
 When("I visit the conversations page") do
-  visit conversations_path
+  visit community_conversations_path(community_slug: default_community_slug)
 end
 
 When("I click {string}") do |button_text|
@@ -68,7 +68,7 @@ Then("I should see a {string} link") do |link_text|
 end
 
 Then("I should be on a conversation page") do
-  expect(current_path).to match(%r{/conversations/\d+})
+  expect(current_path).to match(%r{/#{Regexp.escape(default_community_slug)}/conversations/\d+})
 end
 
 Then("I should see {string} in the chat") do |message_text|

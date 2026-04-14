@@ -6,12 +6,15 @@ RSpec.describe "Signup errors", type: :system do
   end
 
   it "shows errors when email is already taken" do
+    community = default_community
     email = TestData.unique_email(prefix: "taken")
-    User.create!(name: "Existing", email: email, password: "password123", password_confirmation: "password123")
+    User.create!(name: "Existing", email: email, password: "password123", password_confirmation: "password123",
+                 community: community)
 
     visit new_user_path
     fill_in "Name", with: "New User"
     fill_in "Email", with: email
+    select community.name, from: "Community"
     fill_in "Password", with: "password123"
     fill_in "Password confirmation", with: "password123"
     click_button "Create Account"

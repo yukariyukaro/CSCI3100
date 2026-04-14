@@ -37,6 +37,7 @@ en:
   users:
     profile:
       updated: "Profile updated successfully."
+      current_password_invalid: "Current password is invalid."
     update:
       success: "Profile updated successfully."
   transactions:
@@ -63,12 +64,10 @@ en:
   listings:
     create:
       success: "Product published successfully!"
-    destroy:
-      success: "Product has been unlisted."
-      failed: "Unable to unlist this product."
     errors:
       image_too_large: "Image must be smaller than 5MB"
       image_invalid_type: "Image must be a JPEG or PNG file"
+      quota_exceeded: "Listing quota exceeded for your community."
   flash:
     success: "Operation successful."
     access_denied: "You do not have permission to perform this action."

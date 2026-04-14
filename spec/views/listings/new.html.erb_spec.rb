@@ -19,6 +19,7 @@ RSpec.describe "listings/new.html.erb", type: :view do
     User.create!(
       name: "Seller",
       email: TestData.unique_email(prefix: "listing_view"),
+      community: default_community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -28,6 +29,7 @@ RSpec.describe "listings/new.html.erb", type: :view do
     assign(:product, Product.new)
     view.singleton_class.send(:define_method, :current_user) { seller }
     view.singleton_class.send(:define_method, :logged_in?) { true }
+    Current.community = seller.community
     render
   end
 

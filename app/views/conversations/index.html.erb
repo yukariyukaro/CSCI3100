@@ -6,13 +6,13 @@
       <% @conversations.each do |conv| %>
         <% other = conv.buyer == current_user ? conv.seller : conv.buyer %>
         <% last_msg = conv.messages.last %>
-        <%= link_to conversation_path(conv), class: "flex items-center gap-4 p-4 bg-base-100 border border-base-200 rounded-xl hover:shadow-md transition" do %>
+        <%= link_to community_conversation_path(community_slug: conv.community.slug, id: conv), class: "flex items-center gap-4 p-4 bg-base-100 border border-base-200 rounded-xl hover:shadow-md transition" do %>
           <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
             <%= other.name.first.upcase %>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-baseline">
-              <span class="font-semibold text-base-content truncate"><%= other.name %></span>
+              <span class="font-semibold text-base-content truncate"><%= other.name %> (<%= other.community.abbreviation %>)</span>
               <% if last_msg %>
                 <span class="text-xs text-base-content/50 flex-shrink-0 ml-2"><%= last_msg.created_at.strftime("%m/%d %H:%M") %></span>
               <% end %>
@@ -30,7 +30,7 @@
   <% else %>
     <div class="text-center py-16 bg-base-200 rounded-xl">
       <p class="text-base-content/60">No conversations yet.</p>
-      <%= link_to "Browse Products", products_path, class: "btn btn-primary mt-4" %>
+      <%= link_to "Browse Products", community_products_path(community_slug: Current.community.slug), class: "btn btn-primary mt-4" %>
     </div>
   <% end %>
 </div>

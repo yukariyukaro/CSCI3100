@@ -7,7 +7,7 @@ Given("I visit the home page") do
 end
 
 Given("I visit the products page") do
-  visit products_path
+  visit community_products_path(community_slug: default_community_slug)
 end
 
 # ─── Assertions: button presence ─────────────────────────────────────────────

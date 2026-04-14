@@ -5,10 +5,12 @@
 require "rails_helper"
 
 RSpec.describe "Turbo Flash Debug — Root Cause Investigation", type: :request do
+  let(:community) { default_community }
   let!(:user) do
     User.create!(
       name: "Debug User",
       email: "debug@link.cuhk.edu.hk",
+      community: community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -27,7 +29,7 @@ RSpec.describe "Turbo Flash Debug — Root Cause Investigation", type: :request 
 
     it "Step 2: Redirect location is correct" do
       post sessions_path, params: { email: user.email, password: "password123" }
-      expect(response.location).to include(root_path)
+      expect(response.location).to include(community_products_path(community_slug: community.slug))
       puts "\n✓ Redirect location: #{response.location}"
     end
 
@@ -118,14 +120,14 @@ RSpec.describe "Turbo Flash Debug — Root Cause Investigation", type: :request 
 
   describe "ROOT CAUSE #3: Unauthenticated redirect uses wrong flash key" do
     it "Step 1: Accessing protected resource triggers redirect" do
-      get conversations_path,
+      get community_conversations_path(community_slug: community.slug),
           headers: { "Accept" => "text/vnd.turbo-stream.html, text/html" }
       expect(response).to have_http_status(:found)
       puts "\n✓ GET /conversations returned #{response.status} (expected 302)"
     end
 
     it "Step 2: Following redirect shows login page with flash" do
-      get conversations_path,
+      get community_conversations_path(community_slug: community.slug),
           headers: { "Accept" => "text/vnd.turbo-stream.html, text/html" }
       follow_redirect!
       puts "\n--- After following redirect: ---"
@@ -135,7 +137,7 @@ RSpec.describe "Turbo Flash Debug — Root Cause Investigation", type: :request 
     end
 
     it "Step 3: Flash message uses 'info:' key, mapped to alert-info CLASS (FIXED)" do
-      get conversations_path,
+      get community_conversations_path(community_slug: community.slug),
           headers: { "Accept" => "text/vnd.turbo-stream.html, text/html" }
       follow_redirect!
 

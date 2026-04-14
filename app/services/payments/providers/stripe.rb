@@ -113,11 +113,13 @@ module Payments
       end
 
       def payment_success_url(payment)
-        Rails.application.routes.url_helpers.payment_url(payment, host: app_host)
+        community_slug = payment.product_transaction.community.slug
+        Rails.application.routes.url_helpers.community_payment_url(community_slug:, id: payment.id, host: app_host)
       end
 
       def payment_cancel_url(payment)
-        Rails.application.routes.url_helpers.payment_url(payment, host: app_host)
+        community_slug = payment.product_transaction.community.slug
+        Rails.application.routes.url_helpers.community_payment_url(community_slug:, id: payment.id, host: app_host)
       end
 
       def app_host

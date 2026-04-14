@@ -8,7 +8,7 @@
 
   <div class="bg-base-200 p-4 rounded-xl mb-8">
     <!-- Search Form -->
-    <%= form_with url: products_path, method: :get, local: true, class: "flex flex-col md:flex-row gap-4 relative", data: { controller: "autocomplete", autocomplete_url_value: "/products/autocomplete" } do |form| %>
+    <%= form_with url: community_products_path(community_slug: Current.community.slug), method: :get, local: true, class: "flex flex-col md:flex-row gap-4 relative", data: { controller: "autocomplete", autocomplete_url_value: autocomplete_community_products_path(community_slug: Current.community.slug) } do |form| %>
       <div class="flex-1 relative">
         <%= form.text_field :query, 
               placeholder: "搜索商品 (至少2个字符)...", 
@@ -44,42 +44,46 @@
   <% if @products.any? %>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <% @products.each do |product| %>
-        <%= link_to product_path(product), class: "card bg-base-100 shadow-sm border border-base-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group relative #{'opacity-75' if product.sold?}" do %>
-          <div class="absolute top-3 right-3 z-10">
-            <% case product.sale_status %>
-            <% when "active" %>
-              <span class="badge badge-success">Available</span>
-            <% when "pending" %>
-              <span class="badge badge-warning">Reserved</span>
-            <% when "sold" %>
-              <span class="badge badge-error">Sold</span>
-            <% end %>
-          </div>
-          <figure class="aspect-square bg-base-200 w-full overflow-hidden">
-            <% if product.image.attached? && product.image.blob.persisted? %>
-              <%= image_tag product.image.variant(:thumb),
-                    alt: product.name,
-                    class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" %>
-            <% else %>
-              <%= image_tag "default-product.svg",
-                    alt: product.name,
-                    class: "w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-500" %>
-            <% end %>
-          </figure>
-          <div class="card-body p-4">
-            <h2 class="card-title text-base text-base-content line-clamp-1"><%= product.name %></h2>
-            <div class="flex items-center gap-2 mt-1 mb-2">
-              <div class="badge <%= condition_badge_class(product.condition) %> badge-sm"><%= product.condition %></div>
+        <% cache product do %>
+          <%= link_to community_product_path(community_slug: product.community.slug, id: product), class: "card bg-base-100 shadow-sm border border-base-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group relative #{'opacity-75' if product.sold? || product.offlined?}", "aria-label": "View details for #{product.name}" do %>
+            <div class="absolute top-3 right-3 z-10">
+              <% case product.sale_status %>
+              <% when "active" %>
+                <span class="badge badge-success">Available</span>
+              <% when "pending" %>
+                <span class="badge badge-warning">Reserved</span>
+              <% when "sold" %>
+                <span class="badge badge-error">Sold</span>
+              <% when "offlined" %>
+                <span class="badge badge-neutral">Offlined</span>
+              <% end %>
             </div>
-            <div class="mt-auto pt-2 flex items-center justify-between">
-              <span class="text-xl text-primary font-bold"><%= number_to_currency(product.price) %></span>
-              <button class="btn btn-primary btn-sm btn-circle opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </button>
+            <figure class="aspect-square bg-base-200 w-full overflow-hidden">
+              <% if product.image.attached? && product.image.blob.persisted? %>
+                <%= image_tag product.image.variant(:thumb),
+                      alt: product.name,
+                      class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" %>
+              <% else %>
+                <%= image_tag "default-product.svg",
+                      alt: product.name,
+                      class: "w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-500" %>
+              <% end %>
+            </figure>
+            <div class="card-body p-4">
+              <h2 class="card-title text-base text-base-content line-clamp-1"><%= product.name %></h2>
+              <div class="flex items-center gap-2 mt-1 mb-2">
+                <div class="badge <%= condition_badge_class(product.condition) %> badge-sm"><%= product.condition %></div>
+              </div>
+              <div class="mt-auto pt-2 flex items-center justify-between">
+                <span class="text-xl text-primary font-bold"><%= number_to_currency(product.price) %></span>
+                <button class="btn btn-primary btn-sm btn-circle opacity-0 group-hover:opacity-100 transition-opacity" aria-label="View product">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
+          <% end %>
         <% end %>
       <% end %>
     </div>

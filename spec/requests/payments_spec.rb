@@ -1,10 +1,12 @@
 require "rails_helper"
 
 RSpec.describe "Payments", type: :request do
+  let(:community) { default_community }
   let!(:seller) do
     User.create!(
       name: "Seller",
       email: "request-seller@example.com",
+      community: community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -14,6 +16,7 @@ RSpec.describe "Payments", type: :request do
     User.create!(
       name: "Buyer",
       email: "request-buyer@example.com",
+      community: create_community,
       password: "password123",
       password_confirmation: "password123"
     )
@@ -44,7 +47,7 @@ RSpec.describe "Payments", type: :request do
   end
 
   it "requires login for payment creation" do
-    post transaction_payments_path(transaction)
+    post community_transaction_payments_path(community_slug: product.community.slug, transaction_id: transaction.id)
     expect(response).to redirect_to(new_session_path)
   end
 
@@ -59,7 +62,7 @@ RSpec.describe "Payments", type: :request do
     )
 
     expect do
-      post transaction_payments_path(transaction)
+      post community_transaction_payments_path(community_slug: product.community.slug, transaction_id: transaction.id)
     end.to change(Payment, :count).by(1)
 
     expect(response).to redirect_to("https://checkout.stripe.com/test")

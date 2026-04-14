@@ -5,6 +5,7 @@ RSpec.describe Ai::Summarizer do
     User.create!(
       name: "Seller",
       email: TestData.unique_email(prefix: "seller"),
+      community: default_community,
       password: "password123",
       password_confirmation: "password123"
     )

@@ -325,6 +325,9 @@ bundle install
 # 这一步会根据 config/database.yml 自动创建数据库并加载表结构 (Schema)。
 rails db:prepare
 
+# 初始化种子数据（含 Communities / Colleges）
+rails db:seed
+
 ```
 
 ---
@@ -336,7 +339,7 @@ rails db:prepare
 | `role "..." does not exist`            | 尚未执行 `createuser` 或用户名不匹配 | 重新执行 `sudo -u postgres createuser -s $(whoami)`            |
 | `Is the server running locally?`       | PostgreSQL 服务未启动                | 执行 `sudo service postgresql start`                           |
 | `Gem::Ext::BuildError (pg / nokogiri)` | 缺少 Linux 端的系统依赖库            | 执行 `sudo apt install libpq-dev build-essential`              |
-| `database "..." already exists`        | 之前初始化过，残留了旧数据库         | 运行 `bundle exec rails db:drop db:create db:migrate` 强行重置 |
+| `database "..." already exists`        | 之前初始化过，残留了旧数据库         | 运行 `bundle exec rails db:prepare`（需要“重置”请优先用迁移修复，不要随意 drop） |
 
 ---
 
@@ -348,6 +351,12 @@ rails server -b 0.0.0.0
 ```
 
 访问 `localhost:3000` 看到 "Hello World" 即表示环境配置成功。
+
+应用采用基于路径的多租户：访客访问 `/` 会进入社区选择页；社区内资源路径为 `/:community_slug/...`，例如：
+- `/chung-chi/products`
+- `/new-asia/conversations`
+
+健康检查：`GET /up`
 
 ---
 

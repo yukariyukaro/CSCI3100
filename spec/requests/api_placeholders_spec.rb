@@ -1,29 +1,36 @@
 require "rails_helper"
 
 RSpec.describe "API placeholders", type: :request do
-  it "returns products placeholder JSON" do
-    get api_products_path
+  let(:community) { default_community }
+
+  it "returns products JSON scoped by community" do
+    seller = User.create!(name: "Seller", email: TestData.unique_email(prefix: "seller"), password: "password123",
+                          community: community)
+    Product.create!(name: "MacBook", description: "Good condition laptop, barely used.", price: 2000, seller: seller)
+
+    get api_community_products_path(community_slug: community.slug)
     expect(response).to have_http_status(:ok)
-    expect(response.parsed_body["module"]).to eq("products")
+    expect(response.parsed_body["community"]).to eq(community.slug)
+    expect(response.parsed_body["products"].pluck("name")).to include("MacBook")
   end
 
   it "returns chats placeholder JSON" do
-    get api_chats_path
+    get api_community_chats_path(community_slug: community.slug)
     expect(response).to have_http_status(:ok)
     expect(response.parsed_body["module"]).to eq("chats")
   end
 
   it "returns payments placeholder JSON and create response" do
-    get api_payments_path
+    get api_community_payments_path(community_slug: community.slug)
     expect(response).to have_http_status(:ok)
-    post api_payments_path
+    post api_community_payments_path(community_slug: community.slug)
     expect(response).to have_http_status(:created)
   end
 
   it "returns listings placeholder JSON and create response" do
-    get api_listings_path
+    get api_community_listings_path(community_slug: community.slug)
     expect(response).to have_http_status(:ok)
-    post api_listings_path
+    post api_community_listings_path(community_slug: community.slug)
     expect(response).to have_http_status(:created)
   end
 
@@ -39,7 +46,7 @@ RSpec.describe "API placeholders", type: :request do
       }
     )
 
-    post price_suggestion_api_listings_path, params: {
+    post price_suggestion_api_community_listings_path(community_slug: community.slug), params: {
       name: "Used Keyboard",
       description: "Mechanical keyboard in good condition with accessories.",
       condition: "Good"

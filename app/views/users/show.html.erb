@@ -23,7 +23,7 @@
     <%# Stats row %>
     <div class="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
       <div class="text-center">
-        <div class="text-2xl font-bold text-gray-900"><%= @user.products.visible.count %></div>
+        <div class="text-2xl font-bold text-gray-900"><%= @user.products.count %></div>
         <div class="text-sm text-gray-600">Items</div>
       </div>
       <div class="text-center">
@@ -64,6 +64,49 @@
           <% end %>
         <% end %>
       </div>
+
+      <div class="mb-6">
+        <%= form_with model: @user,
+              local: true,
+              method: :patch,
+              data: { controller: "community-change-confirm", "community-change-confirm-original-community-id-value": @user.community_id } do |f| %>
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="user_name">Name</label>
+            <%= f.text_field :name, class: "input input-bordered w-full bg-white text-gray-900" %>
+          </div>
+
+          <div class="mb-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="user_community_id">Community</label>
+            <%= f.collection_select :community_id, @communities, :id, :name,
+                  { include_blank: false },
+                  class: "select select-bordered w-full bg-white text-gray-900",
+                  data: { "community-change-confirm-target": "select" } %>
+          </div>
+
+          <div class="alert alert-warning text-sm mb-3">
+            <div class="flex flex-col gap-1">
+              <div class="font-semibold">High-risk action</div>
+              <div>Changing your community will automatically offline all your active listings in the previous community. Listings will not move to the new community (re-list required).</div>
+            </div>
+          </div>
+
+          <% if @user.errors[:base].any? %>
+            <div class="alert alert-error text-sm mb-3">
+              <span><%= @user.errors[:base].first %></span>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="current_password">Current password (required if changing community)</label>
+            <%= password_field_tag :current_password, nil,
+                  class: "input input-bordered w-full bg-white text-gray-900",
+                  autocomplete: "current-password",
+                  data: { "community-change-confirm-target": "password" } %>
+          </div>
+
+          <%= f.submit "Save Profile", class: "btn btn-primary w-full" %>
+        <% end %>
+      </div>
     <% end %>
 
     <%# Nav links %>
@@ -89,7 +132,7 @@
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-2xl font-bold text-gray-900">My Items</h3>
         <% if current_user == @user %>
-          <%= link_to "＋ New Listing", new_listing_path, class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition" %>
+          <%= link_to "＋ New Listing", new_community_listing_path(community_slug: current_user.community.slug), class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition" %>
         <% end %>
       </div>
 
@@ -97,7 +140,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <% @products.each do |product| %>
             <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
-              <%= link_to product_path(product) do %>
+              <%= link_to community_product_path(community_slug: product.community.slug, id: product) do %>
                 <div class="p-4">
                   <h4 class="text-lg font-semibold text-gray-900 mb-2"><%= product.name %></h4>
                   <p class="text-gray-600 text-sm mb-3"><%= truncate(product.description, length: 60) %></p>
@@ -109,6 +152,8 @@
                         <% when 'pending' %>
                           bg-yellow-100 text-yellow-800
                         <% when 'sold' %>
+                          bg-gray-100 text-gray-800
+                        <% when 'offlined' %>
                           bg-gray-100 text-gray-800
                       <% end %>">
                       <%= product.sale_status.capitalize %>
@@ -123,7 +168,7 @@
         <div class="text-center py-12 bg-gray-50 rounded-lg">
           <p class="text-gray-600 mb-4">No items listed yet.</p>
           <% if current_user == @user %>
-            <p><%= link_to "Start selling now →", new_listing_path, class: "text-blue-600 hover:text-blue-700 font-medium" %></p>
+            <p><%= link_to "Start selling now →", new_community_listing_path(community_slug: current_user.community.slug), class: "text-blue-600 hover:text-blue-700 font-medium" %></p>
           <% end %>
         </div>
       <% end %>
@@ -154,8 +199,8 @@
                       <div class="text-xs text-gray-600 break-all"><%= payment.error_details %></div>
                     </div>
                     <div class="flex gap-2">
-                      <%= button_to "标记已处理", resolve_payment_path(payment), method: :patch, class: "btn btn-sm btn-outline" %>
-                      <%= link_to "查看", payment_path(payment), class: "btn btn-sm btn-ghost" %>
+                      <%= button_to "标记已处理", resolve_community_payment_path(community_slug: payment.product_transaction.community.slug, id: payment), method: :patch, class: "btn btn-sm btn-outline" %>
+                      <%= link_to "查看", community_payment_path(community_slug: payment.product_transaction.community.slug, id: payment), class: "btn btn-sm btn-ghost" %>
                     </div>
                   </div>
                 <% end %>
@@ -214,7 +259,7 @@
         <% else %>
           <div class="text-center py-12 bg-gray-50 rounded-lg">
             <p class="text-gray-600 mb-4">You have no transactions yet.</p>
-            <p><%= link_to "Browse products →", products_path, class: "text-blue-600 hover:text-blue-700 font-medium" %></p>
+            <p><%= link_to "Browse products →", community_products_path(community_slug: current_user.community.slug), class: "text-blue-600 hover:text-blue-700 font-medium" %></p>
           </div>
         <% end %>
       </section>

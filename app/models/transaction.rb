@@ -1,4 +1,5 @@
 class Transaction < ApplicationRecord
+  belongs_to :community
   belongs_to :product, inverse_of: :transactions
   belongs_to :buyer, class_name: "User", inverse_of: :bought_transactions
   belongs_to :seller, class_name: "User", inverse_of: :sold_transactions
@@ -8,6 +9,7 @@ class Transaction < ApplicationRecord
 
   validate :buyer_and_seller_must_differ
 
+  before_validation :set_community_from_product
   before_update :set_completed_at, if: :will_save_change_to_status?
 
   scope :by_status,    ->(st)      { where(status: st) }
@@ -24,5 +26,9 @@ class Transaction < ApplicationRecord
 
   def set_completed_at
     self.completed_at = Time.current if status == "completed"
+  end
+
+  def set_community_from_product
+    self.community_id ||= product&.community_id
   end
 end
