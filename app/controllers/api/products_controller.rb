@@ -19,6 +19,7 @@ module Api
         ai_summary_status: product.ai_summary_status,
         ai_summary: product.ai_summary,
         ai_model: product.ai_model,
+        ai_last_question: product.ai_last_question,
         ai_summary_requested_at: product.ai_summary_requested_at,
         updated_at: product.updated_at
       }

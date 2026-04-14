@@ -125,11 +125,14 @@ RSpec.describe "Products", type: :request do
 
     it "renders the AI summary card if the product has a summary" do
       product = Product.create!(name: "Used iPhone", description: "Long long desc", price: 500,
-                                seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed")
+                                seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed",
+                                ai_last_question: "Is this worth the price?")
       get product_path(product)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("AI Key Selling Points")
+      expect(response.body).to include("AI Answer")
       expect(response.body).to include("Good condition")
+      expect(response.body).to include("Your last question")
+      expect(response.body).to include("Is this worth the price?")
     end
   end
 
@@ -143,7 +146,14 @@ RSpec.describe "Products", type: :request do
         ai_summary_status: "failed"
       )
 
-      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(nil)
+      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(
+        {
+          status: "ok",
+          ai_summary: "Great choice",
+          message: "AI answered your question.",
+          question: "Is this durable?"
+        }
+      )
 
       post ask_ai_about_this_product_path(product), params: { question: "Is this durable?" }
       expect(response).to redirect_to(product_path(product))
@@ -158,7 +168,14 @@ RSpec.describe "Products", type: :request do
         ai_summary_status: "pending"
       )
 
-      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(nil)
+      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(
+        {
+          status: "failed",
+          ai_summary: nil,
+          message: "AI took too long to respond. Please try again.",
+          question: "What is good here?"
+        }
+      )
 
       post ask_ai_about_this_product_path(product),
            params: { question: "What is good here?" },
@@ -167,6 +184,32 @@ RSpec.describe "Products", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.media_type).to eq("text/vnd.turbo-stream.html")
       expect(response.body).to include("turbo-stream")
+      expect(response.body).to include("AI took too long to respond")
+    end
+
+    it "keeps the user question in the turbo response after failure" do
+      product = Product.create!(
+        name: "Question Preserve Product",
+        description: "Long enough description to test question preservation in turbo response.",
+        price: 120,
+        seller: seller,
+        ai_summary_status: "pending"
+      )
+
+      allow_any_instance_of(Ai::Summarizer).to receive(:call_sync).and_return(
+        {
+          status: "failed",
+          ai_summary: nil,
+          message: "AI is temporarily unavailable. Please try again.",
+          question: "Does it include charger?"
+        }
+      )
+
+      post ask_ai_about_this_product_path(product),
+           params: { question: "Does it include charger?" },
+           headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+      expect(response.body).to include("Does it include charger?")
     end
   end
 
@@ -186,6 +229,7 @@ RSpec.describe "Products", type: :request do
       body = response.parsed_body
       expect(body["ai_summary_status"]).to eq("pending")
       expect(body).to have_key("ai_summary_requested_at")
+      expect(body).to have_key("ai_last_question")
       expect(body).to have_key("updated_at")
     end
   end

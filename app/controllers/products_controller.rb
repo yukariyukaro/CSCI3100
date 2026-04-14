@@ -30,7 +30,7 @@ class ProductsController < ApplicationController
 
   def ask_ai_about_this
     @product = Product.find(params[:id])
-    Ai::Summarizer.new(@product).call_sync(force: true, question: params[:question])
+    @ai_result = Ai::Summarizer.new(@product).call_sync(force: true, question: params[:question])
     respond_with_ai_card
   rescue ActiveRecord::RecordNotFound
     render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
@@ -73,7 +73,7 @@ class ProductsController < ApplicationController
   def respond_with_ai_card
     respond_to do |format|
       format.turbo_stream { render_ai_card_turbo_stream }
-      format.html { redirect_to product_path(@product) }
+      format.html { redirect_with_ai_result }
     end
   end
 
@@ -81,7 +81,12 @@ class ProductsController < ApplicationController
     render turbo_stream: turbo_stream.replace(
       helpers.dom_id(@product, :ai_summary),
       partial: "products/ai_summary_card",
-      locals: { product: @product }
+      locals: { product: @product, ai_result: @ai_result }
     )
+  end
+
+  def redirect_with_ai_result
+    flash_key = @ai_result[:status] == "ok" ? :notice : :alert
+    redirect_to product_path(@product), flash: { flash_key => @ai_result[:message] }
   end
 end

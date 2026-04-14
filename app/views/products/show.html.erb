@@ -42,7 +42,7 @@
 
       <!-- AI Summary Card -->
       <%= turbo_frame_tag(dom_id(@product, :ai_summary)) do %>
-        <%= render "ai_summary_card", product: @product %>
+        <%= render "ai_summary_card", product: @product, ai_result: nil %>
       <% end %>
 
       <!-- Description -->

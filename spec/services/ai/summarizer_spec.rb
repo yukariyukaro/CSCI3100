@@ -31,7 +31,8 @@ RSpec.describe Ai::Summarizer do
       before { product.update!(ai_summary_status: "completed", ai_summary: "already done") }
 
       it "keeps completed summary unchanged" do
-        expect(summarizer.call_sync).to be_nil
+        result = summarizer.call_sync
+        expect(result[:status]).to eq("ok")
         expect(product.reload.ai_summary).to eq("already done")
       end
     end
@@ -40,7 +41,8 @@ RSpec.describe Ai::Summarizer do
       let(:product) { Product.create!(name: "Test Phone", description: short_description, price: 500, seller: seller) }
 
       it "marks status as skipped" do
-        summarizer.call_sync
+        result = summarizer.call_sync
+        expect(result[:status]).to eq("skipped")
         expect(product.reload.ai_summary_status).to eq("skipped")
       end
     end
@@ -49,7 +51,8 @@ RSpec.describe Ai::Summarizer do
       before { stub_const("MODELSCOPE_API_KEY", "") }
 
       it "marks status as skipped" do
-        summarizer.call_sync
+        result = summarizer.call_sync
+        expect(result[:status]).to eq("skipped")
         expect(product.reload.ai_summary_status).to eq("skipped")
       end
     end
@@ -62,10 +65,20 @@ RSpec.describe Ai::Summarizer do
       end
 
       it "writes completed summary synchronously" do
-        summarizer.call_sync
+        result = summarizer.call_sync(question: "Is this in good condition?")
         product.reload
+        expect(result[:status]).to eq("ok")
         expect(product.ai_summary_status).to eq("completed")
         expect(product.ai_summary).to include("Key selling point")
+        expect(product.ai_last_question).to eq("Is this in good condition?")
+      end
+    end
+
+    context "when a blank question is submitted explicitly" do
+      it "returns invalid_input without calling AI" do
+        result = summarizer.call_sync(question: "   ")
+        expect(result[:status]).to eq("invalid_input")
+        expect(result[:message]).to include("Please enter a question")
       end
     end
   end
