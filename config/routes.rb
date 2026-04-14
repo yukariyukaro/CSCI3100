@@ -7,6 +7,7 @@ Rails.application.routes.draw do
 
   resources :products, only: %i[index show] do
     get "autocomplete", on: :collection
+    post "ask_ai_about_this", on: :member
     post "reserve", on: :member, to: "transactions#create"
     delete "cancel_reservation", on: :member, to: "transactions#destroy"
     patch "mark_sold", on: :member, to: "transactions#complete"
@@ -29,10 +30,14 @@ Rails.application.routes.draw do
   resources :users, only: %i[index show new create update]
 
   namespace :api do
-    resources :products, only: %i[index show]
+    resources :products, only: %i[index show] do
+      get "ai_summary", on: :member
+    end
     resources :chats, only: %i[index show]
     resources :payments, only: %i[index create show]
-    resources :listings, only: %i[index create show]
+    resources :listings, only: %i[index create show] do
+      post "price_suggestion", on: :collection
+    end
     resources :sessions, only: %i[create destroy]
     resources :users, only: %i[index show]
   end

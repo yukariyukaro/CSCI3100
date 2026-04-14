@@ -41,50 +41,9 @@
       </div>
 
       <!-- AI Summary Card -->
-      <div class="my-2">
-        <% case @product.ai_summary_status %>
-        <% when 'completed' %>
-          <div class="card bg-base-200 border-l-4 border-primary shadow-sm animate-fade-in">
-            <div class="card-body p-4">
-              <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-2">
-                ✨ AI 智能卖点总结
-              </h3>
-              <div class="leading-relaxed text-sm text-gray-700">
-                <%= simple_format(@product.ai_summary) %>
-              </div>
-              <span class="text-xs text-gray-400 mt-2 block">自动生成，仅供参考</span>
-            </div>
-          </div>
-        <% when 'generating', nil %>
-          <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
-            <div class="card-body p-4">
-               <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3">
-                <span class="animate-pulse">✨ AI 正在分析卖点...</span>
-              </h3>
-              <div class="flex flex-col gap-2">
-                <div class="skeleton h-3 w-full"></div>
-                <div class="skeleton h-3 w-5/6"></div>
-                <div class="skeleton h-3 w-4/6"></div>
-              </div>
-            </div>
-          </div>
-        <% when 'failed', 'skipped' %>
-          <!-- 优雅隐藏 -->
-          <div class="hidden"></div>
-        <% else %>
-          <div class="card bg-base-200 border-l-4 border-primary shadow-sm">
-            <div class="card-body p-4">
-              <h3 class="card-title text-primary text-sm flex items-center gap-1 mb-3 animate-pulse">
-                ✨ 正在唤醒 AI 助手...
-              </h3>
-              <div class="flex flex-col gap-2">
-                <div class="skeleton h-3 w-full"></div>
-                <div class="skeleton h-3 w-3/4"></div>
-              </div>
-            </div>
-          </div>
-        <% end %>
-      </div>
+      <%= turbo_frame_tag(dom_id(@product, :ai_summary)) do %>
+        <%= render "ai_summary_card", product: @product, ai_result: nil %>
+      <% end %>
 
       <!-- Description -->
       <div class="mt-2">

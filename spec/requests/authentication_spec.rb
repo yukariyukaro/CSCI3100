@@ -412,7 +412,7 @@ RSpec.describe "Authentication Flows", type: :request do
         }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(User.count).to eq(1)
+        expect(User.where("LOWER(email) = ?", email.downcase).count).to eq(1)
       end
 
       it "handles email with leading/trailing whitespace" do

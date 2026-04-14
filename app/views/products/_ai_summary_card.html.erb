@@ -1,0 +1,73 @@
+<% ai_result ||= nil %>
+<% question_value = ai_result&.dig(:question).presence || product.ai_last_question.to_s %>
+<% status_message = ai_result&.dig(:message) %>
+<% status_kind = ai_result&.dig(:status) %>
+
+<div class="my-2" data-controller="ai-summary">
+  <% if product.ai_summary_status == "completed" %>
+    <div class="card bg-base-100 border-l-4 border-primary shadow-sm animate-fade-in border border-base-300">
+      <div class="card-body p-4">
+        <h3 class="card-title text-primary text-base flex items-center gap-2 mb-3">
+          ✨ AI Answer
+        </h3>
+        <% if question_value.present? %>
+          <div class="rounded-lg border border-base-300 bg-base-200 px-3 py-2 mb-3">
+            <p class="text-sm text-base-content/70 font-medium mb-1">Your last question</p>
+            <p class="text-base text-base-content"><%= question_value %></p>
+          </div>
+        <% end %>
+        <div class="leading-relaxed text-base text-base-content">
+          <%= simple_format(product.ai_summary) %>
+        </div>
+        <span class="text-sm text-base-content/60 mt-3 block">Auto-generated · for reference only</span>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card bg-base-100 border-l-4 <%= product.ai_summary_status == "completed" ? "border-base-300" : "border-info" %> shadow-sm mt-3 border border-base-300">
+    <div class="card-body p-4">
+      <h3 class="card-title text-info text-lg mb-2">Ask AI about this</h3>
+
+      <% if status_message.present? %>
+        <% alert_class = status_kind == "ok" ? "alert-success" : "alert-warning" %>
+        <div class="alert <%= alert_class %> mb-3" data-ai-summary-target="serverMessage">
+          <span><%= status_message %></span>
+        </div>
+      <% elsif product.ai_summary_status == "failed" %>
+        <div class="alert alert-warning mb-3" data-ai-summary-target="serverMessage">
+          <span>AI response failed. Ask again to retry.</span>
+        </div>
+      <% elsif product.ai_summary_status == "skipped" %>
+        <div class="alert alert-info mb-3" data-ai-summary-target="serverMessage">
+          <span>Provide a question to ask AI about this product.</span>
+        </div>
+      <% else %>
+        <p class="text-base text-base-content/80 mb-3">Ask a question and get an AI answer based on this product.</p>
+      <% end %>
+
+      <div class="hidden card bg-base-200 border border-base-300 mb-3" data-ai-summary-target="loading">
+        <div class="card-body p-4">
+          <h4 class="text-base font-semibold text-primary animate-pulse">Asking AI...</h4>
+          <div class="flex flex-col gap-2 mt-2">
+            <div class="skeleton h-3 w-full"></div>
+            <div class="skeleton h-3 w-5/6"></div>
+            <div class="skeleton h-3 w-4/6"></div>
+          </div>
+        </div>
+      </div>
+
+      <%= form_with url: ask_ai_about_this_product_path(product), method: :post, class: "space-y-2", data: { action: "submit->ai-summary#onSubmit input->ai-summary#clearError", "ai-summary-target": "form" } do %>
+        <%= text_field_tag :question,
+              question_value,
+              placeholder: "e.g., Is this suitable for daily use?",
+              class: "input input-bordered w-full text-base",
+              data: { "ai-summary-target": "question" } %>
+        <p class="text-error text-base hidden" data-ai-summary-target="error"></p>
+        <button type="submit" class="btn btn-outline" data-ai-summary-target="button">
+          <span data-ai-summary-target="buttonText">Ask AI about this</span>
+          <span class="loading loading-spinner loading-xs hidden ml-2" data-ai-summary-target="spinner"></span>
+        </button>
+      <% end %>
+    </div>
+  </div>
+</div>
