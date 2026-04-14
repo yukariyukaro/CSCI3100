@@ -32,7 +32,7 @@ module ProductSearch
       desc_like = desc_like_node(like)
 
       scope.where(combined_search_node(name_like, desc_like, fuzzy))
-        .order(search_ordering(name_like, desc_like, fuzzy), arel_table[:id].asc)
+           .order(search_ordering(name_like, desc_like, fuzzy), arel_table[:id].asc)
     end
 
     def like_pattern(query)
