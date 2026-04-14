@@ -1,0 +1,18 @@
+<div class="container mx-auto px-4 py-10 max-w-4xl">
+  <h1 class="text-3xl font-bold text-base-content mb-2">Choose Your Community</h1>
+  <p class="text-base-content/70 mb-8">Browse listings by college/hostel community.</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <% @communities.each do |community| %>
+      <%= link_to community_products_path(community_slug: community.slug),
+            class: "p-5 bg-base-100 border border-base-200 rounded-xl hover:shadow-md transition flex items-center justify-between" do %>
+        <div class="min-w-0">
+          <div class="font-semibold text-base-content truncate"><%= community.name %></div>
+          <div class="text-sm text-base-content/60 truncate"><%= community.description %></div>
+        </div>
+        <div class="badge badge-outline flex-shrink-0"><%= community.abbreviation %></div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+

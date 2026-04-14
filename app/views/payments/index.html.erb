@@ -1,0 +1,50 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Payments</h1>
+  </div>
+
+  <% if @payments.blank? %>
+    <div class="alert">
+      <span><%= t("payments.empty") %></span>
+    </div>
+  <% else %>
+    <div class="overflow-x-auto bg-white rounded-xl border border-base-200">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Provider</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @payments.each do |payment| %>
+            <tr>
+              <td><%= payment.id %></td>
+              <td><%= payment.product_transaction.product.name %></td>
+              <td><%= number_to_currency(payment.amount) %></td>
+              <td>
+                <% if payment.manual_intervention_required? %>
+                  <span class="badge badge-error">Manual</span>
+                <% elsif payment.succeeded? %>
+                  <span class="badge badge-success">Succeeded</span>
+                <% elsif payment.cancelled? %>
+                  <span class="badge">Cancelled</span>
+                <% elsif payment.failed? %>
+                  <span class="badge badge-warning">Failed</span>
+                <% else %>
+                  <span class="badge badge-info">Pending</span>
+                <% end %>
+              </td>
+              <td><%= payment.provider %></td>
+              <td><%= link_to "View", community_payment_path(community_slug: Current.community.slug, id: payment), class: "btn btn-sm btn-outline" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

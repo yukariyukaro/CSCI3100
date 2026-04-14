@@ -1,0 +1,95 @@
+name: "Ruby on Rails CI"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        # 升级到 Postgres 16，与现代 Heroku 栈对齐
+        image: postgres:16-alpine
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_DB: rails_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - "6379:6379"
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RAILS_ENV: test
+      # 使用更健壮的连接字符串
+      DATABASE_URL: "postgres://postgres:password@localhost:5432/rails_test"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.8"
+          bundler-cache: true # 确保 Gem 被高效缓存
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      # 逻辑优化：将 bundler-audit 放入 Gemfile
+      # 这样它会被 bundler-cache 缓存，而不是每次运行都下载
+      - name: Security audit
+        run: bundle exec bundle-audit --update
+
+      - name: Static security scan (Brakeman)
+        run: bundle exec brakeman -q
+
+      - name: Lint code for consistent style
+        run: bundle exec rubocop
+
+      # 关键修正：使用 db:prepare 而不是 db:schema:load
+      # db:prepare 在 schema 不存在时会尝试运行 migration，更适合初期项目
+      - name: Set up database
+        run: bin/rails db:prepare
+
+      - name: Run tests
+        env:
+          ENFORCE_COVERAGE: "1"
+        run: |
+          bundle exec rspec
+          bundle exec cucumber
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Dependency + config vulnerability scan (Trivy FS)
+        if: always()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          ignore-unfixed: false
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: "1"

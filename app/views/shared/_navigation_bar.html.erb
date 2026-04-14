@@ -1,0 +1,131 @@
+<%# DaisyUI navbar — 全局顶部导航栏 %>
+<nav class="w-full flex items-center justify-between bg-base-100 border-b border-base-200 shadow-sm sticky top-0 z-50 px-6 h-16">
+
+  <%# ── 左侧：Logo ── %>
+  <%= link_to root_path, class: "flex items-center gap-2 text-primary font-bold text-xl hover:text-primary-focus transition-colors duration-200 flex-shrink-0" do %>
+    <div class="p-1.5 bg-primary/10 rounded-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 22V12h6v10" />
+      </svg>
+    </div>
+    <span class="tracking-tight">CUHK Marketplace</span>
+  <% end %>
+
+  <%# ── 中间：导航链接 ── %>
+  <div class="flex items-center gap-1">
+    <% products_link = current_community_or_default ? community_products_path(community_slug: current_community_or_default.slug) : communities_path %>
+    <%= link_to products_link,
+          class: "flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-colors hover:bg-base-200 #{current_page?(products_link) ? 'text-primary bg-primary/10' : 'text-base-content/70'}" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+      <span>Products</span>
+    <% end %>
+
+    <% conversations_link = current_community_or_default ? community_conversations_path(community_slug: current_community_or_default.slug) : communities_path %>
+    <%= link_to conversations_link,
+          class: "flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-colors hover:bg-base-200 #{current_page?(conversations_link) ? 'text-primary bg-primary/10' : 'text-base-content/70'}" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+      <span>Chats</span>
+    <% end %>
+
+    <% payments_link = current_community_or_default ? community_payments_path(community_slug: current_community_or_default.slug) : communities_path %>
+    <%= link_to payments_link,
+          class: "flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-colors hover:bg-base-200 #{current_page?(payments_link) ? 'text-primary bg-primary/10' : 'text-base-content/70'}" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+      <span>Payments</span>
+    <% end %>
+
+    <% listings_link = logged_in? ? community_listings_path(community_slug: current_user.community.slug) : communities_path %>
+    <%= link_to listings_link,
+          class: "flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-colors hover:bg-base-200 #{current_page?(listings_link) ? 'text-primary bg-primary/10' : 'text-base-content/70'}" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+      </svg>
+      <span>Listings</span>
+    <% end %>
+  </div>
+
+  <%# ── 右侧：未登录显示 Login，已登录显示头像下拉菜单 ── %>
+  <div class="flex items-center gap-2 flex-shrink-0">
+
+    <%# ── Day / Night 切换按钮 ── %>
+    <button
+      type="button"
+      data-controller="theme"
+      data-action="click->theme#toggle"
+      data-dark="false"
+      aria-label="Toggle theme"
+      class="theme-toggle btn btn-ghost btn-circle relative text-base-content">
+      <%# Sun icon — visible in dark mode (click to return to light) %>
+      <span class="theme-icon-sun absolute inset-0 flex items-center justify-center pointer-events-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="4"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m10.02 10.02 1.42 1.42M2 12h2m16 0h2m-17.78 6.78 1.42-1.42m10.02-10.02 1.42-1.42"/>
+        </svg>
+      </span>
+      <%# Moon icon — visible in light mode (click to switch to dark) %>
+      <span class="theme-icon-moon absolute inset-0 flex items-center justify-center pointer-events-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </span>
+    </button>
+
+    <div class="flex items-center gap-1">
+      <%= link_to "EN", root_path(locale: "en"), class: "btn btn-ghost btn-xs #{I18n.locale.to_s == 'en' ? 'btn-active' : ''}" %>
+      <%= link_to "中文", root_path(locale: "zh"), class: "btn btn-ghost btn-xs #{I18n.locale.to_s == 'zh' ? 'btn-active' : ''}" %>
+    </div>
+    <% if logged_in? %>
+      <details class="dropdown dropdown-end relative">
+        <summary class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-base-200 transition-colors border border-transparent hover:border-base-300 list-none">
+          <div class="avatar nav-avatar">
+            <div class="w-9 h-9 rounded-full ring-2 ring-primary/20 overflow-hidden">
+              <% if current_user.avatar.attached? %>
+                <%= image_tag current_user.avatar.variant(:thumb), alt: current_user.name, class: "w-full h-full object-cover" %>
+              <% else %>
+                <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center text-base font-bold">
+                  <%= current_user.name.first.upcase %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <span class="text-base font-semibold text-base-content"><%= current_user.name %> (<%= current_user.community.abbreviation %>)</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+
+        <ul class="dropdown-content absolute menu bg-base-100 rounded-xl z-[100] mt-2 w-64 p-2 shadow-xl border border-base-200">
+          <li>
+            <%= link_to user_path(current_user), class: "flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-base-200 transition-colors text-base" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span class="font-medium text-base-content dark:text-base-content">My Profile</span>
+            <% end %>
+          </li>
+          <li class="mt-1">
+            <%= button_to session_path(current_user), method: :delete,
+                  class: "flex items-center gap-3 py-2.5 px-3 w-full text-left text-error hover:bg-error/10 rounded-lg transition-colors text-base",
+                  form: { class: "w-full" } do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span class="font-medium text-error dark:text-error">Logout</span>
+            <% end %>
+          </li>
+        </ul>
+      </details>
+    <% else %>
+      <%= link_to "Login", new_session_path,
+            class: "btn btn-primary btn-md font-semibold px-7 rounded-full shadow-sm hover:shadow-md transition-all" %>
+    <% end %>
+  </div>
+
+</nav>

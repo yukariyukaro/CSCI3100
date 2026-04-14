@@ -1,0 +1,16 @@
+<div class="hero min-h-[70vh] bg-base-200 rounded-2xl my-8 overflow-visible relative">
+  <!-- Use a subtle gradient or pattern instead of external image to avoid loading issues -->
+  <div class="hero-overlay bg-gradient-to-br from-primary/80 to-secondary/80 rounded-2xl"></div>
+  <div class="hero-content text-center text-neutral-content w-full max-w-3xl overflow-visible relative z-10">
+    <div class="w-full relative z-20">
+      <h1 class="mb-5 text-5xl font-bold text-white drop-shadow-md">CUHK Marketplace</h1>
+      <p class="mb-8 text-xl text-white/90 drop-shadow">
+        Welcome to the second-hand trading platform. Discover great deals from your campus!
+      </p>
+
+      <div class="mt-4">
+        <%= link_to "Browse Communities", communities_path, class: "btn btn-primary btn-lg" %>
+      </div>
+    </div>
+  </div>
+</div>

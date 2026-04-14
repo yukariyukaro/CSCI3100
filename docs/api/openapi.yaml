@@ -1,0 +1,137 @@
+openapi: 3.0.3
+info:
+  title: CUHK Marketplace API
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/{community_slug}/products:
+    get:
+      summary: List products (scoped by community)
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [community, products]
+                properties:
+                  community:
+                    type: string
+                  products:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+  /api/{community_slug}/products/{id}:
+    get:
+      summary: Show product (scoped by community)
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    required: [community]
+                    properties:
+                      community:
+                        type: string
+                  - $ref: "#/components/schemas/Product"
+        "404":
+          description: Not Found
+  /api/{community_slug}/chats:
+    get:
+      summary: Chats placeholder
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+      responses:
+        "200":
+          description: OK
+  /api/{community_slug}/payments:
+    get:
+      summary: Payments placeholder
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+      responses:
+        "200":
+          description: OK
+    post:
+      summary: Payments placeholder create
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+      responses:
+        "201":
+          description: Created
+  /api/{community_slug}/listings:
+    get:
+      summary: Listings placeholder
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+      responses:
+        "200":
+          description: OK
+    post:
+      summary: Listings placeholder create
+      parameters:
+        - $ref: "#/components/parameters/CommunitySlug"
+      responses:
+        "201":
+          description: Created
+  /api/sessions:
+    post:
+      summary: Create session
+      responses:
+        "201":
+          description: Created
+    delete:
+      summary: Destroy session
+      responses:
+        "204":
+          description: No Content
+components:
+  parameters:
+    CommunitySlug:
+      name: community_slug
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Product:
+      type: object
+      required: [id, name, description, price, sale_status, created_at, seller]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        sale_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        seller:
+          type: object
+          required: [id, name]
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+

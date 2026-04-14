@@ -1,0 +1,14 @@
+<% if user.errors.any? %>
+  <div class="alert alert-error mb-4" data-testid="signup-errors">
+    <ul class="list-disc pl-5">
+      <% user.errors.each do |error| %>
+        <% if Rails.env.production? && error.attribute == :email && error.type == :taken %>
+          <li>该邮箱目前无法注册，请检查输入或尝试登录。</li>
+        <% else %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+

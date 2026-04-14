@@ -1,0 +1,47 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Fake Checkout</h1>
+    <%= link_to "Back",
+          community_product_path(community_slug: @payment.product_transaction.product.community.slug, id: @payment.product_transaction.product),
+          class: "btn btn-sm btn-outline" %>
+  </div>
+
+  <div class="card bg-white border border-base-200 rounded-xl">
+    <div class="card-body">
+      <div class="space-y-2">
+        <div class="text-sm text-gray-500">Product</div>
+        <div class="font-semibold text-gray-900"><%= @payment.product_transaction.product.name %></div>
+      </div>
+
+      <div class="mt-4 space-y-2">
+        <div class="text-sm text-gray-500">Amount</div>
+        <div class="text-2xl font-bold text-gray-900"><%= number_to_currency(@payment.amount) %></div>
+      </div>
+
+      <div class="mt-6 flex flex-col gap-2">
+        <%= button_to "Pay (Simulate Webhook)",
+                      webhook_payments_path,
+                      method: :post,
+                      params: {
+                        provider_reference: @payment.provider_reference,
+                        amount: @payment.amount.to_s,
+                        token: params[:token],
+                        outcome: "succeeded"
+                      },
+                      class: "btn btn-primary" %>
+
+        <%= button_to "Cancel",
+                      webhook_payments_path,
+                      method: :post,
+                      params: {
+                        provider_reference: @payment.provider_reference,
+                        amount: @payment.amount.to_s,
+                        token: params[:token],
+                        outcome: "cancelled"
+                      },
+                      class: "btn btn-outline" %>
+      </div>
+    </div>
+  </div>
+</div>
+

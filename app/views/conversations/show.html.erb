@@ -1,0 +1,54 @@
+<%# Chat room — powered by ActionCable %>
+<div class="container mx-auto px-4 py-6 max-w-2xl"
+     data-controller="chat"
+     data-chat-conversation-id-value="<%= @conversation.id %>"
+     data-chat-current-user-id-value="<%= current_user.id %>">
+
+  <%# Header %>
+  <div class="flex items-center gap-3 mb-4">
+    <%= link_to community_conversations_path(community_slug: @conversation.community.slug), class: "btn btn-ghost btn-sm" do %>
+      ← Back
+    <% end %>
+    <% other = @conversation.buyer == current_user ? @conversation.seller : @conversation.buyer %>
+    <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+      <%= other.name.first.upcase %>
+    </div>
+    <div>
+      <p class="font-semibold text-base-content leading-tight"><%= other.name %> (<%= other.community.abbreviation %>)</p>
+      <p class="text-xs text-base-content/50">Re: <%= link_to @conversation.product.name, community_product_path(community_slug: @conversation.product.community.slug, id: @conversation.product), class: "link link-hover" %></p>
+    </div>
+  </div>
+
+  <div data-chat-target="status" class="alert alert-warning mb-4 hidden"></div>
+
+  <%# Message list %>
+  <div data-chat-target="messages"
+       id="messages"
+       class="flex flex-col gap-1 h-[60vh] overflow-y-auto bg-base-200 rounded-xl p-4 mb-4">
+    <% @messages.each do |msg| %>
+      <% is_self = msg.sender_id == current_user.id %>
+      <div class="chat <%= is_self ? 'chat-end' : 'chat-start' %>" data-message-id="<%= msg.id %>">
+        <div class="chat-header text-xs opacity-60 mb-1">
+          <%= is_self ? "You" : "#{msg.sender.name} (#{msg.sender.community.abbreviation})" %>
+          <time class="ml-1"><%= msg.created_at.strftime("%H:%M") %></time>
+        </div>
+        <div class="chat-bubble <%= is_self ? 'chat-bubble-primary' : '' %>">
+          <%= msg.content %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Send form %>
+  <%= form_with url: community_conversation_messages_path(community_slug: @conversation.community.slug, conversation_id: @conversation.id),
+        scope: :message,
+        data: { chat_target: "form", action: "submit->chat#send" },
+        class: "flex gap-2" do |f| %>
+    <%= f.text_field :content,
+          placeholder: "Type a message…",
+          autocomplete: "off",
+          class: "input input-bordered flex-1 text-base-content dark:text-base-content placeholder-base-content/50 dark:placeholder-base-content/40",
+          data: { chat_target: "input" } %>
+    <%= f.submit "Send", class: "btn btn-primary", data: { testid: "send-message" } %>
+  <% end %>
+</div>
