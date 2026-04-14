@@ -26,7 +26,7 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validate  :avatar_content_type_and_size, if: -> { avatar.attached? }
 
-  before_validation :normalize_email
+  before_save :normalize_email
 
   def avatar_url
     if avatar.attached?
@@ -47,7 +47,7 @@ class User < ApplicationRecord
   private
 
   def normalize_email
-    self.email = email.to_s.strip.downcase
+    self.email = email.to_s.strip.downcase if email.present?
   end
 
   def avatar_content_type_and_size
