@@ -5,6 +5,11 @@ ruby "3.3.8"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.2.3", ">= 7.2.3.1"
 
+# Explicit gem version bumps to resolve Trivy CVEs
+gem "addressable", ">= 2.9.0"
+gem "rack", ">= 3.0.9.1"
+gem "rack-session", ">= 2.1.2"
+
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 
