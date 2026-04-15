@@ -113,7 +113,6 @@ RSpec.describe "Products", type: :request do
         description: "Long enough description for manual AI summary trigger check.",
         price: 500,
         seller: seller,
-<<<<<<< HEAD
         ai_summary_status: "pending",
         community: community
       )
@@ -124,13 +123,6 @@ RSpec.describe "Products", type: :request do
       allow_any_instance_of(Ai::Summarizer).to receive(:call)
 
       get community_product_path(community_slug: community.slug, id: product)
-=======
-        ai_summary_status: "pending"
-      )
-
-      expect_any_instance_of(Ai::Summarizer).not_to receive(:call_sync)
-      get product_path(product)
->>>>>>> docs/update-readme
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Ask AI about this")
     end
@@ -138,13 +130,8 @@ RSpec.describe "Products", type: :request do
     it "renders the AI summary card if the product has a summary" do
       product = Product.create!(name: "Used iPhone", description: "Long long desc", price: 500,
                                 seller: seller, ai_summary: "✅ Good condition", ai_summary_status: "completed",
-<<<<<<< HEAD
                                 ai_last_question: "Is this worth the price?", community: community)
       get community_product_path(community_slug: community.slug, id: product)
-=======
-                                ai_last_question: "Is this worth the price?")
-      get product_path(product)
->>>>>>> docs/update-readme
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("AI Answer")
       expect(response.body).to include("Good condition")
@@ -172,14 +159,9 @@ RSpec.describe "Products", type: :request do
         }
       )
 
-<<<<<<< HEAD
       post ask_ai_about_this_community_product_path(community_slug: community.slug, id: product),
            params: { question: "Is this durable?" }
       expect(response).to redirect_to(community_product_path(community_slug: community.slug, id: product))
-=======
-      post ask_ai_about_this_product_path(product), params: { question: "Is this durable?" }
-      expect(response).to redirect_to(product_path(product))
->>>>>>> docs/update-readme
     end
 
     it "returns turbo stream response for turbo requests" do
@@ -200,11 +182,7 @@ RSpec.describe "Products", type: :request do
         }
       )
 
-<<<<<<< HEAD
       post ask_ai_about_this_community_product_path(community_slug: community.slug, id: product),
-=======
-      post ask_ai_about_this_product_path(product),
->>>>>>> docs/update-readme
            params: { question: "What is good here?" },
            headers: { "Accept" => "text/vnd.turbo-stream.html" }
 
@@ -232,11 +210,7 @@ RSpec.describe "Products", type: :request do
         }
       )
 
-<<<<<<< HEAD
       post ask_ai_about_this_community_product_path(community_slug: community.slug, id: product),
-=======
-      post ask_ai_about_this_product_path(product),
->>>>>>> docs/update-readme
            params: { question: "Does it include charger?" },
            headers: { "Accept" => "text/vnd.turbo-stream.html" }
 
@@ -244,7 +218,7 @@ RSpec.describe "Products", type: :request do
     end
   end
 
-  describe "GET /api/products/:id/ai_summary" do
+  describe "GET /api/community/:community_slug/products/:id/ai_summary" do
     it "returns summary status with metadata fields" do
       product = Product.create!(
         name: "API Test Product",
@@ -252,18 +226,11 @@ RSpec.describe "Products", type: :request do
         price: 100,
         seller: seller,
         ai_summary_status: "pending",
-<<<<<<< HEAD
         ai_summary_requested_at: Time.current,
         community: community
       )
 
       get ai_summary_api_community_product_path(community_slug: community.slug, id: product)
-=======
-        ai_summary_requested_at: Time.current
-      )
-
-      get ai_summary_api_product_path(product)
->>>>>>> docs/update-readme
       expect(response).to have_http_status(:ok)
       body = response.parsed_body
       expect(body["ai_summary_status"]).to eq("pending")
