@@ -23,12 +23,11 @@ class ProductsController < ApplicationController
 
   def show
     @product = current_community_scope(Product).find(params[:id])
-    Ai::Summarizer.new(@product).call
     @conversation = find_chat_conversation
   end
 
   def ask_ai_about_this
-    @product = Product.find(params[:id])
+    @product = current_community_scope(Product).find(params[:id])
     @ai_result = Ai::Summarizer.new(@product).call_sync(force: true, question: params[:question])
     respond_with_ai_card
   rescue ActiveRecord::RecordNotFound
