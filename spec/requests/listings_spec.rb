@@ -298,4 +298,54 @@ RSpec.describe "Listings", type: :request do
       end
     end
   end
+
+  describe "DELETE /listings/:id" do
+    let!(:product) do
+      Product.create!(
+        name: "Mechanical Keyboard",
+        description: "Hot-swappable keyboard with linear switches.",
+        price: 350,
+        seller: seller,
+        community: community,
+        sale_status: :active
+      )
+    end
+
+    let(:other_user) do
+      User.create!(
+        name: "Other User",
+        email: TestData.unique_email(prefix: "other"),
+        community: community,
+        password: "password123",
+        password_confirmation: "password123"
+      )
+    end
+
+    context "when visitor is not logged in" do
+      it "redirects to the login page" do
+        delete community_listing_path(community_slug: community.slug, id: product.id)
+        expect(response).to redirect_to(new_session_path)
+      end
+    end
+
+    context "when logged in as the seller" do
+      before { log_in_as(seller) }
+
+      it "marks the product as offlined" do
+        delete community_listing_path(community_slug: community.slug, id: product.id)
+        expect(response).to redirect_to(community_listings_path(community_slug: community.slug))
+        expect(product.reload.sale_status).to eq("offlined")
+      end
+    end
+
+    context "when logged in as another user" do
+      before { log_in_as(other_user) }
+
+      it "returns not found and keeps status unchanged" do
+        delete community_listing_path(community_slug: community.slug, id: product.id)
+        expect(response).to have_http_status(:not_found)
+        expect(product.reload.sale_status).to eq("active")
+      end
+    end
+  end
 end

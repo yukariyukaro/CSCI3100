@@ -25,6 +25,7 @@ class Product < ApplicationRecord
   scope :by_status,    ->(status) { where(sale_status: status) }
   scope :by_seller,    ->(user_id) { where(seller_id: user_id) }
   scope :for_sale,     -> { where(sale_status: %i[active pending]) }
+  scope :visible_in_catalog, -> { where.not(sale_status: :offlined) }
 
   # Reset AI summary if the description changes
   before_validation :set_community_from_seller, on: :create

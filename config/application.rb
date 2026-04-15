@@ -28,8 +28,8 @@ module CuhkMarketplace
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Set Sidekiq as the backend adapter for Active Job
-    config.active_job.queue_adapter = :sidekiq
+    # Default to async to avoid hard Redis dependency in local/dev-like environments.
+    config.active_job.queue_adapter = :async
 
     config.i18n.available_locales = %i[en zh]
     config.i18n.default_locale = :en

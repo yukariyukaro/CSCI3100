@@ -13,6 +13,17 @@ RSpec.describe "Products", type: :request do
   end
 
   describe "GET /products" do
+    let!(:offlined_product) do
+      Product.create!(
+        name: "Hidden Product",
+        description: "Should be hidden from catalog",
+        price: 300,
+        seller: seller,
+        sale_status: :offlined,
+        created_at: 4.days.ago
+      )
+    end
+
     before do
       Product.create!(name: "MacBook Pro", description: "Apple laptop", price: 1000, seller: seller,
                       created_at: 2.days.ago)
@@ -27,6 +38,9 @@ RSpec.describe "Products", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("MacBook Pro")
       expect(response.body).to include("iPhone 15")
+      expect(response.body).not_to include(
+        community_product_path(community_slug: community.slug, id: offlined_product.id)
+      )
     end
 
     it "returns matching products when a query is provided (>= 2 chars)" do
@@ -47,6 +61,14 @@ RSpec.describe "Products", type: :request do
       get community_products_path(community_slug: community.slug), params: { query: "二手iPhone" }
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("二手iPhone 13")
+    end
+
+    it "does not show offlined products when searching by exact name" do
+      get community_products_path(community_slug: community.slug), params: { query: "Hidden Product" }
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include(
+        community_product_path(community_slug: community.slug, id: offlined_product.id)
+      )
     end
 
     it "sorts by price ascending" do
