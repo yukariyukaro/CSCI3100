@@ -85,6 +85,9 @@
            data-ai-pricing-target="output"
            aria-live="polite"></p>
       </div>
+      <%= hidden_field_tag :ai_price_suggestion_url,
+            price_suggestion_api_community_listings_path(community_slug: Current.community.slug),
+            data: { "ai-pricing-target": "endpoint" } %>
       <% if @product.errors[:price].any? %>
         <p class="text-error text-sm mt-1"><%= @product.errors[:price].first %></p>
       <% end %>

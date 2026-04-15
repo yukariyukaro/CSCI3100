@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["name", "description", "condition", "price", "output", "button"]
+  static targets = ["name", "description", "condition", "price", "output", "button", "endpoint"]
 
   async suggest(event) {
     event.preventDefault()
@@ -17,7 +17,7 @@ export default class extends Controller {
         condition: this.conditionTarget.value
       }
 
-      const response = await fetch("/api/listings/price_suggestion", {
+      const response = await fetch(this.#priceSuggestionUrl(), {
         method: "POST",
         signal: this.abortController.signal,
         headers: {
@@ -78,6 +78,14 @@ export default class extends Controller {
   #csrfToken() {
     const node = document.querySelector('meta[name="csrf-token"]')
     return node ? node.content : ""
+  }
+
+  #priceSuggestionUrl() {
+    if (this.hasEndpointTarget && this.endpointTarget.value.length > 0) {
+      return this.endpointTarget.value
+    }
+
+    return "/api/listings/price_suggestion"
   }
 
   #escape(str) {
