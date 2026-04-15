@@ -37,7 +37,7 @@
       <%= f.text_field :name,
             placeholder: "e.g., MacBook Pro 14",
             required: true,
-            class: "input input-bordered w-full mt-1 #{'input-error' if @product.errors[:name].any?}",
+            class: "input input-bordered w-full mt-1 text-base-content #{'input-error' if @product.errors[:name].any?}",
             data: { testid: "product-name", "ai-pricing-target": "name" } %>
       <% if @product.errors[:name].any? %>
         <p class="text-error text-sm mt-1"><%= @product.errors[:name].first %></p>
@@ -52,7 +52,7 @@
             placeholder: "Describe the product condition, features, and any extras included...",
             required: true,
             rows: 5,
-            class: "textarea textarea-bordered w-full mt-1 #{'textarea-error' if @product.errors[:description].any?}",
+            class: "textarea textarea-bordered w-full mt-1 text-base-content #{'textarea-error' if @product.errors[:description].any?}",
             data: { testid: "product-description", "ai-pricing-target": "description" } %>
       <p class="text-base-content/50 text-xs mt-1">Minimum 10 characters.</p>
       <% if @product.errors[:description].any? %>
