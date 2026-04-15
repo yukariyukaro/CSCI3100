@@ -140,9 +140,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
     t.datetime "ai_summary_requested_at"
     t.bigint "seller_id", null: false
     t.integer "sale_status", default: 0, null: false
-    t.bigint "community_id", null: false
     t.string "ai_model"
     t.text "ai_last_question"
+    t.bigint "community_id", null: false
     t.index ["community_id", "sale_status", "created_at"], name: "index_products_on_community_status_created"
     t.index ["community_id"], name: "index_products_on_community_id"
     t.index ["seller_id", "created_at"], name: "index_products_on_seller_id_and_created_at"
@@ -174,8 +174,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_14_201525) do
     t.datetime "updated_at", null: false
     t.string "password_digest"
     t.bigint "community_id", null: false
+    t.index "lower((email)::text)", name: "index_users_on_lower_email", unique: true
     t.index ["community_id"], name: "index_users_on_community_id"
-    t.index ["email"], name: "index_users_on_email", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

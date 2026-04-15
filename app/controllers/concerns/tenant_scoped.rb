@@ -50,7 +50,7 @@ module TenantScoped
   end
 
   def forbidden_listing_write_attempt?
-    controller_name == "listings" && action_name.in?(%w[new create])
+    controller_name == "listings" && action_name.in?(%w[new create destroy])
   end
 
   def audit_forbidden_listing_write!

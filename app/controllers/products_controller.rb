@@ -15,7 +15,7 @@ class ProductsController < ApplicationController
 
     cache_key = "autocomplete_#{Current.community&.slug}_#{query.downcase}"
     suggestions = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-      Product.suggest(query, scope: current_community_scope(Product))
+      Product.suggest(query, scope: current_community_scope(Product).visible_in_catalog)
     end
 
     render json: suggestions
@@ -44,7 +44,7 @@ class ProductsController < ApplicationController
   end
 
   def load_products
-    base = current_community_scope(Product)
+    base = current_community_scope(Product).visible_in_catalog
     return base if @query.blank?
 
     if @query.length < 2

@@ -31,7 +31,7 @@ Rails.application.routes.draw do
       resources :payments, only: %i[create]
     end
 
-    resources :listings, only: %i[index new create]
+    resources :listings, only: %i[index new create destroy]
   end
 
   resources :sessions, only: %i[new create destroy]

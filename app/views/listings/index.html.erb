@@ -68,6 +68,13 @@
               </div>
               <div class="card-actions justify-end mt-2">
                 <%= link_to "View", community_product_path(community_slug: product.community.slug, id: product), class: "btn btn-sm btn-outline" %>
+                <% if product.active? %>
+                  <%= button_to "Unlist",
+                        community_listing_path(community_slug: Current.community.slug, id: product.id),
+                        method: :delete,
+                        class: "btn btn-sm btn-error btn-outline",
+                        data: { turbo_confirm: "Unlist this product from marketplace?" } %>
+                <% end %>
               </div>
             </div>
           </div>
